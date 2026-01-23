@@ -1,0 +1,30 @@
+.app-shell {
+  position: fixed;
+  inset: 0;
+  background: #fff;
+}
+
+.app-shell.is-sidebar-collapsed .sidebar {
+  width: 64px;
+  padding: 18px 10px;
+}
+
+.app-shell.is-sidebar-collapsed .sidebar__top,
+.app-shell.is-sidebar-collapsed .sidebar__bottom {
+  opacity: 0;
+  pointer-events: none;
+  height: 0;
+  overflow: hidden;
+}
+
+.app-shell.is-sidebar-collapsed .sidebar__collapse {
+  right: -14px;
+}
+
+/* Mapa full-screen */
+.map-area {
+  position: absolute;
+  inset: 0;
+}
+
+

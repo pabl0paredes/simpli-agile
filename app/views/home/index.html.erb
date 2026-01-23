@@ -1,0 +1,117 @@
+<div class="app-shell" data-controller="sidebar">
+  <%# Sidebar %>
+  <aside class="sidebar" data-sidebar-target="panel">
+    <div class="sidebar__top">
+      <div class="sidebar__brand">SimpliCity App</div>
+
+      <div class="sidebar__section">
+        <div class="sidebar__label">REGIÓN</div>
+        <select class="sidebar__select" data-sidebar-target="regionSelect">
+          <option>Seleccionar región...</option>
+        </select>
+      </div>
+
+      <div class="sidebar__section">
+        <div class="sidebar__label">COMUNA</div>
+        <input class="sidebar__input" type="text" placeholder="Buscar comuna..." />
+      </div>
+
+      <div class="sidebar__section">
+        <div class="sidebar__label">USO DE SUELO</div>
+        <select class="sidebar__select" disabled>
+          <option>Seleccionar uso de suelo</option>
+        </select>
+        <div class="sidebar__hint">
+          Selecciona primero una comuna en el mapa o en el buscador
+        </div>
+      </div>
+
+      <div class="sidebar__divider"></div>
+
+      <div class="sidebar__section">
+        <div class="sidebar__label">CAPAS DE DATOS</div>
+        <div class="sidebar__hint sidebar__hint--center">
+          Selecciona un uso de suelo para activar las capas
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar__bottom">
+      <button class="sidebar__link" type="button">
+        <span class="sidebar__icon">⚙️</span> Configuración
+      </button>
+      <button class="sidebar__link" type="button">
+        <span class="sidebar__icon">❔</span> Ayuda
+      </button>
+    </div>
+  </aside>
+
+  <!-- Botón de colapsar -->
+  <button
+    class="sidebar__collapse"
+    type="button"
+    aria-label="Colapsar sidebar"
+    data-action="click->sidebar#toggle"
+    data-sidebar-target="toggle"
+  >
+    ‹
+  </button>
+
+  <main class="map-area" data-sidebar-target="mapArea">
+    <div
+      id="map"
+      class="map"
+      data-controller="map"
+      data-map-token-value="<%= ENV.fetch("MAPBOX_TOKEN", "") %>"
+    ></div>
+  </main>
+</div>
+
+<!-- Agregar los scripts de Leaflet para que se cargue el mapa -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+  // Inicialización del mapa centrado en Chile
+  var map = L.map('map').setView([-33.46, -70.65], 6);  // Coordenadas de Chile
+
+  // Usamos un tile layer para Mapbox o OpenStreetMap
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  }).addTo(map);
+
+  // Cargar los datos de las regiones desde el endpoint de Rails
+  fetch('/regions')  // Asegúrate de que la URL esté bien configurada en tu backend
+    .then(response => response.json())
+    .then(data => {
+      // Dibujar los polígonos de las regiones
+      data.features.forEach(region => {
+        var geoJsonLayer = L.geoJSON(region, {
+          onEachFeature: function (feature, layer) {
+            console.log(feature)
+            // Crear el tooltip con el nombre de la región
+            layer.bindTooltip(feature.properties.name, {
+              permanent: false,   // Tooltip solo al pasar el ratón
+              sticky: true,
+              direction: 'top',   // Tooltip por encima del polígono
+              className: 'region-tooltip'  // Para personalizar el estilo del tooltip
+            });
+
+            // Cambiar la opacidad al pasar el ratón sobre el polígono
+            layer.on('mouseover', function () {
+              this.setStyle({
+                opacity: 0.5  // Cambiar la opacidad del polígono al pasar el ratón
+              });
+            });
+
+            // Restaurar la opacidad cuando el ratón sale del polígono
+            layer.on('mouseout', function () {
+              this.setStyle({
+                opacity: 1  // Restaurar la opacidad original del polígono
+              });
+            });
+          }
+        }).addTo(map);
+      });
+    })
+    .catch(error => console.error('Error al cargar los datos:', error));
+</script>

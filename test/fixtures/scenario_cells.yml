@@ -1,0 +1,63 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  cell: one
+  base_scenario: one
+  n_C_delta: 1
+  n_I_delta: 1
+  n_O_delta: 1
+  n_S_delta: 1
+  n_E_delta: 1
+  n_HG_delta: 1
+  n_HM_delta: 1
+  n_HP_delta: 1
+  n_HD_delta: 1
+  m_C_delta: 1
+  m_I_delta: 1
+  m_O_delta: 1
+  m_S_delta: 1
+  m_E_delta: 1
+  m_HG_delta: 1
+  m_HM_delta: 1
+  m_HP_delta: 1
+  m_HD_delta: 1
+  acc_C_delta: 1.5
+  acc_I_delta: 1.5
+  acc_O_delta: 1.5
+  acc_S_delta: 1.5
+  acc_E_delta: 1.5
+  acc_HG_delta: 1.5
+  acc_HM_delta: 1.5
+  acc_HP_delta: 1.5
+  acc_HD_delta: 1.5
+
+two:
+  cell: two
+  base_scenario: two
+  n_C_delta: 1
+  n_I_delta: 1
+  n_O_delta: 1
+  n_S_delta: 1
+  n_E_delta: 1
+  n_HG_delta: 1
+  n_HM_delta: 1
+  n_HP_delta: 1
+  n_HD_delta: 1
+  m_C_delta: 1
+  m_I_delta: 1
+  m_O_delta: 1
+  m_S_delta: 1
+  m_E_delta: 1
+  m_HG_delta: 1
+  m_HM_delta: 1
+  m_HP_delta: 1
+  m_HD_delta: 1
+  acc_C_delta: 1.5
+  acc_I_delta: 1.5
+  acc_O_delta: 1.5
+  acc_S_delta: 1.5
+  acc_E_delta: 1.5
+  acc_HG_delta: 1.5
+  acc_HM_delta: 1.5
+  acc_HP_delta: 1.5
+  acc_HD_delta: 1.5

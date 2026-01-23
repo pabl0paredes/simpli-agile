@@ -61,6 +61,9 @@ GEM
       activemodel (= 7.1.6)
       activesupport (= 7.1.6)
       timeout (>= 0.4.0)
+    activerecord-postgis-adapter (9.0.2)
+      activerecord (~> 7.1.0)
+      rgeo-activerecord (~> 7.0.0)
     activestorage (7.1.6)
       actionpack (= 7.1.6)
       activejob (= 7.1.6)
@@ -83,11 +86,14 @@ GEM
     addressable (2.8.8)
       public_suffix (>= 2.0.2, < 8.0)
     base64 (0.3.0)
+    bcrypt (3.1.21)
     benchmark (0.5.0)
     bigdecimal (4.0.1)
     bindex (0.8.1)
     bootsnap (1.21.1)
       msgpack (~> 1.2)
+    bootstrap (5.3.8)
+      popper_js (>= 2.11.8, < 3)
     builder (3.3.0)
     capybara (3.40.0)
       addressable
@@ -106,9 +112,27 @@ GEM
     debug (1.11.1)
       irb (~> 1.10)
       reline (>= 0.3.8)
+    devise (4.9.4)
+      bcrypt (~> 3.0)
+      orm_adapter (~> 0.1)
+      railties (>= 4.1.0)
+      responders
+      warden (~> 1.2.3)
+    dotenv (3.2.0)
+    dotenv-rails (3.2.0)
+      dotenv (= 3.2.0)
+      railties (>= 6.1)
     drb (2.2.3)
     erb (6.0.1)
     erubi (1.13.1)
+    ffi (1.17.3-aarch64-linux-gnu)
+    ffi (1.17.3-aarch64-linux-musl)
+    ffi (1.17.3-arm-linux-gnu)
+    ffi (1.17.3-arm-linux-musl)
+    ffi (1.17.3-arm64-darwin)
+    ffi (1.17.3-x86_64-darwin)
+    ffi (1.17.3-x86_64-linux-gnu)
+    ffi (1.17.3-x86_64-linux-musl)
     globalid (1.3.0)
       activesupport (>= 6.1)
     i18n (1.14.8)
@@ -138,6 +162,7 @@ GEM
     minitest (6.0.1)
       prism (~> 1.5)
     msgpack (1.8.0)
+    multi_json (1.19.1)
     mutex_m (0.3.0)
     net-imap (0.6.2)
       date
@@ -165,6 +190,7 @@ GEM
       racc (~> 1.4)
     nokogiri (1.19.0-x86_64-linux-musl)
       racc (~> 1.4)
+    orm_adapter (0.5.0)
     pg (1.6.3)
     pg (1.6.3-aarch64-linux)
     pg (1.6.3-aarch64-linux-musl)
@@ -172,6 +198,7 @@ GEM
     pg (1.6.3-x86_64-darwin)
     pg (1.6.3-x86_64-linux)
     pg (1.6.3-x86_64-linux-musl)
+    popper_js (2.11.8)
     pp (0.6.3)
       prettyprint
     prettyprint (0.2.0)
@@ -230,8 +257,26 @@ GEM
     regexp_parser (2.11.3)
     reline (0.6.3)
       io-console (~> 0.5)
+    responders (3.2.0)
+      actionpack (>= 7.0)
+      railties (>= 7.0)
     rexml (3.4.4)
+    rgeo (3.0.1)
+    rgeo-activerecord (7.0.1)
+      activerecord (>= 5.0)
+      rgeo (>= 1.0.0)
+    rgeo-geojson (2.2.0)
+      multi_json (~> 1.15)
+      rgeo (>= 1.0.0)
     rubyzip (3.2.2)
+    sassc (2.4.0)
+      ffi (~> 1.9)
+    sassc-rails (2.1.2)
+      railties (>= 4.0.0)
+      sassc (>= 2.0)
+      sprockets (> 3.0)
+      sprockets-rails
+      tilt
     securerandom (0.4.1)
     selenium-webdriver (4.40.0)
       base64 (~> 0.2)
@@ -239,6 +284,9 @@ GEM
       rexml (~> 3.2, >= 3.2.5)
       rubyzip (>= 1.2.2, < 4.0)
       websocket (~> 1.0)
+    simple_form (5.4.1)
+      actionpack (>= 7.0)
+      activemodel (>= 7.0)
     sprockets (4.2.2)
       concurrent-ruby (~> 1.0)
       logger
@@ -251,6 +299,7 @@ GEM
       railties (>= 6.0.0)
     stringio (3.2.0)
     thor (1.5.0)
+    tilt (2.7.0)
     timeout (0.6.0)
     tsort (0.2.0)
     turbo-rails (2.0.21)
@@ -258,6 +307,8 @@ GEM
       railties (>= 7.1.0)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
+    warden (1.2.9)
+      rack (>= 2.0.9)
     web-console (4.2.1)
       actionview (>= 6.0.0)
       activemodel (>= 6.0.0)
@@ -285,14 +336,21 @@ PLATFORMS
   x86_64-linux-musl
 
 DEPENDENCIES
+  activerecord-postgis-adapter
   bootsnap
+  bootstrap (~> 5.3)
   capybara
   debug
+  devise
+  dotenv-rails
   importmap-rails
   pg (~> 1.1)
   puma (>= 5.0)
   rails (~> 7.1.6)
+  rgeo-geojson
+  sassc-rails
   selenium-webdriver
+  simple_form
   sprockets-rails
   stimulus-rails
   turbo-rails

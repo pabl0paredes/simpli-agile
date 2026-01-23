@@ -1,0 +1,63 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  municipality: one
+  n_C: 1
+  n_I: 1
+  n_O: 1
+  n_S: 1
+  n_E: 1
+  n_HG: 1
+  n_HM: 1
+  n_HP: 1
+  n_HD: 1
+  m_C: 1
+  m_I: 1
+  m_O: 1
+  m_S: 1
+  m_E: 1
+  m_HG: 1
+  m_HM: 1
+  m_HP: 1
+  m_HD: 1
+  acc_C: 1.5
+  acc_I: 1.5
+  acc_O: 1.5
+  acc_S: 1.5
+  acc_E: 1.5
+  acc_HG: 1.5
+  acc_HM: 1.5
+  acc_HP: 1.5
+  acc_HD: 1.5
+  show_id: 1
+
+two:
+  municipality: two
+  n_C: 1
+  n_I: 1
+  n_O: 1
+  n_S: 1
+  n_E: 1
+  n_HG: 1
+  n_HM: 1
+  n_HP: 1
+  n_HD: 1
+  m_C: 1
+  m_I: 1
+  m_O: 1
+  m_S: 1
+  m_E: 1
+  m_HG: 1
+  m_HM: 1
+  m_HP: 1
+  m_HD: 1
+  acc_C: 1.5
+  acc_I: 1.5
+  acc_O: 1.5
+  acc_S: 1.5
+  acc_E: 1.5
+  acc_HG: 1.5
+  acc_HM: 1.5
+  acc_HP: 1.5
+  acc_HD: 1.5
+  show_id: 1

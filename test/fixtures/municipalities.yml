@@ -1,0 +1,11 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  name: MyString
+  zoom: 1
+  region: one
+
+two:
+  name: MyString
+  zoom: 1
+  region: two

@@ -1,0 +1,11 @@
+.region-tooltip {
+  background-color: rgba(0, 0, 0, 0.7); /* Fondo oscuro */
+  color: #fff;  /* Texto blanco */
+  padding: 8px 12px;  /* Espaciado alrededor del texto */
+  border-radius: 6px;  /* Bordes redondeados */
+  font-size: 14px;  /* Tamaño de fuente */
+  font-weight: 600;  /* Fuente en negrita */
+  text-align: center;  /* Centrar el texto */
+  pointer-events: none;  /* Evitar que el tooltip interfiera con la interactividad */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4); /* Sombra sutil */
+}

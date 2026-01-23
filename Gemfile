@@ -23,6 +23,18 @@ gem "turbo-rails"
 # Hotwire's modest JavaScript framework [https://stimulus.hotwired.dev]
 gem "stimulus-rails"
 
+gem "bootstrap", "~> 5.3"
+gem "simple_form"
+gem "sassc-rails"
+gem "devise"
+gem "activerecord-postgis-adapter"
+gem "rgeo-geojson"
+
+group :development, :test do
+  gem "dotenv-rails"
+end
+
+
 # Use Redis adapter to run Action Cable in production
 # gem "redis", ">= 4.0.1"
 

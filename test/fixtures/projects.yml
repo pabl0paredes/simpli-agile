@@ -1,0 +1,15 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  scenario: one
+  cell: one
+  use: one
+  total_agents: 1
+  surface_per_agent: 1
+
+two:
+  scenario: two
+  cell: two
+  use: two
+  total_agents: 1
+  surface_per_agent: 1
