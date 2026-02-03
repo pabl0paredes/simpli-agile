@@ -6,19 +6,21 @@
 
       <div class="sidebar__section">
         <div class="sidebar__label">REGIÓN</div>
-        <select class="sidebar__select" data-sidebar-target="regionSelect">
+        <select class="sidebar__select" data-sidebar-target="regionSelect" data-action="change->sidebar#regionChanged">
           <option>Seleccionar región...</option>
         </select>
       </div>
 
       <div class="sidebar__section">
         <div class="sidebar__label">COMUNA</div>
-        <input class="sidebar__input" type="text" placeholder="Buscar comuna..." />
+        <select class="sidebar__select" data-sidebar-target="municipalitySelect" data-action="change->sidebar#municipalityChanged">
+          <option>Seleccionar comuna...</option>
+        </select>
       </div>
 
       <div class="sidebar__section">
         <div class="sidebar__label">USO DE SUELO</div>
-        <select class="sidebar__select" disabled>
+        <select class="sidebar__select" data-sidebar-target="useSelect" data-action="change->sidebar#useChanged" disabled>
           <option>Seleccionar uso de suelo</option>
         </select>
         <div class="sidebar__hint">
@@ -28,13 +30,50 @@
 
       <div class="sidebar__divider"></div>
 
-      <div class="sidebar__section">
+      <div class="sidebar__section" data-sidebar-target="layerSection" hidden>
         <div class="sidebar__label">CAPAS DE DATOS</div>
-        <div class="sidebar__hint sidebar__hint--center">
-          Selecciona un uso de suelo para activar las capas
+
+        <div class="sidebar__layers">
+          <button
+            type="button"
+            class="sidebar__layer-btn"
+            data-action="click->sidebar#selectLayer"
+          >
+            🧱 Superficie construida
+          </button>
+
+          <button
+            type="button"
+            class="sidebar__layer-btn"
+            data-action="click->sidebar#selectLayer"
+          >
+            🏠 Unidades construidas
+          </button>
+
+          <button
+            type="button"
+            class="sidebar__layer-btn"
+            data-action="click->sidebar#selectLayer"
+          >
+            🚶 Accesibilidad
+          </button>
         </div>
       </div>
-    </div>
+
+      <div
+        class="sidebar__section"
+        data-sidebar-target="locateSection"
+        hidden
+      >
+        <button
+          type="button"
+          class="sidebar__primary-btn"
+        >
+          📍 Localizar infraestructura
+        </button>
+      </div>
+
+
 
     <div class="sidebar__bottom">
       <button class="sidebar__link" type="button">
@@ -66,52 +105,3 @@
     ></div>
   </main>
 </div>
-
-<!-- Agregar los scripts de Leaflet para que se cargue el mapa -->
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
-<script>
-  // Inicialización del mapa centrado en Chile
-  var map = L.map('map').setView([-33.46, -70.65], 6);  // Coordenadas de Chile
-
-  // Usamos un tile layer para Mapbox o OpenStreetMap
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-  }).addTo(map);
-
-  // Cargar los datos de las regiones desde el endpoint de Rails
-  fetch('/regions')  // Asegúrate de que la URL esté bien configurada en tu backend
-    .then(response => response.json())
-    .then(data => {
-      // Dibujar los polígonos de las regiones
-      data.features.forEach(region => {
-        var geoJsonLayer = L.geoJSON(region, {
-          onEachFeature: function (feature, layer) {
-            console.log(feature)
-            // Crear el tooltip con el nombre de la región
-            layer.bindTooltip(feature.properties.name, {
-              permanent: false,   // Tooltip solo al pasar el ratón
-              sticky: true,
-              direction: 'top',   // Tooltip por encima del polígono
-              className: 'region-tooltip'  // Para personalizar el estilo del tooltip
-            });
-
-            // Cambiar la opacidad al pasar el ratón sobre el polígono
-            layer.on('mouseover', function () {
-              this.setStyle({
-                opacity: 0.5  // Cambiar la opacidad del polígono al pasar el ratón
-              });
-            });
-
-            // Restaurar la opacidad cuando el ratón sale del polígono
-            layer.on('mouseout', function () {
-              this.setStyle({
-                opacity: 1  // Restaurar la opacidad original del polígono
-              });
-            });
-          }
-        }).addTo(map);
-      });
-    })
-    .catch(error => console.error('Error al cargar los datos:', error));
-</script>

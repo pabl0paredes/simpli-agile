@@ -8,4 +8,5 @@
   text-align: center;  /* Centrar el texto */
   pointer-events: none;  /* Evitar que el tooltip interfiera con la interactividad */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4); /* Sombra sutil */
+  white-space: nowrap;
 }

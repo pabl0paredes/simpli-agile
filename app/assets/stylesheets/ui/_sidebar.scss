@@ -147,3 +147,93 @@
   box-shadow: none;
   border-right: 0;
 }
+
+.sidebar__layers{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  margin-top:10px;
+}
+
+.sidebar__layer-btn{
+  display:flex;
+  align-items:center;
+  gap:12px;
+
+  width:100%;
+  padding:12px 14px;
+
+  background:transparent;
+  border:0;
+  border-radius:14px;
+
+  color:#0f172a;
+  font-size: 15px;
+
+  text-align:left;
+  cursor:pointer;
+
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.sidebar__layer-icon{
+  width:28px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:14px;
+  opacity:0.9;
+}
+
+/* hover suave, sin “card” */
+.sidebar__layer-btn:hover{
+  background:#f1f5f9;
+}
+
+/* estado seleccionado (azul como tu foto) */
+.sidebar__layer-btn.is-active{
+  background:#eaf2ff;      /* celeste suave */
+  color:#1d4ed8;           /* azul */
+}
+
+.sidebar__layer-btn.is-active .sidebar__layer-icon{
+  color:#1d4ed8;
+  opacity:1;
+}
+
+// Localización de Infraestructura
+
+.sidebar__primary-btn{
+  width:100%;
+  padding:14px 16px;
+
+  border-radius:14px;
+  border:0;
+
+  background:#111827;        /* gris oscuro elegante */
+  color:#ffffff;
+
+  font-size:16px;
+  font-weight:700;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+
+  cursor:pointer;
+
+  transition:
+    background 0.15s ease,
+    transform 0.05s ease,
+    box-shadow 0.15s ease;
+}
+
+.sidebar__primary-btn:hover{
+  background:#1f2937;
+  box-shadow:0 8px 20px rgba(0,0,0,0.15);
+}
+
+.sidebar__primary-btn:active{
+  transform:translateY(1px);
+}
