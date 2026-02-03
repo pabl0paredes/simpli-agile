@@ -5,6 +5,7 @@ class Region < ApplicationRecord
     {
       type: "Feature",
       geometry: RGeo::GeoJSON.encode(self.geometry),
+      id: self.region_code,
       properties: {
         id: self.id,
         region_code: self.region_code,
