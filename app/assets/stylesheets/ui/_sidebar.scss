@@ -2,8 +2,8 @@
   position: absolute;
   top: 0;
   left: 0;
-  height: 100%;
-  width: 360px;
+  height: 100vh;
+  width: 300px;
 
   background: #ffffff;
   border-right: 1px solid #e9edf3;
@@ -14,7 +14,8 @@
   padding: 28px 22px;
 
   z-index: 10;
-  overflow: visible;
+  overflow-y: auto;
+  overflow-x: hidden;
   transition: transform 220ms ease;
 }
 
@@ -24,10 +25,13 @@
 }
 
 .sidebar__brand {
-  font-size: 26px;
-  font-weight: 700;
-  letter-spacing: -0.2px;
   margin-bottom: 26px;
+}
+
+.sidebar__brand img {
+  max-width: 220px;
+  height: auto;
+  display: block;
 }
 
 .sidebar__section {
@@ -37,10 +41,10 @@
 .sidebar__label {
   font-size: 13px;
   font-weight: 700;
-  color: #6b7280;
+  color: #233141;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  text-align: center;
+  text-align: left;
   margin-bottom: 10px;
 }
 
@@ -52,7 +56,7 @@
   border-radius: 10px;
   padding: 0 14px;
   font-size: 15px;
-  color: #111827;
+  color: #233141;
   background: #fff;
   outline: none;
 }
@@ -100,7 +104,7 @@
   background: transparent;
   padding: 10px 6px;
   font-size: 15px;
-  color: #111827;
+  color: #233141;
   cursor: pointer;
 }
 
@@ -118,7 +122,7 @@
 .sidebar__collapse {
   position: fixed;
   top: 50%;
-  left: 360px;                          /* borde del panel abierto */
+  left: 300px;                          /* borde del panel abierto */
   transform: translate(-50%, -50%);     /* mitad dentro/mitad fuera + centrado vertical */
 
   width: 28px;
@@ -192,12 +196,12 @@
 
 /* estado seleccionado (azul como tu foto) */
 .sidebar__layer-btn.is-active{
-  background:#eaf2ff;      /* celeste suave */
-  color:#1d4ed8;           /* azul */
+  background:#2bf89a;      /* celeste suave */
+  color:#233141;           /* azul */
 }
 
 .sidebar__layer-btn.is-active .sidebar__layer-icon{
-  color:#1d4ed8;
+  color:#233141;
   opacity:1;
 }
 
@@ -210,7 +214,7 @@
   border-radius:14px;
   border:0;
 
-  background:#111827;        /* gris oscuro elegante */
+  background:#233141;        /* gris oscuro elegante */
   color:#ffffff;
 
   font-size:16px;

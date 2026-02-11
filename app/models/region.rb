@@ -1,16 +1,18 @@
 class Region < ApplicationRecord
-  has_many :municipalities, primary_key: :region_code, foreign_key: :region_code
+  self.primary_key = "region_code"
+
+  has_many :municipalities,
+    foreign_key: "region_code",
+    primary_key: "region_code"
 
   def to_geojson
     {
       type: "Feature",
       geometry: RGeo::GeoJSON.encode(self.geometry),
-      id: self.region_code,
       properties: {
-        id: self.id,
         region_code: self.region_code,
         name: self.name
       }
     }
-  end
+end
 end

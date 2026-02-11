@@ -1,11 +1,13 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
 one:
+  municipality_code: 1
   name: MyString
+  region_code: 1
   zoom: 1
-  region: one
 
 two:
+  municipality_code: 1
   name: MyString
+  region_code: 1
   zoom: 1
-  region: two

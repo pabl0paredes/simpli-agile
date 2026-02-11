@@ -2,7 +2,9 @@
   <%# Sidebar %>
   <aside class="sidebar" data-sidebar-target="panel">
     <div class="sidebar__top">
-      <div class="sidebar__brand">SimpliCity App</div>
+      <div class="sidebar__brand">
+        <%= image_tag "Logo SimpliCity.png", alt: "Logo SimpliCity" %>
+      </div>
 
       <div class="sidebar__section">
         <div class="sidebar__label">REGIÓN</div>
@@ -19,9 +21,9 @@
       </div>
 
       <div class="sidebar__section">
-        <div class="sidebar__label">USO DE SUELO</div>
-        <select class="sidebar__select" data-sidebar-target="useSelect" data-action="change->sidebar#useChanged" disabled>
-          <option>Seleccionar uso de suelo</option>
+        <div class="sidebar__label">OPORTUNIDADES</div>
+        <select class="sidebar__select" data-sidebar-target="opportunitySelect" data-action="change->sidebar#opportunityChanged" disabled>
+          <option>Seleccionar oportunidad</option>
         </select>
         <div class="sidebar__hint">
           Selecciona primero una comuna en el mapa o en el buscador
@@ -37,17 +39,19 @@
           <button
             type="button"
             class="sidebar__layer-btn"
+            data-metric="surface"
             data-action="click->sidebar#selectLayer"
           >
-            🧱 Superficie construida
+            <i class="fa-solid fa-square"></i>Superficie construida
           </button>
 
           <button
             type="button"
             class="sidebar__layer-btn"
+            data-metric="units"
             data-action="click->sidebar#selectLayer"
           >
-            🏠 Unidades construidas
+            <i class="fa-solid fa-building"></i>Unidades construidas
           </button>
 
           <button
@@ -68,6 +72,7 @@
         <button
           type="button"
           class="sidebar__primary-btn"
+          data-action="click->sidebar#toggleLocator"
         >
           📍 Localizar infraestructura
         </button>
@@ -84,6 +89,62 @@
       </button>
     </div>
   </aside>
+
+  <!-- Sidebar secundaria (Localizador) -->
+  <aside class="sidebar sidebar--secondary" data-sidebar-target="locatorPanel" hidden>
+    <div class="sidebar__top">
+      <button type="button" class="sidebar__close-btn" data-action="click->sidebar#toggleLocator">
+        ✖
+      </button>
+      <div class="sidebar__brand">Localizador</div>
+
+      <div class="sidebar__section">
+        <div class="sidebar__label">OPORTUNIDAD</div>
+        <select class="sidebar__select" data-sidebar-target="locatorOpportunitySelect" disabled>
+          <option>Seleccionar oportunidad</option>
+        </select>
+      </div>
+
+      <div class="sidebar__section">
+        <div class="sidebar__label">UNIDADES</div>
+        <input
+          class="sidebar__input"
+          type="number"
+          min="1"
+          step="1"
+          inputmode="numeric"
+          placeholder="Ej: 10"
+          data-sidebar-target="unitsInput"
+        />
+      </div>
+
+      <div class="sidebar__section">
+        <div class="sidebar__label">SUPERFICIE POR UNIDAD</div>
+        <input
+          class="sidebar__input"
+          type="number"
+          min="1"
+          step="1"
+          inputmode="numeric"
+          placeholder="Ej: 65"
+          data-sidebar-target="areaPerUnitInput"
+        />
+      </div>
+
+      <div class="sidebar__section">
+        <button type="button" class="sidebar__primary-btn" data-sidebar-target="addBtn">
+          Agregar
+        </button>
+      </div>
+
+      <div class="sidebar__section">
+        <button type="button" class="sidebar__secondary-btn" data-sidebar-target="saveRecalcBtn">
+          Guardar y recalcular
+        </button>
+      </div>
+    </div>
+  </aside>
+
 
   <!-- Botón de colapsar -->
   <button
@@ -103,5 +164,20 @@
       data-controller="map"
       data-map-token-value="<%= ENV.fetch("MAPBOX_TOKEN", "") %>"
     ></div>
+
+    <%# Botones flotantes (derecha) %>
+    <div class="map-fab">
+      <button type="button" class="map-fab__btn" aria-label="Mapa">
+        <i class="fa-solid fa-map"></i>
+      </button>
+
+      <button type="button" class="map-fab__btn" aria-label="Gráfico">
+        <i class="fa-solid fa-chart-bar"></i>
+      </button>
+
+      <button type="button" class="map-fab__btn" aria-label="Capas">
+        <i class="fa-solid fa-list"></i>
+      </button>
+    </div>
   </main>
 </div>

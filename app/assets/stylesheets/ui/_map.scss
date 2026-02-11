@@ -3,3 +3,8 @@
   inset: 0;
   z-index: 0;
 }
+
+.mapboxgl-ctrl-top-right {
+  right: 10px !important;   /* mismo right que tus botones */
+  top: 50px !important;  /* para que no choque con tus 3 FAB */
+}

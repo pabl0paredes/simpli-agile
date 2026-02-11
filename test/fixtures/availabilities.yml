@@ -2,8 +2,8 @@
 
 one:
   user: one
-  municipality: one
+  municipality_code: 1
 
 two:
   user: two
-  municipality: two
+  municipality_code: 1

@@ -7,3 +7,11 @@
 #   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
 #     MovieGenre.find_or_create_by!(name: genre_name)
 #   end
+
+system_user = User.find_or_create_by!(email: "system@simpli.cl") do |u|
+  pwd = SecureRandom.hex(32)
+  u.password = pwd
+  u.password_confirmation = pwd
+end
+
+puts "✔ System user listo (id=#{system_user.id})"
