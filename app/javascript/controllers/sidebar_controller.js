@@ -7,16 +7,35 @@ export default class extends Controller {
     "toggle",
     "regionSelect",
     "municipalitySelect",
-    "useSelect",
+    "opportunitySelect",
     "layerSection",
-    "locateSection"
+    "locateSection",
+    "locatorPanel"
   ]
 
   connect() {
     this.collapsed = false
     this.loadRegionsIntoSelect()
     this.loadMunicipalitiesIntoSelect()
-    this.loadUsesIntoSelect()
+    this.loadOpportunitiesIntoSelect()
+
+    window.addEventListener("region:clicked", this.onRegionClicked)
+    window.addEventListener("municipality:clicked", this.onMunicipalityClicked)
+    window.addEventListener("sidebar:toggle", this.onSidebarToggle)
+  }
+
+  disconnect() {
+    window.removeEventListener("region:clicked", this.onRegionClicked)
+    window.removeEventListener("municipality:clicked", this.onMunicipalityClicked)
+    window.removeEventListener("sidebar:toggle", this.onSidebarToggle)
+  }
+
+  onSidebarToggle = () => {
+    if (this.collapsed) {
+      this.locatorPanelTarget.style.left = '0px'
+    } else {
+      this.locatorPanelTarget.style.left = '300px'
+    }
   }
 
   loadRegionsIntoSelect() {
@@ -37,6 +56,15 @@ export default class extends Controller {
       })
     })
     .catch(error => console.error("Error al cargar las regiones:", error))
+  }
+
+  onRegionClicked = (e) => {
+    const regionCode = e.detail.region_code
+    if (!regionCode) return
+
+    this.regionSelectTarget.value = regionCode
+
+    this.regionChanged({ target: this.regionSelectTarget })
   }
 
   loadMunicipalitiesIntoSelect(regionCode = null) {
@@ -61,17 +89,28 @@ export default class extends Controller {
     .catch(error => console.error("Error al cargar las comunas:", error))
   }
 
-  loadUsesIntoSelect() {
-    fetch("/uses")
+  onMunicipalityClicked = (e) => {
+    const munCode = e.detail.municipality_code
+    if (!munCode) return
+
+    // hace el cambio en el selector
+    this.municipalitySelectTarget.value = munCode
+
+    // reutiliza la lógica de municipality changed
+    this.municipalityChanged({ target: this.municipalitySelectTarget })
+  }
+
+  loadOpportunitiesIntoSelect() {
+    fetch("/opportunities")
     .then(response => response.json())
     .then(data => {
-      const selector = this.useSelectTarget
+      const selector = this.opportunitySelectTarget
       selector.innerHTML = "<option>Seleccionar uso...</option>"
 
-      data.forEach(use => {
+      data.forEach(opportunity => {
         const option = document.createElement("option")
-        option.value = use.use_code
-        option.textContent = use.name
+        option.value = opportunity.opportunity_code
+        option.textContent = opportunity.name
         selector.appendChild(option)
       })
     })
@@ -88,29 +127,40 @@ export default class extends Controller {
     window.dispatchEvent(new CustomEvent("region:selected", {
       detail: { region_code: regionCode }
     }))
+
+    this.municipalitySelectTarget.value = ""
+
+    window.dispatchEvent(new CustomEvent("municipality:cleared"))
   }
 
   municipalityChanged(e) {
     const munCode = e.target.value
-    if (!munCode || munCode.includes("Seleccionar")) return
+    if (!munCode || munCode.includes("Seleccionar")) {
+      window.dispatchEvent(new CustomEvent("municipality:cleared"))
+      return
+    }
 
-    this.useSelectTarget.disabled = false
+    this.opportunitySelectTarget.disabled = false
     this.locateSectionTarget.hidden = false
 
-    // Ocultar el hint del uso de suelo seleccionado
-    const useHint = this.useSelectTarget.closest('.sidebar__section').querySelector('.sidebar__hint')
-    if (useHint) useHint.style.display = 'none'
+    // Ocultar el hint de oportunidad seleccionada
+    const opportunityHint = this.opportunitySelectTarget.closest('.sidebar__section').querySelector('.sidebar__hint')
+    if (opportunityHint) opportunityHint.style.display = 'none'
 
     window.dispatchEvent(new CustomEvent("municipality:selected", {
       detail: { municipality_code: munCode }
     }))
   }
 
-  useChanged(e) {
-    const useCode = e.target.value
-    if (!useCode || useCode.includes("Seleccionar")) return
+  opportunityChanged(e) {
+    const opportunityCode = e.target.value
+    if (!opportunityCode || opportunityCode.includes("Seleccionar")) return
 
     this.layerSectionTarget.hidden = false
+
+    window.dispatchEvent(new CustomEvent("opportunity:selected", {
+      detail: { opportunity_code: opportunityCode }
+    }))
   }
 
   selectLayer(e) {
@@ -123,7 +173,21 @@ export default class extends Controller {
         btn.classList.remove("is-active");
       }
     });
+
+    const metric = e.target.dataset.metric  // "surface" o "units"
+
+    window.dispatchEvent(new CustomEvent("layer:selected", {
+      detail: { metric }
+    }))
   }
+
+  toggleLocator() {
+    this.locatorPanelTarget.hidden = !this.locatorPanelTarget.hidden
+    if (!this.locatorPanelTarget.hidden) {
+      this.locatorPanelTarget.style.left = '300px'
+    }
+  }
+
 
   toggle() {
     this.collapsed = !this.collapsed

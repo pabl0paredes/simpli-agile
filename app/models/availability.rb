@@ -1,4 +1,4 @@
 class Availability < ApplicationRecord
   belongs_to :user
-  belongs_to :municipality
+  belongs_to :municipality, foreign_key: "municipality_code", primary_key: "municipality_code"
 end

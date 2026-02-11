@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  h3_origin: MyString
+  h3_destiny: MyString
+  travel_time: 1.5
+  travel_mode: one
+
+two:
+  h3_origin: MyString
+  h3_destiny: MyString
+  travel_time: 1.5
+  travel_mode: two

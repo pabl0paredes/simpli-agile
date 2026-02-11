@@ -1,0 +1,69 @@
+/* Variante secundaria: se pega a la derecha de la sidebar principal */
+.sidebar--secondary {
+  position: fixed;
+  left: 300px;
+  top: 0;
+  height: 100vh;
+  width: 300px;
+  border-left: 1px solid rgba(15, 23, 42, 0.08);
+  background: #fff;
+  z-index: 20;
+  transition: left 0.3s ease-in-out;
+}
+
+.sidebar--secondary.sidebar--active {
+  left: 0;
+  width: 300px;
+}
+
+.sidebar--secondary .sidebar__brand {
+  font-size: 28px;
+  font-weight: 600;
+  color: #233141;
+  margin: 5px 0 20px 0px;
+  letter-spacing: 0.5px;
+}
+
+
+.sidebar--secondary .sidebar__close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 22px;
+  background: none;
+  border: none;
+  color: #0f172a;
+  cursor: pointer;
+  font-weight: bold;
+  z-index: 100;
+}
+
+.sidebar--secondary .sidebar__close-btn:hover {
+  color: #2563eb;
+}
+
+
+/* Botones del localizador */
+.sidebar__primary-btn,
+.sidebar__secondary-btn {
+  width: 100%;
+  border-radius: 14px;
+  padding: 14px 16px;
+  // font-weight: 800;
+  border: 1px solid rgba(15, 23, 42, 0.10);
+  cursor: pointer;
+}
+
+.sidebar__primary-btn {
+  background: #2563eb;
+  color: #fff;
+}
+
+.sidebar__primary-btn:hover {
+  filter: brightness(0.98);
+}
+
+.sidebar__secondary-btn {
+  background: #f8fafc;
+  color: #233141;
+}

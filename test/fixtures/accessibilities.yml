@@ -1,0 +1,17 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  h3: MyString
+  travel_mode: one
+  type: 
+  opportunity_code: MyString
+  scenario: one
+  value: 1.5
+
+two:
+  h3: MyString
+  travel_mode: two
+  type: 
+  opportunity_code: MyString
+  scenario: two
+  value: 1.5
