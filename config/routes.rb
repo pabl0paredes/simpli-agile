@@ -27,9 +27,22 @@ Rails.application.routes.draw do
   resources :cells, only: [] do
     collection do
       get :thematic
+      get :accessibility
     end
   end
 
+  resources :scenarios, only: [:destroy] do
+    collection do
+      get :names
+      post :ensure_draft
+    end
+    member do
+      post :publish
+      get :projects_lists
+    end
+  end
+
+  resources :projects, only: [:create]
 
   resources :opportunities, only: [:index]
 end

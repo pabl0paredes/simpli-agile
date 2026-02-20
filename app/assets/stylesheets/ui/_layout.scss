@@ -4,22 +4,27 @@
   background: #fff;
 }
 
-.app-shell.is-sidebar-collapsed .sidebar {
-  width: 64px;
-  padding: 18px 10px;
+/* Colapso: NO achicar, la principal se oculta con transform en sidebar.scss */
+.app-shell.is-sidebar-collapsed .sidebar:not(.sidebar--secondary) {
+  width: 300px;
+  padding: 28px 22px;
 }
 
-.app-shell.is-sidebar-collapsed .sidebar__top,
-.app-shell.is-sidebar-collapsed .sidebar__bottom {
+
+.app-shell.is-sidebar-collapsed .sidebar:not(.sidebar--secondary) .sidebar__top,
+.app-shell.is-sidebar-collapsed .sidebar:not(.sidebar--secondary) .sidebar__bottom {
   opacity: 0;
   pointer-events: none;
   height: 0;
   overflow: hidden;
 }
 
+
 .app-shell.is-sidebar-collapsed .sidebar__collapse {
-  right: -14px;
+  left: 0;
+  right: auto;
 }
+
 
 /* Mapa full-screen */
 .map-area {

@@ -1,0 +1,46 @@
+.pickcell-hint {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+
+  // ✅ clave: que NO intercepte mouse
+  pointer-events: none;
+}
+
+.pickcell-hint[hidden] {
+  display: none !important;
+}
+
+.pickcell-hint__panel {
+  position: absolute;
+  top: 90px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 420px;
+  max-width: calc(100vw - 32px);
+
+  background: rgba(255,255,255,0.95);
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 18px;
+  box-shadow: 0 24px 70px rgba(16, 24, 40, 0.25);
+  padding: 16px 18px;
+
+  // sigue sin bloquear clicks porque el padre tiene pointer-events none
+}
+
+.pickcell-hint__title {
+  font-size: 16px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.pickcell-hint__text {
+  color: #334155;
+  font-size: 14px;
+}
+
+.pickcell-hint__muted {
+  margin-top: 8px;
+  color: #64748b;
+  font-size: 12px;
+}

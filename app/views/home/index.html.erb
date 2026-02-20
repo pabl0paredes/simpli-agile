@@ -6,6 +6,37 @@
         <%= image_tag "Logo SimpliCity.png", alt: "Logo SimpliCity" %>
       </div>
 
+      <% if user_signed_in? %>
+        <div class="sidebar__section" data-sidebar-target="scenarioSection" hidden>
+          <div class="sidebar__label">ESCENARIO</div>
+
+          <select class="sidebar__select"
+                  data-sidebar-target="scenarioSelect"
+                  data-action="change->sidebar#scenarioChanged"
+                  disabled>
+            <option>Seleccionar escenario...</option>
+          </select>
+
+          <div class="sidebar__hint sidebar__hint--center" data-sidebar-target="scenarioHint">
+            Selecciona una comuna para ver tus escenarios
+          </div>
+        </div>
+
+        <button
+          type="button"
+          class="sidebar__danger-btn"
+          data-sidebar-target="deleteScenarioBtn"
+          data-action="click->sidebar#deleteScenario"
+          hidden
+        >
+          🗑️ Eliminar escenario
+        </button>
+
+
+        <div class="sidebar__divider"></div>
+      <% end %>
+
+
       <div class="sidebar__section">
         <div class="sidebar__label">REGIÓN</div>
         <select class="sidebar__select" data-sidebar-target="regionSelect" data-action="change->sidebar#regionChanged">
@@ -57,10 +88,32 @@
           <button
             type="button"
             class="sidebar__layer-btn"
+            data-layer="accessibility"
             data-action="click->sidebar#selectLayer"
           >
             🚶 Accesibilidad
           </button>
+
+          <div class="sidebar__subchoices" data-sidebar-target="accessibilityChoices" hidden>
+            <button
+              type="button"
+              class="sidebar__subchoice-btn"
+              data-mode="walk"
+              data-action="click->sidebar#selectAccessibilityMode"
+            >
+              Caminata
+            </button>
+
+            <button
+              type="button"
+              class="sidebar__subchoice-btn"
+              data-mode="car"
+              data-action="click->sidebar#selectAccessibilityMode"
+            >
+              Automóvil
+            </button>
+          </div>
+
         </div>
       </div>
 
@@ -96,7 +149,52 @@
       <button type="button" class="sidebar__close-btn" data-action="click->sidebar#toggleLocator">
         ✖
       </button>
-      <div class="sidebar__brand">Localizador</div>
+      <div class="sidebar__header">Localizador</div>
+
+      <div class="sidebar__section" data-sidebar-target="previousProjectsSection">
+        <div class="sidebar__label">PROYECTOS ANTERIORES (HISTORIAL)</div>
+        <div class="locator-projects" data-sidebar-target="previousProjectsList"></div>
+      </div>
+
+      <div class="sidebar__divider"></div>
+
+      <div class="sidebar__section">
+        <div class="sidebar__label">PROYECTOS EN BORRADOR</div>
+        <div class="locator-projects" data-sidebar-target="draftProjectsList"></div>
+      </div>
+
+      <div class="sidebar__divider"></div>
+
+      <div class="sidebar__section">
+        <div class="sidebar__label">NOMBRE DEL PROYECTO</div>
+        <input
+          class="sidebar__input"
+          type="text"
+          placeholder="Ej: Cesfam Sector Norte"
+          data-sidebar-target="projectNameInput"
+        />
+      </div>
+
+
+      <div class="sidebar__label">CELDA</div>
+
+      <div class="locator-cell">
+        <input
+          class="sidebar__input"
+          type="text"
+          placeholder="Selecciona una celda..."
+          data-sidebar-target="selectedCellDisplay"
+          readonly
+        />
+
+        <button type="button"
+                class="sidebar__secondary-btn"
+                data-action="click->sidebar#startPickCell">
+          Seleccionar celda
+        </button>
+      </div>
+
+      <input type="hidden" data-sidebar-target="selectedCellH3" />
 
       <div class="sidebar__section">
         <div class="sidebar__label">OPORTUNIDAD</div>
@@ -132,13 +230,19 @@
       </div>
 
       <div class="sidebar__section">
-        <button type="button" class="sidebar__primary-btn" data-sidebar-target="addBtn">
+        <button type="button"
+                class="sidebar__primary-btn"
+                data-sidebar-target="addBtn"
+                data-action="click->sidebar#addProject">
           Agregar
         </button>
       </div>
 
       <div class="sidebar__section">
-        <button type="button" class="sidebar__secondary-btn" data-sidebar-target="saveRecalcBtn">
+        <button type="button"
+                class="sidebar__secondary-btn"
+                data-sidebar-target="saveRecalcBtn"
+                data-action="click->sidebar#openPublishModal">
           Guardar y recalcular
         </button>
       </div>
@@ -156,6 +260,101 @@
   >
     ‹
   </button>
+
+  <div
+    class="user-menu"
+    data-controller="user-menu"
+    data-user-menu-open-value="false"
+  >
+    <button type="button"
+            class="user-menu__btn"
+            aria-label="Usuario"
+            data-action="click->user-menu#toggleMenu">
+
+      <% if user_signed_in? %>
+        <span class="user-menu__initial">
+          <%= current_user.email.first.upcase %>
+        </span>
+      <% else %>
+        <i class="fa-solid fa-circle-user"></i>
+      <% end %>
+
+    </button>
+
+    <div class="user-menu__dropdown" data-user-menu-target="dropdown" hidden>
+      <% if user_signed_in? %>
+
+        <div class="user-menu__item user-menu__item--muted">
+          <%= current_user.email %>
+        </div>
+
+        <%= button_to "Cerrar sesión",
+              destroy_user_session_path,
+              method: :delete,
+              form: { data: { turbo: false } },
+              class: "user-menu__item user-menu__item--button" %>
+
+      <% else %>
+
+        <%= link_to "Iniciar sesión",
+              new_user_session_path,
+              class: "user-menu__item",
+              data: { action: "click->user-menu#openModal",
+                      turbo_frame: "auth_modal_frame" } %>
+
+        <%= link_to "Crear cuenta",
+              new_user_registration_path,
+              class: "user-menu__item",
+              data: { action: "click->user-menu#openModal",
+                      turbo_frame: "auth_modal_frame" } %>
+
+      <% end %>
+    </div>
+
+    <!-- Modal -->
+    <div class="auth-modal" data-user-menu-target="modal" hidden>
+      <div class="auth-modal__backdrop" data-action="click->user-menu#closeModal"></div>
+
+      <div class="auth-modal__panel" role="dialog" aria-modal="true">
+        <button type="button" class="auth-modal__close" data-action="click->user-menu#closeModal">✖</button>
+
+        <turbo-frame id="auth_modal_frame"></turbo-frame>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="modal" data-sidebar-target="publishModal" hidden>
+    <div class="modal__backdrop" data-action="click->sidebar#closePublishModal"></div>
+
+    <div class="modal__panel" role="dialog" aria-modal="true">
+      <div class="modal__title">Guardar escenario</div>
+
+      <div class="modal__body">
+        <div class="sidebar__label">NOMBRE DEL ESCENARIO</div>
+        <input
+          class="sidebar__input"
+          type="text"
+          placeholder="Ej: Comercio + salud 2026-02-19"
+          data-sidebar-target="publishNameInput"
+        />
+        <div class="sidebar__hint sidebar__hint--muted">
+          Este nombre se mostrará en tu lista de escenarios.
+        </div>
+      </div>
+
+      <div class="modal__actions">
+        <button type="button" class="sidebar__secondary-btn" data-action="click->sidebar#closePublishModal">
+          Cancelar
+        </button>
+
+        <button type="button" class="sidebar__primary-btn" data-action="click->sidebar#confirmPublishScenario">
+          Guardar escenario
+        </button>
+      </div>
+    </div>
+  </div>
+
 
   <main class="map-area" data-sidebar-target="mapArea">
     <div
@@ -180,4 +379,17 @@
       </button>
     </div>
   </main>
+
+  <div class="pickcell-hint" data-sidebar-target="pickCellModal" hidden>
+    <div class="pickcell-hint__panel">
+      <div class="pickcell-hint__title">Seleccionar celda</div>
+      <div class="pickcell-hint__text">Haz click en una celda del mapa para seleccionarla.</div>
+      <div class="pickcell-hint__text pickcell-hint__muted">Presiona ESC para cancelar.</div>
+    </div>
+  </div>
+
+
+
+
+
 </div>

@@ -1,0 +1,39 @@
+.modal[hidden] { display: none; }
+
+.modal {
+  display: block;              // ✅ asegura que no quede "display:none" por otra regla
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 2147483647;         // ✅ por encima de Mapbox y cualquier cosa
+  isolation: isolate;          // ✅ crea un stacking context propio (importante)
+}
+
+.modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(17,24,39,0.55);
+}
+
+.modal__panel {
+  position: relative;
+  width: calc(100% - 24px);
+  margin: 10vh auto 0;
+  background: white;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+}
+
+.modal__title {
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+}

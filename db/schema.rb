@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_02_06_155241) do
+ActiveRecord::Schema[7.1].define(version: 2026_02_19_182207) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "postgis"
@@ -26,6 +26,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_02_06_155241) do
     t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.index ["h3"], name: "index_accessibilities_on_h3"
     t.index ["opportunity_code"], name: "index_accessibilities_on_opportunity_code"
+    t.index ["scenario_id", "travel_mode_id", "opportunity_code", "accessibility_type"], name: "idx_accessibilities_query"
     t.index ["scenario_id"], name: "index_accessibilities_on_scenario_id"
     t.index ["travel_mode_id"], name: "index_accessibilities_on_travel_mode_id"
   end
@@ -91,6 +92,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_02_06_155241) do
     t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.index ["h3"], name: "index_projects_on_h3"
     t.index ["opportunity_code"], name: "index_projects_on_opportunity_code"
+    t.index ["scenario_id", "opportunity_code"], name: "idx_projects_scenario_opp"
     t.index ["scenario_id"], name: "index_projects_on_scenario_id"
   end
 
@@ -107,15 +109,19 @@ ActiveRecord::Schema[7.1].define(version: 2026_02_06_155241) do
 
   create_table "scenario_cells", force: :cascade do |t|
     t.string "h3", null: false
-    t.bigint "base_scenario_id", null: false
+    t.bigint "scenario_id", null: false
     t.string "opportunity_code", null: false
     t.integer "units_delta"
     t.integer "surface_delta"
     t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
-    t.index ["base_scenario_id"], name: "index_scenario_cells_on_base_scenario_id"
+    t.integer "units_total", null: false
+    t.integer "surface_total", null: false
     t.index ["h3"], name: "index_scenario_cells_on_h3"
     t.index ["opportunity_code"], name: "index_scenario_cells_on_opportunity_code"
+    t.index ["scenario_id", "h3", "opportunity_code"], name: "idx_scenario_cells_unique", unique: true
+    t.index ["scenario_id", "opportunity_code"], name: "idx_scenario_cells_scenario_opp"
+    t.index ["scenario_id"], name: "index_scenario_cells_on_scenario_id"
   end
 
   create_table "scenarios", force: :cascade do |t|
@@ -124,7 +130,10 @@ ActiveRecord::Schema[7.1].define(version: 2026_02_06_155241) do
     t.integer "municipality_code", null: false
     t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.string "status"
+    t.bigint "parent_id"
     t.index ["municipality_code"], name: "index_scenarios_on_municipality_code"
+    t.index ["user_id", "municipality_code", "status"], name: "index_scenarios_on_user_id_and_municipality_code_and_status"
     t.index ["user_id"], name: "index_scenarios_on_user_id"
   end
 
@@ -149,6 +158,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_02_06_155241) do
     t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.index ["h3_destiny"], name: "index_travel_times_on_h3_destiny"
     t.index ["h3_origin"], name: "index_travel_times_on_h3_origin"
+    t.index ["travel_mode_id", "h3_origin"], name: "idx_travel_times_mode_origin"
     t.index ["travel_mode_id"], name: "index_travel_times_on_travel_mode_id"
   end
 
@@ -184,8 +194,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_02_06_155241) do
   add_foreign_key "projects", "scenarios"
   add_foreign_key "scenario_cells", "cells", column: "h3", primary_key: "h3"
   add_foreign_key "scenario_cells", "opportunities", column: "opportunity_code", primary_key: "opportunity_code"
-  add_foreign_key "scenario_cells", "scenarios", column: "base_scenario_id"
+  add_foreign_key "scenario_cells", "scenarios"
   add_foreign_key "scenarios", "municipalities", column: "municipality_code", primary_key: "municipality_code"
+  add_foreign_key "scenarios", "scenarios", column: "parent_id"
   add_foreign_key "scenarios", "users"
   add_foreign_key "travel_modes", "municipalities", column: "municipality_code", primary_key: "municipality_code"
   add_foreign_key "travel_times", "cells", column: "h3_destiny", primary_key: "h3"
