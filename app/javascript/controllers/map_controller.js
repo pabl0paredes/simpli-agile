@@ -1,4 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
+import { MapSelection } from "./map_selection"
+import { MapHover } from "./map_hover"
+import { MapThematic } from "./map_thematic"
 
 export default class extends Controller {
   static values = { token: String }
@@ -33,27 +36,40 @@ export default class extends Controller {
 
     // ✅ todo lo que agrega layers/sources, dentro de "load"
     this.map.on("load", () => {
+      this.selection = new MapSelection(this)
+      this.hover = new MapHover(this)
+      this.thematic = new MapThematic(this)
+
       this.ensureMunicipalitiesLayer()
-      this.bindMunicipalitiesHoverTooltip()
+      this.hover.bindMunicipalitiesHoverTooltip()
       this.bindMunicipalitiesClick()
       this.loadRegionsIntoMap()
       this.bindRegionsClick()
+
       window.addEventListener("region:selected", this.onRegionSelected)
       window.addEventListener("municipality:selected", this.onMunicipalitySelected)
       window.addEventListener("municipality:cleared", this.onMunicipalityCleared)
-      window.addEventListener("layer:selected", this.onLayerSelected)
+      window.addEventListener("layer:selected", this.thematic.onLayerSelected)
       window.addEventListener("opportunity:selected", this.onOpportunitySelected)
+      window.addEventListener("accessibility:mode_selected", this.onAccessibilityModeSelected)
+      window.addEventListener("layer:cleared", this.onLayerCleared)
+      window.addEventListener("scenario:selected", this.onScenarioSelected)
+      window.addEventListener("cell:pick_start", this.selection.onPickCellStart)
+      window.addEventListener("cell:pick_cancel", this.selection.onPickCellCancel)
     })
-
-    this.loadRegionsIntoMap(map)
   }
 
   disconnect() {
     window.removeEventListener("region:selected", this.onRegionSelected)
     window.removeEventListener("municipality:selected", this.onMunicipalitySelected)
     window.removeEventListener("municipality:cleared", this.onMunicipalityCleared)
-    window.removeEventListener("layer:selected", this.onLayerSelected)
+    window.removeEventListener("layer:selected", this.thematic.onLayerSelected)
     window.removeEventListener("opportunity:selected", this.onOpportunitySelected)
+    window.removeEventListener("accessibility:mode_selected", this.onAccessibilityModeSelected)
+    window.removeEventListener("layer:cleared", this.onLayerCleared)
+    window.removeEventListener("scenario:selected", this.onScenarioSelected)
+    window.removeEventListener("cell:pick_start", this.selection.onPickCellStart)
+    window.removeEventListener("cell:pick_cancel", this.selection.onPickCellCancel)
   }
 
   onRegionSelected = async (event) => {
@@ -90,28 +106,70 @@ export default class extends Controller {
     this.setMunicipalitiesVisible(false)
 
     this.map.getSource("selected-municipality").setData(focus.geometry)
-
   }
 
-  onLayerSelected = (event) => {
-    const metric = event.detail.metric
+  onScenarioSelected = (event) => {
+    this._selectedScenarioId = event.detail.scenario_id
 
-    // guardamos selección
-    this._selectedMetric = metric
+    // ✅ Cambió el escenario: limpia lo que esté pintado para evitar “data pegada”
+    this.onLayerCleared()
 
-    // ⚠️ solo cargamos si ya está todo listo
-    if (!this._selectedMunicipalityCode || !this._selectedOpportunityCode) return
+    // opcional: si ya hay metric seleccionado (o accesibilidad activa), recargar
+    // Por ahora, con accesibilidad basta recargar cuando se clickea modo.
+  }
 
-    this.loadCellsThematic({
-      municipalityCode: this._selectedMunicipalityCode,
-      opportunityCode: this._selectedOpportunityCode,
-      metric: metric
-    })
+  onLayerCleared = () => {
+    // apaga visibilidad
+    this.setCellsVisible(false)
+
+    // limpia data para que no quede “pegado”
+    const src = this.map.getSource("cells")
+    if (src) {
+      src.setData({ type: "FeatureCollection", features: [] })
+    }
+
+    this._cellsBreaks = null
+    this._selectedMetric = null
+    this._selectedLayerType = null
+    this._selectedAccessibilityMode = null
+
+    if (this._clearCellsHover) this._clearCellsHover()
   }
 
   onOpportunitySelected = (event) => {
     this._selectedOpportunityCode = event.detail.opportunity_code
     console.log("✅ guardé opp:", this._selectedOpportunityCode)
+  }
+
+  onAccessibilityModeSelected = async (event) => {
+    const mode = event.detail.mode
+    if (!this._selectedMunicipalityCode) return
+    if (!this._selectedOpportunityCode) return  // 👈 clave
+
+    this._selectedLayerType = "accessibility"     // ✅
+    this._selectedAccessibilityMode = mode        // ✅
+    this._selectedMetric = null                   // ✅
+
+    const scenarioId = this._selectedScenarioId
+
+    this.ensureCellsLayer()
+
+
+    const url =
+      `/cells/accessibility?municipality_code=${encodeURIComponent(this._selectedMunicipalityCode)}` +
+      `&mode=${encodeURIComponent(mode)}` +
+      `&opportunity_code=${encodeURIComponent(this._selectedOpportunityCode)}` +
+      `&scenario_id=${encodeURIComponent(scenarioId)}`
+
+    const fc = await fetch(url).then(r => r.json())
+
+    this.map.getSource("cells").setData({
+      type: "FeatureCollection",
+      features: fc.features
+    })
+
+    this._cellsBreaks = fc.breaks
+    this.setCellsVisible(true)
   }
 
   onMunicipalityCleared = () => {
@@ -125,7 +183,8 @@ export default class extends Controller {
     // source vacío inicial
     this.map.addSource("municipalities", {
       type: "geojson",
-      data: { type: "FeatureCollection", features: [] }
+      data: { type: "FeatureCollection", features: [] },
+      promoteId: "municipality_code"
     })
 
     // fill
@@ -204,7 +263,7 @@ export default class extends Controller {
         if (this.map.getSource("regions")) {
           this.map.getSource("regions").setData(fc)
         } else {
-          this.map.addSource("regions", { type: "geojson", data: fc })
+          this.map.addSource("regions", { type: "geojson", data: fc, promoteId: "region_code"})
         }
 
         // 2) layers únicos (fill + outline)
@@ -251,82 +310,9 @@ export default class extends Controller {
           })
         }
 
-        this.bindRegionsHoverTooltip() // ✅ listeners 1 vez
+        this.hover.bindRegionsHoverTooltip() // ✅ listeners 1 vez
       })
       .catch(err => console.error("Error cargando regiones:", err))
-  }
-
-  bindRegionsHoverTooltip() {
-    // evitar duplicar listeners si recargas
-    if (this._regionsHoverBound) return
-    this._regionsHoverBound = true
-
-    let hoveredId = null
-    let tooltipDiv = null
-
-    const ensureTooltip = () => {
-      if (tooltipDiv) return tooltipDiv
-      tooltipDiv = document.createElement("div")
-      tooltipDiv.className = "region-tooltip"
-      tooltipDiv.style.position = "absolute"
-      tooltipDiv.style.backgroundColor = "rgba(17, 24, 39, 0.95)" // oscuro elegante
-      tooltipDiv.style.color = "#fff"
-      tooltipDiv.style.padding = "10px 14px"
-      tooltipDiv.style.borderRadius = "12px"
-      tooltipDiv.style.fontWeight = "700"
-      tooltipDiv.style.fontSize = "18px"
-      tooltipDiv.style.pointerEvents = "none"
-      tooltipDiv.style.whiteSpace = "nowrap"
-      tooltipDiv.style.boxShadow = "0 10px 25px rgba(0,0,0,0.25)"
-      this.map.getContainer().appendChild(tooltipDiv)
-      return tooltipDiv
-    }
-
-    const moveTooltip = (lngLat) => {
-      if (!tooltipDiv) return
-      const p = this.map.project(lngLat)
-      tooltipDiv.style.left = `${p.x + 12}px`
-      tooltipDiv.style.top = `${p.y - 56}px`
-    }
-
-    this.map.on("mouseenter", "regions-fill", () => {
-      this.map.getCanvas().style.cursor = "pointer"
-    })
-
-    this.map.on("mousemove", "regions-fill", (e) => {
-      const f = e.features && e.features[0]
-      if (!f) return
-
-      // tooltip sticky
-      const el = ensureTooltip()
-      el.textContent = f.properties?.name ?? ""
-      moveTooltip(e.lngLat)
-
-      // hover state
-      const id = f.properties?.region_code ?? f.id
-      if (id == null) return
-
-      if (hoveredId !== null && hoveredId !== id) {
-        this.map.setFeatureState({ source: "regions", id: hoveredId }, { hover: false })
-      }
-      hoveredId = id
-
-      // IMPORTANTE: source necesita "id" por feature
-      // Si tus features no traen id, abajo te digo cómo setearlo.
-      this.map.setFeatureState({ source: "regions", id: hoveredId }, { hover: true })
-    })
-
-    this.map.on("mouseleave", "regions-fill", () => {
-      this.map.getCanvas().style.cursor = ""
-      if (tooltipDiv) {
-        tooltipDiv.remove()
-        tooltipDiv = null
-      }
-      if (hoveredId !== null) {
-        this.map.setFeatureState({ source: "regions", id: hoveredId }, { hover: false })
-        hoveredId = null
-      }
-    })
   }
 
   bindRegionsClick() {
@@ -346,82 +332,8 @@ export default class extends Controller {
     })
   }
 
-
-  bindMunicipalitiesHoverTooltip() {
-    if (this._muniHoverBound) return
-    this._muniHoverBound = true
-
-    let hoveredId = null
-    let tooltipDiv = null
-
-    const ensureTooltip = () => {
-      if (tooltipDiv) return tooltipDiv
-      tooltipDiv = document.createElement("div")
-
-      // si quieres misma clase que regiones:
-      tooltipDiv.className = "municipality-tooltip"
-
-      // mismos estilos “modernos”
-      tooltipDiv.style.position = "absolute"
-      tooltipDiv.style.backgroundColor = "rgba(17, 24, 39, 0.95)"
-      tooltipDiv.style.color = "#fff"
-      tooltipDiv.style.padding = "10px 14px"
-      tooltipDiv.style.borderRadius = "12px"
-      tooltipDiv.style.fontWeight = "700"
-      tooltipDiv.style.fontSize = "18px"
-      tooltipDiv.style.pointerEvents = "none"
-      tooltipDiv.style.whiteSpace = "nowrap"
-      tooltipDiv.style.boxShadow = "0 10px 25px rgba(0,0,0,0.25)"
-
-      this.map.getContainer().appendChild(tooltipDiv)
-      return tooltipDiv
-    }
-
-    const moveTooltip = (lngLat) => {
-      if (!tooltipDiv) return
-      const p = this.map.project(lngLat)
-      tooltipDiv.style.left = `${p.x + 12}px`
-      tooltipDiv.style.top = `${p.y - 56}px`
-    }
-
-    this.map.on("mouseenter", "municipalities-fill", () => {
-      this.map.getCanvas().style.cursor = "pointer"
-    })
-
-    this.map.on("mousemove", "municipalities-fill", (e) => {
-      const f = e.features && e.features[0]
-      if (!f) return
-
-      // tooltip sticky
-      const el = ensureTooltip()
-      el.textContent = f.properties?.name ?? ""
-      moveTooltip(e.lngLat)
-
-      // hover state — acá NO adivinamos: usamos feature.id
-      const id = f.id
-      if (id == null) return
-
-      if (hoveredId !== null && hoveredId !== id) {
-        this.map.setFeatureState({ source: "municipalities", id: hoveredId }, { hover: false })
-      }
-      hoveredId = id
-      this.map.setFeatureState({ source: "municipalities", id: hoveredId }, { hover: true })
-    })
-
-    this.map.on("mouseleave", "municipalities-fill", () => {
-      this.map.getCanvas().style.cursor = ""
-      if (tooltipDiv) {
-        tooltipDiv.remove()
-        tooltipDiv = null
-      }
-      if (hoveredId !== null) {
-        this.map.setFeatureState({ source: "municipalities", id: hoveredId }, { hover: false })
-        hoveredId = null
-      }
-    })
-  }
-
   bindMunicipalitiesClick() {
+    // evita registrarlo dos veces, importante para eventos de click
     if (this._municipalitiesClickBound) return
     this._municipalitiesClickBound = true
 
@@ -439,8 +351,6 @@ export default class extends Controller {
     })
   }
 
-
-
   setRegionsVisible(visible) {
     const v = visible ? "visible" : "none"
     ;["regions-fill", "regions-outline", "regions-hover"].forEach((id) => {
@@ -453,6 +363,18 @@ export default class extends Controller {
     ;["municipalities-fill", "municipalities-outline"].forEach((id) => {
       if (this.map.getLayer(id)) this.map.setLayoutProperty(id, "visibility", v)
     })
+  }
+
+  setCellsVisible(visible) {
+    const visibility = visible ? "visible" : "none"
+
+    if (this.map.getLayer("cells-fill")) {
+      this.map.setLayoutProperty("cells-fill", "visibility", visibility)
+    }
+
+    if (this.map.getLayer("cells-outline")) {
+      this.map.setLayoutProperty("cells-outline", "visibility", visibility)
+    }
   }
 
   ensureCellsLayer() {
@@ -492,28 +414,38 @@ export default class extends Controller {
         type: "line",
         source: "cells",
         paint: {
-          "line-color": "rgba(17,24,39,0.20)",
-          "line-width": 1
+          "line-color": [
+            "case",
+            ["boolean", ["feature-state", "selected"], false],
+            "#2563eb",                // azul selección
+            "rgba(17,24,39,0.20)"     // normal
+          ],
+          "line-width": [
+            "case",
+            ["boolean", ["feature-state", "selected"], false],
+            3,   // grosor seleccionado
+            1
+          ]
         }
       })
     }
+
+    if (!this.map.getLayer("cells-hover")) {
+      this.map.addLayer({
+        id: "cells-hover",
+        type: "fill",
+        source: "cells",
+        paint: {
+          "fill-color": "#111827",
+          "fill-opacity": [
+            "case",
+            ["boolean", ["feature-state", "hover"], false],
+            0.15,
+            0
+          ]
+        }
+      })
+    }
+    this.hover.bindCellsHoverTooltip()
   }
-
-  async loadCellsThematic({ municipalityCode, opportunityCode, metric }) {
-    this.ensureCellsLayer()
-
-    const url = `/cells/thematic?municipality_code=${encodeURIComponent(municipalityCode)}&opportunity_code=${encodeURIComponent(opportunityCode)}&metric=${encodeURIComponent(metric)}`
-    const payload = await fetch(url).then(r => r.json())
-
-    this.map.getSource("cells").setData({
-      type: "FeatureCollection",
-      features: payload.features
-    })
-
-    // si quieres guardar breaks para leyenda:
-    this._cellsBreaks = payload.breaks
-  }
-
-
-
 }
