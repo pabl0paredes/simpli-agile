@@ -156,4 +156,88 @@ export default class extends Controller {
     // Mantén esto por si el map_controller necesita resize
     window.dispatchEvent(new Event("sidebar:toggle"))
   }
+
+  snapshotSidebarBeforeOpen() {
+    // Guarda una sola vez por apertura
+    if (this._locatorSidebarPrev) return
+
+    const prev = {}
+
+    // Opportunity select
+    if (this.hasOpportunitySelectTarget) {
+      prev.opportunityDisabled = this.opportunitySelectTarget.disabled
+      prev.opportunityValue = this.opportunitySelectTarget.value
+    }
+
+    // Sección de capas
+    if (this.hasLayerSectionTarget) {
+      prev.layerSectionHidden = this.layerSectionTarget.hidden
+    }
+
+    // Estado de botones de capas (disabled + active)
+    const btns = Array.from(this.element.querySelectorAll(".sidebar__layer-btn"))
+    prev.layerButtons = btns.map((b) => ({
+      id: b.id || null,
+      datasetKey: b.dataset?.layer || b.dataset?.metric || null, // usa lo que tengas
+      disabled: b.disabled,
+      className: b.className,
+      ariaPressed: b.getAttribute("aria-pressed"),
+      // Si usas dataset para trackear active:
+      isActive: b.classList.contains("is-active") || b.classList.contains("is-selected")
+    }))
+
+    // Si tienes un “estado lógico” interno de capa seleccionada, guárdalo también
+    prev.selectedLayerType = this._selectedLayerType || null
+    prev.selectedMetric = this._selectedMetric || null
+    prev.selectedAccessibilityMode = this._selectedAccessibilityMode || null
+    prev.selectedOpportunityCode = this._selectedOpportunityCode || null
+
+    this._locatorSidebarPrev = prev
+  }
+
+  restoreSidebarAfterClose() {
+    const prev = this._locatorSidebarPrev
+    if (!prev) return
+
+    // Opportunity select
+    if (this.hasOpportunitySelectTarget) {
+      this.opportunitySelectTarget.disabled = !!prev.opportunityDisabled
+      if (prev.opportunityValue !== undefined) {
+        this.opportunitySelectTarget.value = prev.opportunityValue
+      }
+    }
+
+    // Sección de capas
+    if (this.hasLayerSectionTarget && prev.layerSectionHidden !== undefined) {
+      this.layerSectionTarget.hidden = !!prev.layerSectionHidden
+    }
+
+    // Botones: restaurar disabled + clases (y aria-pressed si lo usas)
+    const btns = Array.from(this.element.querySelectorAll(".sidebar__layer-btn"))
+    if (Array.isArray(prev.layerButtons) && prev.layerButtons.length === btns.length) {
+      btns.forEach((b, i) => {
+        const p = prev.layerButtons[i]
+        b.disabled = !!p.disabled
+        b.className = p.className || b.className
+        if (p.ariaPressed !== null && p.ariaPressed !== undefined) {
+          b.setAttribute("aria-pressed", p.ariaPressed)
+        }
+      })
+    } else {
+      // Fallback: al menos re-enable si no calza el número (por seguridad)
+      btns.forEach((b) => {
+        b.disabled = false
+        b.classList.remove("is-disabled")
+      })
+    }
+
+    // Restaurar estado lógico (si lo usas para que el UI no “mienta”)
+    this._selectedLayerType = prev.selectedLayerType
+    this._selectedMetric = prev.selectedMetric
+    this._selectedAccessibilityMode = prev.selectedAccessibilityMode
+    this._selectedOpportunityCode = prev.selectedOpportunityCode
+
+    // Limpia snapshot
+    this._locatorSidebarPrev = null
+  }
 }
