@@ -27,14 +27,6 @@ export function createLocator(controller) {
         .catch(err => console.error("Error cargando oportunidades (localizador):", err))
     },
 
-    // toggleLocator() {
-    //   controller.locatorPanelTarget.hidden = !controller.locatorPanelTarget.hidden
-
-    //   if (!controller.locatorPanelTarget.hidden) {
-    //     controller.locatorPanelTarget.style.left = controller.collapsed ? "0px" : "300px"
-    //   }
-    // },
-
     toggleLocator() {
       const opening = controller.locatorPanelTarget.hidden
       controller.locatorPanelTarget.hidden = !controller.locatorPanelTarget.hidden
@@ -44,6 +36,9 @@ export function createLocator(controller) {
       }
 
       if (opening) {
+        // ✅ SNAPSHOT ANTES de modificar UI
+        controller.snapshotSidebarBeforeOpen()
+
         // ✅ clear + disable sidebar principal
         if (controller.hasOpportunitySelectTarget) {
           controller.opportunitySelectTarget.value = "Seleccionar uso..."
@@ -65,6 +60,8 @@ export function createLocator(controller) {
           }
         }))
       } else {
+        // ✅ RESTORE exacto
+        controller.restoreSidebarAfterClose()
         // ✅ re-enable
         if (controller.hasOpportunitySelectTarget) controller.opportunitySelectTarget.disabled = false
         controller.element.querySelectorAll(".sidebar__layer-btn").forEach(b => {
