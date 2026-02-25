@@ -1,0 +1,30 @@
+<div class="modal" data-sidebar-target="publishModal" hidden>
+  <div class="modal__backdrop" data-action="click->sidebar#closePublishModal"></div>
+
+  <div class="modal__panel" role="dialog" aria-modal="true">
+    <div class="modal__title">Guardar escenario</div>
+
+    <div class="modal__body">
+      <div class="sidebar__label">NOMBRE DEL ESCENARIO</div>
+      <input
+        class="sidebar__input"
+        type="text"
+        placeholder="Ej: Comercio + salud 2026-02-19"
+        data-sidebar-target="publishNameInput"
+      />
+      <div class="sidebar__hint sidebar__hint--muted">
+        Este nombre se mostrará en tu lista de escenarios.
+      </div>
+    </div>
+
+    <div class="modal__actions">
+      <button type="button" class="sidebar__secondary-btn" data-action="click->sidebar#closePublishModal">
+        Cancelar
+      </button>
+
+      <button type="button" class="sidebar__primary-btn" data-action="click->sidebar#confirmPublishScenario">
+        Guardar escenario
+      </button>
+    </div>
+  </div>
+</div>

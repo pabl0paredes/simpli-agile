@@ -1,0 +1,62 @@
+<div
+  class="user-menu"
+  data-controller="user-menu"
+  data-user-menu-open-value="false"
+>
+  <button type="button"
+          class="user-menu__btn"
+          aria-label="Usuario"
+          data-action="click->user-menu#toggleMenu">
+
+    <% if user_signed_in? %>
+      <span class="user-menu__initial">
+        <%= current_user.email.first.upcase %>
+      </span>
+    <% else %>
+      <i class="fa-solid fa-circle-user"></i>
+    <% end %>
+
+  </button>
+
+  <div class="user-menu__dropdown" data-user-menu-target="dropdown" hidden>
+    <% if user_signed_in? %>
+
+      <div class="user-menu__item user-menu__item--muted">
+        <%= current_user.email %>
+      </div>
+
+      <%= button_to "Cerrar sesión",
+            destroy_user_session_path,
+            method: :delete,
+            form: { data: { turbo: false } },
+            class: "user-menu__item user-menu__item--button" %>
+
+    <% else %>
+
+      <%= link_to "Iniciar sesión",
+            new_user_session_path,
+            class: "user-menu__item",
+            data: { action: "click->user-menu#openModal",
+                    turbo_frame: "auth_modal_frame" } %>
+
+      <%= link_to "Crear cuenta",
+            new_user_registration_path,
+            class: "user-menu__item",
+            data: { action: "click->user-menu#openModal",
+                    turbo_frame: "auth_modal_frame" } %>
+
+    <% end %>
+  </div>
+
+  <!-- Modal -->
+  <div class="auth-modal" data-user-menu-target="modal" hidden>
+    <div class="auth-modal__backdrop" data-action="click->user-menu#closeModal"></div>
+
+    <div class="auth-modal__panel" role="dialog" aria-modal="true">
+      <button type="button" class="auth-modal__close" data-action="click->user-menu#closeModal">✖</button>
+
+      <turbo-frame id="auth_modal_frame"></turbo-frame>
+    </div>
+  </div>
+
+</div>

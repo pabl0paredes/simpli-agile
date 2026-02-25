@@ -1,0 +1,105 @@
+<!-- Sidebar secundaria (Localizador) -->
+<aside class="sidebar sidebar--secondary" data-sidebar-target="locatorPanel" hidden>
+  <div class="sidebar__top">
+    <button type="button" class="sidebar__close-btn" data-action="click->sidebar#toggleLocator">
+      ✖
+    </button>
+    <div class="sidebar__header">Localizador</div>
+
+    <div class="sidebar__section" data-sidebar-target="previousProjectsSection">
+      <div class="sidebar__label">PROYECTOS ANTERIORES (HISTORIAL)</div>
+      <div class="locator-projects" data-sidebar-target="previousProjectsList"></div>
+    </div>
+
+    <div class="sidebar__divider"></div>
+
+    <div class="sidebar__section">
+      <div class="sidebar__label">PROYECTOS EN BORRADOR</div>
+      <div class="locator-projects" data-sidebar-target="draftProjectsList"></div>
+    </div>
+
+    <div class="sidebar__divider"></div>
+
+    <div class="sidebar__section">
+      <div class="sidebar__label">NOMBRE DEL PROYECTO</div>
+      <input
+        class="sidebar__input"
+        type="text"
+        placeholder="Ej: Cesfam Sector Norte"
+        data-sidebar-target="projectNameInput"
+      />
+    </div>
+
+
+    <div class="sidebar__label">CELDA</div>
+
+    <div class="locator-cell">
+      <input
+        class="sidebar__input"
+        type="text"
+        placeholder="Selecciona una celda..."
+        data-sidebar-target="selectedCellDisplay"
+        readonly
+      />
+
+      <button type="button"
+              class="sidebar__secondary-btn"
+              data-action="click->sidebar#startPickCell">
+        Seleccionar celda
+      </button>
+    </div>
+
+    <input type="hidden" data-sidebar-target="selectedCellH3" />
+
+    <div class="sidebar__section">
+      <div class="sidebar__label">OPORTUNIDAD</div>
+      <select class="sidebar__select" data-sidebar-target="locatorOpportunitySelect" disabled>
+        <option>Seleccionar oportunidad</option>
+      </select>
+    </div>
+
+    <div class="sidebar__section">
+      <div class="sidebar__label">UNIDADES</div>
+      <input
+        class="sidebar__input"
+        type="number"
+        min="1"
+        step="1"
+        inputmode="numeric"
+        placeholder="Ej: 10"
+        data-sidebar-target="unitsInput"
+      />
+    </div>
+
+    <div class="sidebar__section">
+      <div class="sidebar__label">SUPERFICIE POR UNIDAD</div>
+      <input
+        class="sidebar__input"
+        type="number"
+        min="1"
+        step="1"
+        inputmode="numeric"
+        placeholder="Ej: 65"
+        data-sidebar-target="areaPerUnitInput"
+      />
+    </div>
+
+    <div class="sidebar__section">
+      <button type="button"
+              class="sidebar__primary-btn"
+              data-sidebar-target="addBtn"
+              data-action="click->sidebar#addProject">
+        Agregar
+      </button>
+    </div>
+
+    <div class="sidebar__section">
+      <button type="button"
+              class="sidebar__secondary-btn"
+              data-sidebar-target="saveRecalcBtn"
+              data-action="click->sidebar#openPublishModal">
+        Guardar y recalcular
+      </button>
+    </div>
+  </div>
+</aside>
