@@ -28,6 +28,9 @@ Rails.application.routes.draw do
     collection do
       get :thematic
       get :accessibility
+      get :delta
+      get :accessibility_delta
+      get :locator_status
     end
   end
 

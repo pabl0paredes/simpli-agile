@@ -12,15 +12,28 @@ class ScenariosController < ApplicationController
     user_scenarios = Scenario
       .where(user_id: current_user.id, municipality_code: mun_code)
       .where.not(id: base&.id)
-      .select(:id, :name)
+      .select(:id, :name, :status)
       .order(created_at: :desc)
 
     payload = []
+
     if base
-      payload << { id: base.id, name: base.name.presence || "Escenario base", is_base: true }
+      payload << {
+        id: base.id,
+        name: base.name.presence || "Escenario base",
+        is_base: true,
+        status: base.status
+      }
     end
 
-    payload += user_scenarios.map { |s| { id: s.id, name: s.name.presence || "Escenario #{s.id}", is_base: false } }
+    payload += user_scenarios.map do |s|
+      {
+        id: s.id,
+        name: s.name.presence || "Escenario #{s.id}",
+        is_base: false,
+        status: s.status
+      }
+    end
 
     render json: payload
   end
@@ -30,11 +43,12 @@ class ScenariosController < ApplicationController
 
     base_id = params[:base_scenario_id].presence&.to_i
 
-    # ✅ Si no viene base_id, inferirlo: "escenario base del system_user para esa comuna"
-    if base_id.nil?
-      base = Scenario.find_by(user_id: 1, municipality_code: mun_code, status: "base")
-      return render json: { error: "No existe escenario base para municipality_code=#{mun_code}" }, status: :unprocessable_entity if base.nil?
-      base_id = base.id
+    if base_id
+      base = Scenario.find_by(id: base_id)
+      # 🔒 Si te pasan un draft, usa su padre como base real
+      if base&.status == "draft"
+        base_id = base.parent_id
+      end
     end
 
     draft = Scenario.find_or_create_by!(
@@ -100,7 +114,50 @@ class ScenariosController < ApplicationController
       SELECT id FROM chain;
     SQL
 
-    chain_ids = is_base ? [scenario.id] : conn.exec_params(chain_sql, [viewing_id]).map { |r| r["id"].to_i }
+    if scenario.status == "draft"
+      # cadena ancestros desde el draft (incluye self)
+      chain_ids = conn.exec_params(chain_sql, [viewing_id]).map { |r| r["id"].to_i }
+
+      # ✅ anteriores: ancestros EXCLUYENDO el mismo draft
+      previous_projects = Project
+        .where(scenario_id: chain_ids - [scenario.id])
+        .select(:id, :name, :scenario_id, :created_at)
+        .order(created_at: :desc)
+
+      # ✅ borrador: projects del mismo draft
+      draft_projects = Project
+        .where(scenario_id: scenario.id)
+        .select(:id, :name, :scenario_id, :created_at)
+        .order(created_at: :desc)
+
+      return render json: {
+        viewing_scenario: { id: scenario.id, name: scenario.name, status: scenario.status },
+        chain_ids: chain_ids,
+        previous_projects: previous_projects.as_json(only: [:id, :name, :scenario_id]),
+        draft_scenario: { id: scenario.id, status: scenario.status, parent_id: scenario.parent_id },
+        draft_projects: draft_projects.as_json(only: [:id, :name, :scenario_id])
+      }
+    end
+
+
+
+    if scenario.status == "draft"
+      # 🔥 Si estoy en draft:
+      # - historial = parent + sus padres
+      parent_id = scenario.parent_id
+
+      chain_ids =
+        if parent_id
+          conn.exec_params(chain_sql, [parent_id]).map { |r| r["id"].to_i }
+        else
+          []
+        end
+    else
+      # comportamiento normal
+      chain_ids =
+        is_base ? [scenario.id] :
+          conn.exec_params(chain_sql, [viewing_id]).map { |r| r["id"].to_i }
+    end
 
     # 2) Proyectos "anteriores": todos los projects de la cadena
     previous_projects = is_base ? [] : Project
@@ -109,12 +166,16 @@ class ScenariosController < ApplicationController
       .order(created_at: :desc)
 
     # 3) Draft hijo (si existe) del escenario seleccionado
-    draft = Scenario.find_by(
-      user_id: current_user.id,
-      municipality_code: scenario.municipality_code,
-      status: "draft",
-      parent_id: viewing_id
-    )
+    if scenario.status == "draft"
+      draft = scenario
+    else
+      draft = Scenario.find_by(
+        user_id: current_user.id,
+        municipality_code: scenario.municipality_code,
+        status: "draft",
+        parent_id: viewing_id
+      )
+    end
 
     draft_projects =
       if draft

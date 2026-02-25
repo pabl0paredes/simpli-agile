@@ -45,3 +45,50 @@
 .map-fab__btn:active {
   transform: translateY(1px);
 }
+
+.mode-toggle {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+
+  display: inline-flex;
+  gap: 6px;
+  padding: 6px;
+
+  background: rgba(255,255,255,0.92);
+  border: 1px solid rgba(17,24,39,0.12);
+  border-radius: 999px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+  backdrop-filter: blur(8px);
+}
+
+.mode-toggle__btn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+
+  padding: 8px 14px;
+  border-radius: 999px;
+
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+
+  transition: background 120ms ease, color 120ms ease, transform 120ms ease;
+}
+
+.mode-toggle__btn:hover {
+  background: rgba(17,24,39,0.06);
+}
+
+.mode-toggle__btn.is-active {
+  background: #111827;
+  color: #ffffff;
+}
+
+.mode-toggle__btn:active {
+  transform: translateY(1px);
+}
