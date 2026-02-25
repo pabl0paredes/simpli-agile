@@ -7,44 +7,96 @@
       </div>
 
       <% if user_signed_in? %>
-        <div class="sidebar__section" data-sidebar-target="scenarioSection" hidden>
-          <div class="sidebar__label">ESCENARIO</div>
+      <div class="sidebar__section" data-sidebar-target="comparatorSection" hidden>
+        <div class="sidebar__label">ESCENARIO A</div>
+        <select class="sidebar__select"
+                data-sidebar-target="scenarioASelect"
+                data-action="change->sidebar#scenarioAChanged"
+                disabled>
+          <option>Seleccionar escenario A...</option>
+        </select>
 
-          <select class="sidebar__select"
-                  data-sidebar-target="scenarioSelect"
-                  data-action="change->sidebar#scenarioChanged"
-                  disabled>
-            <option>Seleccionar escenario...</option>
-          </select>
+        <div style="height: 10px"></div>
 
-          <div class="sidebar__hint sidebar__hint--center" data-sidebar-target="scenarioHint">
-            Selecciona una comuna para ver tus escenarios
-          </div>
+        <div class="sidebar__label">ESCENARIO B</div>
+        <select class="sidebar__select"
+                data-sidebar-target="scenarioBSelect"
+                data-action="change->sidebar#scenarioBChanged"
+                disabled>
+          <option>Seleccionar escenario B...</option>
+        </select>
+      </div>
+
+      <div class="sidebar__divider" data-sidebar-target="comparatorDivider" hidden></div>
+
+      <div class="sidebar__section" data-sidebar-target="compareModeSection" hidden>
+        <div class="sidebar__label">MODO DE COMPARACIÓN</div>
+
+        <div class="compare-modes">
+          <button type="button"
+                  class="compare-modes__btn is-active"
+                  data-mode="delta"
+                  data-action="click->sidebar#compareModeSelected"
+                  aria-label="Delta">
+            <i class="fa-solid fa-caret-up"></i>
+          </button>
+
+          <button type="button"
+                  class="compare-modes__btn"
+                  data-mode="split"
+                  data-action="click->sidebar#compareModeSelected"
+                  aria-label="Split">
+            <i class="fa-solid fa-table-columns"></i>
+          </button>
+
+          <button type="button"
+                  class="compare-modes__btn"
+                  data-mode="swipe"
+                  data-action="click->sidebar#compareModeSelected"
+                  aria-label="Swipe">
+            <i class="fa-solid fa-grip-lines-vertical"></i>
+          </button>
         </div>
+      </div>
 
-        <button
-          type="button"
-          class="sidebar__danger-btn"
-          data-sidebar-target="deleteScenarioBtn"
-          data-action="click->sidebar#deleteScenario"
-          hidden
-        >
-          🗑️ Eliminar escenario
-        </button>
+      <div class="sidebar__section" data-sidebar-target="scenarioSection" hidden>
+        <div class="sidebar__label">ESCENARIO</div>
+
+        <select class="sidebar__select"
+                data-sidebar-target="scenarioSelect"
+                data-action="change->sidebar#scenarioChanged"
+                disabled>
+          <option>Seleccionar escenario...</option>
+        </select>
+
+        <div class="sidebar__hint sidebar__hint--center" data-sidebar-target="scenarioHint">
+          Selecciona una comuna para ver tus escenarios
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="sidebar__danger-btn"
+        data-sidebar-target="deleteScenarioBtn"
+        data-action="click->sidebar#deleteScenario"
+        hidden
+      >
+        🗑️ Eliminar escenario
+      </button>
 
 
-        <div class="sidebar__divider"></div>
+      <div class="sidebar__divider"></div>
       <% end %>
 
 
-      <div class="sidebar__section">
+      <div class="sidebar__section" data-sidebar-target="regionSection">
         <div class="sidebar__label">REGIÓN</div>
         <select class="sidebar__select" data-sidebar-target="regionSelect" data-action="change->sidebar#regionChanged">
           <option>Seleccionar región...</option>
         </select>
       </div>
 
-      <div class="sidebar__section">
+      <div class="sidebar__section" data-sidebar-target="municipalitySection">
         <div class="sidebar__label">COMUNA</div>
         <select class="sidebar__select" data-sidebar-target="municipalitySelect" data-action="change->sidebar#municipalityChanged">
           <option>Seleccionar comuna...</option>
@@ -356,13 +408,12 @@
   </div>
 
 
-  <main class="map-area" data-sidebar-target="mapArea">
-    <div
-      id="map"
-      class="map"
-      data-controller="map"
-      data-map-token-value="<%= ENV.fetch("MAPBOX_TOKEN", "") %>"
-    ></div>
+  <main class="map-area"
+        data-sidebar-target="mapArea"
+        data-controller="map"
+        data-map-token-value="<%= ENV.fetch("MAPBOX_TOKEN", "") %>">
+
+    <div id="map" class="map" data-map-target="mapContainer"></div>
 
     <%# Botones flotantes (derecha) %>
     <div class="map-fab">
@@ -374,11 +425,47 @@
         <i class="fa-solid fa-chart-bar"></i>
       </button>
 
-      <button type="button" class="map-fab__btn" aria-label="Capas">
+      <button type="button"
+              class="map-fab__btn"
+              aria-label="Leyenda"
+              data-action="click->map#toggleLegend"
+              data-map-target="legendBtn"
+              hidden>
         <i class="fa-solid fa-list"></i>
       </button>
     </div>
+
+    <% if user_signed_in? %>
+    <div class="mode-toggle"
+        data-controller="mode-toggle"
+        data-mode-toggle-mode-value="constructor"
+        data-sidebar-target="modeToggle"
+        hidden>
+      <button type="button"
+              class="mode-toggle__btn"
+              data-mode-toggle-target="btn"
+              data-mode="constructor"
+              data-action="click->mode-toggle#select">
+        Constructor
+      </button>
+
+      <button type="button"
+              class="mode-toggle__btn"
+              data-mode-toggle-target="btn"
+              data-mode="comparador"
+              data-action="click->mode-toggle#select">
+        Comparador
+      </button>
+    </div>
+    <% end %>
+
+
+    <div class="map-legend" data-map-target="legendPanel" hidden>
+      <div class="map-legend__title">Leyenda</div>
+      <div class="map-legend__items" data-map-target="legendItems"></div>
+    </div>
   </main>
+
 
   <div class="pickcell-hint" data-sidebar-target="pickCellModal" hidden>
     <div class="pickcell-hint__panel">

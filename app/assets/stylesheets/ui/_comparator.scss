@@ -1,0 +1,35 @@
+.compare-modes {
+  display: flex;
+  gap: 10px;
+}
+
+.compare-modes__btn {
+  flex: 1 1 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid rgba(17,24,39,0.12);
+  background: #fff;
+
+  color: #374151;
+  cursor: pointer;
+  transition: background 120ms ease, transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+}
+
+.compare-modes__btn:hover {
+  background: rgba(17,24,39,0.04);
+}
+
+.compare-modes__btn.is-active {
+  border-color: rgba(17,24,39,0.30);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+  background: rgba(17,24,39,0.06);
+  color: #111827;
+}
+
+.compare-modes__btn:active {
+  transform: translateY(1px);
+}

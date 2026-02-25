@@ -1,4 +1,409 @@
 class CellsController < ApplicationController
+
+  def locator_status
+    mun_code = params.require(:municipality_code).to_i
+    selected_id = params.require(:base_scenario_id).to_i   # lo usas como "selected"
+    draft_id = params[:draft_scenario_id].presence&.to_i   # opcional
+
+    conn = ActiveRecord::Base.connection.raw_connection
+
+    # 1) definir el "hist_root": desde dónde cuelga el historial
+    hist_root =
+      if draft_id
+        # draft existe => historial es el padre del draft (y sus padres)
+        Scenario.where(id: draft_id).pluck(:parent_id).first
+      else
+        # no hay draft => historial es el escenario seleccionado (y sus padres)
+        selected_id
+      end
+
+    # si draft existe pero no tiene parent_id (debería), fallback al selected
+    hist_root ||= selected_id
+
+    if draft_id
+      sql = <<~SQL
+        WITH RECURSIVE
+        chain AS (
+          SELECT s.id, s.parent_id, 0 AS depth
+          FROM scenarios s
+          WHERE s.id = $1
+          UNION ALL
+          SELECT p.id, p.parent_id, c.depth + 1
+          FROM scenarios p
+          JOIN chain c ON p.id = c.parent_id
+          WHERE c.depth < 30
+        ),
+        parent_projects AS (
+          SELECT DISTINCT pr.h3
+          FROM projects pr
+          WHERE pr.scenario_id IN (SELECT id FROM chain)
+        ),
+        draft_projects AS (
+          SELECT DISTINCT pr.h3
+          FROM projects pr
+          WHERE pr.scenario_id = $2
+        )
+        SELECT
+          c.h3,
+          c.show_id,
+          ST_AsGeoJSON(c.geometry) AS geom_json,
+          (pp.h3 IS NOT NULL) AS has_parent_projects,
+          (dp.h3 IS NOT NULL) AS has_draft_projects
+        FROM cells c
+        LEFT JOIN parent_projects pp ON pp.h3 = c.h3
+        LEFT JOIN draft_projects dp ON dp.h3 = c.h3
+        WHERE c.municipality_code = $3;
+      SQL
+
+      result = conn.exec_params(sql, [hist_root, draft_id, mun_code])
+    else
+      sql = <<~SQL
+        WITH RECURSIVE
+        chain AS (
+          SELECT s.id, s.parent_id, 0 AS depth
+          FROM scenarios s
+          WHERE s.id = $1
+
+          UNION ALL
+
+          SELECT p.id, p.parent_id, c.depth + 1
+          FROM scenarios p
+          JOIN chain c ON p.id = c.parent_id
+          WHERE c.depth < 30
+        ),
+        parent_projects AS (
+          SELECT DISTINCT pr.h3
+          FROM projects pr
+          WHERE pr.scenario_id IN (SELECT id FROM chain)
+        )
+        SELECT
+          c.h3,
+          c.show_id,
+          ST_AsGeoJSON(c.geometry) AS geom_json,
+          pp.h3 AS pp_h3_debug,
+          (pp.h3 IS NOT NULL) AS has_parent_projects,
+          false AS has_draft_projects
+        FROM cells c
+        LEFT JOIN parent_projects pp ON pp.h3 = c.h3
+        WHERE c.municipality_code = $2;
+      SQL
+
+      result = conn.exec_params(sql, [hist_root, mun_code])
+    end
+
+    bool = ActiveModel::Type::Boolean.new
+
+    features = result.map do |r|
+      {
+        type: "Feature",
+        geometry: JSON.parse(r["geom_json"]),
+        properties: {
+          h3: r["h3"],
+          show_id: r["show_id"],
+          has_parent_projects: bool.cast(r["has_parent_projects"]),
+          has_draft_projects: bool.cast(r["has_draft_projects"])
+        }
+      }
+    end
+
+    render json: { nonce: SecureRandom.hex(4), type: "FeatureCollection", features: features }
+  end
+
+  def accessibility_delta
+    mun_code        = params.require(:municipality_code).to_i
+    scenario_a_id   = params.require(:scenario_a_id).to_i
+    scenario_b_id   = params.require(:scenario_b_id).to_i
+    opportunity     = params.require(:opportunity_code).to_s
+    mode            = params.require(:mode).to_s
+
+    travel_mode = TravelMode.find_by!(municipality_code: mun_code, mode: mode)
+    travel_mode_id = travel_mode.id
+
+    conn = ActiveRecord::Base.connection.raw_connection
+
+    sql = <<~SQL
+      WITH RECURSIVE
+      chain_a AS (
+        SELECT s.id, s.parent_id, 0 AS depth
+        FROM scenarios s WHERE s.id = $1
+        UNION ALL
+        SELECT p.id, p.parent_id, c.depth + 1
+        FROM scenarios p
+        JOIN chain_a c ON p.id = c.parent_id
+        WHERE c.depth < 20
+      ),
+      chain_b AS (
+        SELECT s.id, s.parent_id, 0 AS depth
+        FROM scenarios s WHERE s.id = $2
+        UNION ALL
+        SELECT p.id, p.parent_id, c.depth + 1
+        FROM scenarios p
+        JOIN chain_b c ON p.id = c.parent_id
+        WHERE c.depth < 20
+      ),
+
+      effective_a AS (
+        SELECT c.id AS scenario_id
+        FROM chain_a c
+        WHERE EXISTS (
+          SELECT 1
+          FROM accessibilities a
+          WHERE a.scenario_id = c.id
+            AND a.travel_mode_id = $4
+            AND a.opportunity_code = $5
+          LIMIT 1
+        )
+        ORDER BY c.depth ASC
+        LIMIT 1
+      ),
+      effective_b AS (
+        SELECT c.id AS scenario_id
+        FROM chain_b c
+        WHERE EXISTS (
+          SELECT 1
+          FROM accessibilities a
+          WHERE a.scenario_id = c.id
+            AND a.travel_mode_id = $4
+            AND a.opportunity_code = $5
+          LIMIT 1
+        )
+        ORDER BY c.depth ASC
+        LIMIT 1
+      ),
+
+      a_vals AS (
+        SELECT a.h3, a.value
+        FROM accessibilities a
+        JOIN effective_a ea ON ea.scenario_id = a.scenario_id
+        WHERE a.travel_mode_id = $4
+          AND a.opportunity_code = $5
+      ),
+      b_vals AS (
+        SELECT a.h3, a.value
+        FROM accessibilities a
+        JOIN effective_b eb ON eb.scenario_id = a.scenario_id
+        WHERE a.travel_mode_id = $4
+          AND a.opportunity_code = $5
+      )
+
+      SELECT
+        c.h3,
+        c.show_id,
+        ST_AsGeoJSON(c.geometry) AS geom_json,
+        COALESCE(b_vals.value, 0) - COALESCE(a_vals.value, 0) AS delta_value,
+        (SELECT scenario_id FROM effective_a) AS effective_a_id,
+        (SELECT scenario_id FROM effective_b) AS effective_b_id
+      FROM cells c
+      LEFT JOIN a_vals ON a_vals.h3 = c.h3
+      LEFT JOIN b_vals ON b_vals.h3 = c.h3
+      WHERE c.municipality_code = $3;
+    SQL
+
+    result = conn.exec_params(sql, [scenario_a_id, scenario_b_id, mun_code, travel_mode_id, opportunity])
+
+    rows = []
+    deltas = []
+    eff_a = nil
+    eff_b = nil
+
+    result.each do |r|
+      eff_a ||= r["effective_a_id"]&.to_i
+      eff_b ||= r["effective_b_id"]&.to_i
+      v = r["delta_value"].to_f
+      rows << r
+      deltas << v unless v == 0
+    end
+
+    uniq_count = deltas.uniq.length
+
+    breaks =
+      if uniq_count == 0
+        [0.0, 0.0]
+      elsif uniq_count == 1
+        v = deltas.first.to_f
+        v > 0 ? [0.0, v] : [v, 0.0]
+      else
+        k = [5, uniq_count].min
+        jenks_breaks(deltas, k)
+      end
+
+    features = rows.map do |r|
+      v = r["delta_value"].to_f
+      klass =
+        if v == 0
+          0
+        elsif uniq_count == 1
+          1
+        else
+          jenks_class(v, breaks)
+        end
+
+      {
+        type: "Feature",
+        geometry: JSON.parse(r["geom_json"]),
+        properties: {
+          h3: r["h3"],
+          show_id: r["show_id"],
+          value: v,
+          class: klass,
+          municipality_code: mun_code,
+          opportunity_code: opportunity,
+          mode: mode,
+          travel_mode_id: travel_mode_id,
+          scenario_a_id: scenario_a_id,
+          scenario_b_id: scenario_b_id,
+          effective_a_id: eff_a,
+          effective_b_id: eff_b
+        }
+      }
+    end
+
+    render json: {
+      type: "FeatureCollection",
+      features: features,
+      breaks: breaks,
+      effective_a_id: eff_a,
+      effective_b_id: eff_b
+    }
+  end
+
+  def delta
+    mun_code     = params.require(:municipality_code).to_i
+    scenario_a   = params.require(:scenario_a_id).to_i
+    scenario_b   = params.require(:scenario_b_id).to_i
+    opp_code     = params.require(:opportunity_code).to_s
+    metric       = params.require(:metric).to_s
+
+    metric_col =
+      case metric
+      when "surface" then "surface_total"
+      when "units"   then "units_total"
+      else
+        return render json: { error: "metric debe ser 'surface' o 'units'" }, status: :unprocessable_entity
+      end
+
+    info_col =
+      case metric
+      when "surface" then "surface"
+      when "units"   then "units"
+      end
+
+    conn = ActiveRecord::Base.connection.raw_connection
+
+    sql = <<~SQL
+      WITH RECURSIVE
+      chain_a AS (
+        SELECT s.id, s.parent_id, 0 AS depth
+        FROM scenarios s
+        WHERE s.id = $1
+        UNION ALL
+        SELECT p.id, p.parent_id, c.depth + 1
+        FROM scenarios p
+        JOIN chain_a c ON p.id = c.parent_id
+        WHERE c.depth < 20
+      ),
+      best_a AS (
+        SELECT DISTINCT ON (sc.h3)
+          sc.h3,
+          sc.#{metric_col} AS value
+        FROM chain_a c
+        JOIN scenario_cells sc
+          ON sc.scenario_id = c.id
+        AND sc.opportunity_code = $3
+        ORDER BY sc.h3, c.depth ASC
+      ),
+      chain_b AS (
+        SELECT s.id, s.parent_id, 0 AS depth
+        FROM scenarios s
+        WHERE s.id = $2
+        UNION ALL
+        SELECT p.id, p.parent_id, c.depth + 1
+        FROM scenarios p
+        JOIN chain_b c ON p.id = c.parent_id
+        WHERE c.depth < 20
+      ),
+      best_b AS (
+        SELECT DISTINCT ON (sc.h3)
+          sc.h3,
+          sc.#{metric_col} AS value
+        FROM chain_b c
+        JOIN scenario_cells sc
+          ON sc.scenario_id = c.id
+        AND sc.opportunity_code = $3
+        ORDER BY sc.h3, c.depth ASC
+      )
+      SELECT
+        cells.h3,
+        cells.show_id,
+        ST_AsGeoJSON(cells.geometry) AS geom_json,
+        (COALESCE(best_b.value, ic.#{info_col}, 0) - COALESCE(best_a.value, ic.#{info_col}, 0)) AS delta_value
+      FROM cells
+      LEFT JOIN best_a ON best_a.h3 = cells.h3
+      LEFT JOIN best_b ON best_b.h3 = cells.h3
+      LEFT JOIN info_cells ic
+        ON ic.h3 = cells.h3
+      AND ic.opportunity_code = $3
+      WHERE cells.municipality_code = $4;
+    SQL
+
+    result = conn.exec_params(sql, [scenario_a, scenario_b, opp_code, mun_code])
+
+    rows = []
+    deltas = []
+
+    result.each do |r|
+      v = r["delta_value"].to_f
+      rows << r
+      deltas << v if v != 0
+    end
+
+    deltas_nonzero = deltas.reject { |v| v == 0 }
+    uniq_count = deltas_nonzero.uniq.length
+    k = [[5, uniq_count].min, 1].max
+
+    breaks =
+      if uniq_count == 0
+        [0.0, 0.0]
+      elsif uniq_count == 1
+        v = deltas_nonzero.first.to_f
+        # rango no degenerado: [0, v] si v>0; [v, 0] si v<0
+        v > 0 ? [0.0, v] : [v, 0.0]
+      else
+        k = [5, uniq_count].min
+        jenks_breaks(deltas_nonzero, k)
+      end
+
+    features = rows.map do |r|
+      v = r["delta_value"].to_f
+      klass =
+        if v == 0
+          0
+        elsif uniq_count == 1
+          1
+        else
+          jenks_class(v, breaks) # 1..k
+        end
+
+      {
+        type: "Feature",
+        geometry: JSON.parse(r["geom_json"]),
+        properties: {
+          h3: r["h3"],
+          show_id: r["show_id"],
+          value: v,
+          class: klass,
+          municipality_code: mun_code,
+          opportunity_code: opp_code,
+          metric: metric,
+          scenario_a_id: scenario_a,
+          scenario_b_id: scenario_b
+        }
+      }
+    end
+
+    render json: { type: "FeatureCollection", features: features, breaks: breaks }
+  end
+
   # GET /cells/thematic?municipality_code=13101&opportunity_code=C&metric=surface
   def thematic
     mun_code    = params.require(:municipality_code).to_i
@@ -175,7 +580,14 @@ class CellsController < ApplicationController
 
     features = rows.map do |r|
       v = r.attributes["value"].to_f
-      klass = (v <= 0 || breaks.uniq.length <= 1) ? 0 : jenks_class(v, breaks)
+      klass =
+        if breaks.uniq.length <= 1
+          1
+        else
+          # En accesibilidad, incluso v=0 debe caer en "Muy baja"
+          jenks_class(v, breaks)
+        end
+
 
       {
         type: "Feature",

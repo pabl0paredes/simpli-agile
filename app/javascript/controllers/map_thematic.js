@@ -48,5 +48,9 @@ export class MapThematic {
 
     this.ctx._cellsBreaks = payload.breaks
     this.ctx.setCellsVisible(true)
+
+    this.ctx.legend.render()
+    this.ctx.legend.showButtonIfNeeded()
+
   }
 }

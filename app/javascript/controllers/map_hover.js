@@ -218,7 +218,7 @@ export class MapHover {
       const el = ensureTooltip()
 
       // ✅ Si estamos seleccionando celda, mostramos show_id (no value)
-      if (this._pickCellMode) {
+      if (this.controller?._pickCellMode) {
         const showId = f.properties?.show_id
         el.textContent = (showId != null) ? `Celda ${showId} (click para seleccionar)` : `Celda (click para seleccionar)`
         moveTooltip(e.lngLat)
@@ -227,12 +227,22 @@ export class MapHover {
 
       // ✅ caso normal: mostrar valor de la capa
       const label = this.currentCellsHoverLabel()
+
+      const layerType = this.controller?._selectedLayerType
+      const klass = Number(f.properties?.class ?? 0)
       const rawValue = f.properties?.value ?? 0
 
-      const formatted =
-        (this._selectedLayerType === "accessibility")
-          ? Number(rawValue).toFixed(2)
-          : Number(rawValue).toLocaleString("es-CL")
+      let formatted
+
+      if (layerType === "accessibility") {
+        // accesibilidad: usar texto, no número
+        formatted = this.controller.accessibilityLabelForClass
+          ? this.controller.accessibilityLabelForClass(klass)
+          : (klass ? String(klass) : "-")
+      } else {
+        // thematic: seguir con número
+        formatted = Number(rawValue).toLocaleString("es-CL")
+      }
 
       el.textContent = `${label}: ${formatted}`
       moveTooltip(e.lngLat)
@@ -247,12 +257,12 @@ export class MapHover {
 
   currentCellsHoverLabel() {
     // Decide etiqueta según lo activo
-    if (this._selectedLayerType === "accessibility") {
-      const mode = this._selectedAccessibilityMode || ""
+    if (this.controller._selectedLayerType === "accessibility") {
+      const mode = this.controller._selectedAccessibilityMode || ""
       return mode === "walk" ? "Accesibilidad (caminata)" : "Accesibilidad (auto)"
     }
-    if (this._selectedMetric === "surface") return "Superficie"
-    if (this._selectedMetric === "units") return "Unidades"
+    if (this.controller._selectedMetric === "surface") return "Superficie"
+    if (this.controller._selectedMetric === "units") return "Unidades"
     return "Valor"
   }
 }
