@@ -71,6 +71,7 @@ export default class extends Controller {
     window.addEventListener("cell:picked", this.onCellPicked)
     window.addEventListener("scenario:selected", this.onScenarioSelected)
     window.addEventListener("ui:mode_changed", this.onUIModeChanged)
+    window.addEventListener("comparison:context_changed", this.onComparisonContextChanged)
   }
 
   disconnect() {
@@ -80,6 +81,7 @@ export default class extends Controller {
     window.removeEventListener("cell:picked", this.onCellPicked)
     window.removeEventListener("scenario:selected", this.onScenarioSelected)
     window.removeEventListener("ui:mode_changed", this.onUIModeChanged)
+    window.removeEventListener("comparison:context_changed", this.onComparisonContextChanged)
   }
 
   loadRegionsIntoSelect() { return this.regionsMunicipalities.loadRegionsIntoSelect() }
@@ -128,6 +130,7 @@ export default class extends Controller {
   deleteScenario() { return this.publishDelete.deleteScenario() }
 
   onUIModeChanged = (e) => { return this.comparator.onUIModeChanged(e) }
+  onComparisonContextChanged = (e) => { return this.comparator.onComparisonContextChanged(e)}
 
   enterComparatorMode() { return this.comparator.enterComparatorMode() }
   enterConstructorMode() { return this.comparator.enterConstructorMode() }
@@ -239,5 +242,67 @@ export default class extends Controller {
 
     // Limpia snapshot
     this._locatorSidebarPrev = null
+  }
+
+  syncScenarioActionsUI() {
+    if (this.hasDeleteScenarioBtnTarget) {
+      // ✅ nunca en comparador
+      if (this._uiMode === "comparador") {
+        this.deleteScenarioBtnTarget.hidden = true
+        return
+      }
+
+      const opt = this.scenarioSelectTarget?.selectedOptions?.[0]
+      const isBase = (opt?.dataset?.isBase === "1")
+      this.deleteScenarioBtnTarget.hidden = isBase
+    }
+  }
+
+  syncComparatorGatingUI() {
+    const inComparator = (this._uiMode === "comparador")
+
+    if (!this.hasOpportunitySelectTarget) return
+    if (!this.hasLayerSectionTarget) return
+
+    if (!inComparator) {
+      // modo normal: oportunidad habilitada (si corresponde por tu UX)
+      this.opportunitySelectTarget.disabled = false
+      return
+    }
+
+    const hasA = !!this._scenarioAId
+    const hasB = !!this._scenarioBId
+    const ready = hasA && hasB
+
+    // ✅ En comparador: deshabilitar hasta que estén ambos
+    this.opportunitySelectTarget.disabled = !ready
+
+    // ✅ Si no está listo, ocultar capas y resetear opportunity
+    if (!ready) {
+      this.layerSectionTarget.hidden = true
+      this.opportunitySelectTarget.value = "Seleccionar oportunidad..." // o el placeholder real del <option>
+      this.clearLayerButtonsUI()
+      window.dispatchEvent(new CustomEvent("layer:cleared"))
+    }
+  }
+
+  closeLocator() {
+    if (!this.hasLocatorPanelTarget) return
+    if (this.locatorPanelTarget.hidden) return // ya está cerrado
+
+    // fuerza estado visual a "cerrado"
+    this.locatorPanelTarget.hidden = true
+
+    // restaura sidebar principal + re-enable
+    this.restoreSidebarAfterClose()
+
+    if (this.hasOpportunitySelectTarget) this.opportunitySelectTarget.disabled = false
+    this.element.querySelectorAll(".sidebar__layer-btn").forEach(b => {
+      b.disabled = false
+      b.classList.remove("is-disabled")
+    })
+
+    // avisa al mapa que cierre locator (restauración del snapshot del mapa)
+    window.dispatchEvent(new CustomEvent("locator:closed"))
   }
 }

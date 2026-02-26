@@ -217,10 +217,20 @@ export class MapHover {
       // tooltip
       const el = ensureTooltip()
 
-      // ✅ Si estamos seleccionando celda, mostramos show_id (no value)
+      const showId = f.properties?.show_id
+
+      // ✅ Pick cell mode: mostrar CTA
       if (this.controller?._pickCellMode) {
-        const showId = f.properties?.show_id
-        el.textContent = (showId != null) ? `Celda ${showId} (click para seleccionar)` : `Celda (click para seleccionar)`
+        el.textContent = (showId != null)
+          ? `Celda ${showId} (click para seleccionar)`
+          : `Celda (click para seleccionar)`
+        moveTooltip(e.lngLat)
+        return
+      }
+
+      // ✅ Locator abierto: siempre mostrar "Celda X" sin CTA
+      if (this.controller?._inLocator) {
+        el.textContent = (showId != null) ? `Celda ${showId}` : "Celda"
         moveTooltip(e.lngLat)
         return
       }

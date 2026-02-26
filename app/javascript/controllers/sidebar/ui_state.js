@@ -31,7 +31,7 @@ export function createUIState(controller) {
 
       // 3) reset oportunidad
       if (controller.hasOpportunitySelectTarget) {
-        controller.opportunitySelectTarget.value = "Seleccionar uso..."
+        controller.opportunitySelectTarget.value = "Seleccionar oportunidad..."
         // controller.opportunitySelectTarget.disabled = true
       }
 

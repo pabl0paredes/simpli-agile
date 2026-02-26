@@ -31,6 +31,9 @@ export class MapLocator {
   async onOpened(event) {
     const municipalityCode = event.detail?.municipality_code
     const baseScenarioId = event.detail?.base_scenario_id
+    const draftScenarioId = event.detail?.draft_scenario_id
+
+    this.c._inLocator = true
 
     // Si tu flujo depende de estos, mantenemos el guard
     if (!municipalityCode || !baseScenarioId) {
@@ -46,7 +49,11 @@ export class MapLocator {
     if (!ok) return
 
     try {
-      const url = `/cells/locator_status?municipality_code=${encodeURIComponent(municipalityCode)}&base_scenario_id=${encodeURIComponent(baseScenarioId)}`
+      let url = `/cells/locator_status?municipality_code=${encodeURIComponent(municipalityCode)}&base_scenario_id=${encodeURIComponent(baseScenarioId)}`
+      if (draftScenarioId) {
+        url += `&draft_scenario_id=${encodeURIComponent(draftScenarioId)}`
+      }
+
       const payload = await fetch(url, { headers: { "Accept": "application/json" } }).then(r => r.json())
 
       // payload debe ser FeatureCollection o algo que tu controller ya sabe consumir;
@@ -62,8 +69,8 @@ export class MapLocator {
       }
 
       // Mostrar overlays del locator (parent fill + hatch draft)
-      this.safeSetVisibility("cells-parent-fill", true)
       this.safeSetVisibility("cells-draft-hatch", true)
+      this.safeSetVisibility("cells-parent-fill", true)
 
       // Importante: si el UX pide que al abrir locator se vean celdas, nos aseguramos
       this.c.setCellsVisible(true)

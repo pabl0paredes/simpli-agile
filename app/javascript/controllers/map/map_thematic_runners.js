@@ -17,7 +17,7 @@ export class MapThematicRunners {
     if (inComparator && isDelta) {
       if (!this.c._scenarioAId || !this.c._scenarioBId) return
 
-      this.c._selectedLayerType = "delta"
+      this.c._selectedLayerType = "accessibility"   // ✅ sigue siendo accesibilidad
       this.c._selectedAccessibilityMode = mode
       this.c._selectedMetric = null
 
@@ -73,8 +73,8 @@ export class MapThematicRunners {
     if (!scenario_a_id || !scenario_b_id) return
     if (!opportunity_code || !metric) return
 
-    this.c._selectedLayerType = "delta"
-    this.c._selectedMetric = metric
+    this.c._selectedLayerType = "metric"  // ✅ o "metric" si prefieres
+    this.c._selectedMetric = metric         // metric = "surface" | "units"
     this.c._selectedOpportunityCode = opportunity_code
 
     this.c.ensureCellsLayer()

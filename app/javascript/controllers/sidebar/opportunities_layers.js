@@ -11,7 +11,7 @@ export function createOpportunitiesLayers(controller) {
         .then(response => response.json())
         .then(data => {
           const selector = controller.opportunitySelectTarget
-          selector.innerHTML = "<option>Seleccionar uso...</option>"
+          selector.innerHTML = "<option>Seleccionar oportunidad...</option>"
 
           data.forEach(opportunity => {
             const option = document.createElement("option")

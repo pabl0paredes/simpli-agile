@@ -111,6 +111,7 @@ export function createPublishDelete(controller) {
       }
 
       controller._draftScenarioId = null
+      controller.syncScenarioActionsUI()
 
       alert("Escenario eliminado ✅")
     }

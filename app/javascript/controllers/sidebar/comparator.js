@@ -7,15 +7,32 @@ export function createComparator(controller) {
       controller._uiMode = mode
 
       // ✅ Notificar al mapa
-      window.dispatchEvent(new CustomEvent("ui:mode_changed", {
+      window.dispatchEvent(new CustomEvent("ui:mode_changed_for_map", {
         detail: { mode }
       }))
 
       if (mode === "comparador") {
+        // ✅ reset UI comparador
+        if (controller.hasOpportunitySelectTarget) {
+          controller.opportunitySelectTarget.value = "Seleccionar oportunidad..."
+          controller.opportunitySelectTarget.disabled = true
+        }
+        if (controller.hasLayerSectionTarget) controller.layerSectionTarget.hidden = true
+
         controller.enterComparatorMode()
       } else {
         controller.enterConstructorMode()
       }
+
+      controller.syncScenarioActionsUI()
+    },
+
+    onComparisonContextChanged(e) {
+      controller._scenarioAId = e.detail?.scenario_a_id
+      controller._scenarioBId = e.detail?.scenario_b_id
+      controller._compareMode = e.detail?.compare_mode
+
+      controller.syncComparatorGatingUI()
     },
 
     enterComparatorMode() {
@@ -32,6 +49,13 @@ export function createComparator(controller) {
       // ❌ comparador no construye
       if (controller.hasLocateSectionTarget) controller.locateSectionTarget.hidden = true
       if (controller.hasLocatorPanelTarget) controller.locatorPanelTarget.hidden = true
+
+      if (this.hasDeleteScenarioBtnTarget) this.deleteScenarioBtnTarget.hidden = true
+      // ✅ exigir A y B antes de opportunity
+
+      controller._compareMode = "delta"
+      controller.syncComparatorGatingUI()
+
 
       if (controller._selectedMunicipalityCode) {
         controller.loadScenariosIntoComparatorSelects(controller._selectedMunicipalityCode)
@@ -55,6 +79,26 @@ export function createComparator(controller) {
       if (controller.hasLocateSectionTarget) {
         controller.locateSectionTarget.hidden = !controller._selectedMunicipalityCode
       }
+
+      // ✅ volver a constructor: reset de oportunidad y capas
+      if (controller.hasOpportunitySelectTarget) {
+        controller.opportunitySelectTarget.value = "Seleccionar oportunidad..."
+        // si no hay comuna seleccionada, mantenlo disabled como en tu HTML inicial
+        controller.opportunitySelectTarget.disabled = !controller._selectedMunicipalityCode
+      }
+
+      if (controller.hasLayerSectionTarget) controller.layerSectionTarget.hidden = true
+
+      controller.clearLayerButtonsUI()
+      window.dispatchEvent(new CustomEvent("layer:cleared"))
+
+      // Limpia estado comparador para que no “contamine”
+      controller._scenarioAId = null
+      controller._scenarioBId = null
+      controller._compareMode = null
+
+      controller.syncScenarioActionsUI()     // restaura delete según isBase
+      if (controller.hasOpportunitySelectTarget) controller.opportunitySelectTarget.disabled = false
     },
 
     loadScenariosIntoComparatorSelects(munCode) {

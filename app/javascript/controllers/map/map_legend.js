@@ -36,7 +36,7 @@ export class MapLegend {
     }
 
     const isAccessibility = (this.c._selectedLayerType === "accessibility")
-    const isDelta = (this.c._selectedLayerType === "delta")
+    const isDelta = (this.c._compareMode === "delta")
 
     if (isAccessibility) {
       for (let i = 1; i <= 5; i++) {

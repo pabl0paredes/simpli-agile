@@ -14,52 +14,44 @@ export function createScenarios(controller) {
       if (controller.hasScenarioHintTarget) controller.scenarioHintTarget.style.display = "none"
 
       fetch(`/scenarios/names?municipality_code=${encodeURIComponent(munCode)}`)
-        .then(r => r.json())
-        .then(data => {
-          const selector = controller.scenarioSelectTarget
-          selector.innerHTML = "<option>Seleccionar escenario...</option>"
+      .then(r => r.json())
+      .then(data => {
+        const selector = controller.scenarioSelectTarget
+        selector.innerHTML = "<option>Seleccionar escenario...</option>"
 
-          let baseId = null
+        let baseId = null
 
-          fetch(`/scenarios/names?municipality_code=${encodeURIComponent(munCode)}`)
-          .then(r => r.json())
-          .then(data => {
-            const selector = controller.scenarioSelectTarget
-            selector.innerHTML = "<option>Seleccionar escenario...</option>"
-
-            let baseId = null
-
-            data.forEach(s => {
-              const option = document.createElement("option")
-              option.value = s.id
-              option.textContent = s.name
-              option.dataset.isBase = s.is_base ? "1" : "0"
-              option.dataset.status = s.status
-              selector.appendChild(option)
-              if (s.is_base) baseId = String(s.id)
-            })
-
-            selector.disabled = false
-
-            // ✅ decide qué seleccionar
-            const idToSelect = selectedId ? String(selectedId) : baseId
-            if (idToSelect) {
-              selector.value = idToSelect
-              controller._selectedScenarioId = idToSelect
-
-              const opt = selector.selectedOptions?.[0]
-              const status = opt?.dataset?.status
-
-              window.dispatchEvent(new CustomEvent("scenario:selected", {
-                detail: { scenario_id: idToSelect, status }
-              }))
-            }
-          })
+        data.forEach(s => {
+          const option = document.createElement("option")
+          option.value = s.id
+          option.textContent = s.name
+          option.dataset.isBase = s.is_base ? "1" : "0"
+          option.dataset.status = s.status
+          selector.appendChild(option)
+          if (s.is_base) baseId = String(s.id)
         })
-        .catch(err => {
-          console.error("Error cargando escenarios:", err)
-          controller.scenarioSelectTarget.disabled = true
-        })
+
+        selector.disabled = false
+
+        // ✅ decide qué seleccionar
+        const idToSelect = selectedId ? String(selectedId) : baseId
+        if (idToSelect) {
+          selector.value = idToSelect
+          controller._selectedScenarioId = idToSelect
+
+          const opt = selector.selectedOptions?.[0]
+          const status = opt?.dataset?.status
+
+          window.dispatchEvent(new CustomEvent("scenario:selected", {
+            detail: { scenario_id: idToSelect, status }
+          }))
+        }
+        controller.syncScenarioActionsUI()
+      })
+      .catch(err => {
+        console.error("Error cargando escenarios:", err)
+        controller.scenarioSelectTarget.disabled = true
+      })
     },
 
     scenarioChanged(e) {
@@ -74,6 +66,11 @@ export function createScenarios(controller) {
         controller.scenarioSelectTarget.value = previousScenarioId
         alert("Estás en un borrador. Publica/guarda antes de cambiar de escenario.")
         return
+      }
+
+      // ✅ Si el locator está abierto, ciérralo como corresponde
+      if (!controller.locatorPanelTarget.hidden) {
+        controller.closeLocator()
       }
 
       // ✅ 1) Despejar todo (UI + mapa) antes de cambiar scenario
@@ -105,6 +102,8 @@ export function createScenarios(controller) {
           status: newStatus
         }
       }))
+
+      controller.syncScenarioActionsUI()
     },
 
     onScenarioSelected(e) {

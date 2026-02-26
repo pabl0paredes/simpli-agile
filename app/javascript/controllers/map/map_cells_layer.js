@@ -131,6 +131,13 @@ export class MapCellsLayer {
       map.setLayoutProperty("cells-draft-hatch", "visibility", "none")
     }
 
+    // al final, antes del return true
+    if (map.getLayer("cells-parent-fill") && map.getLayer("cells-draft-hatch")) {
+      // parent abajo, hatch arriba
+      map.moveLayer("cells-parent-fill")
+      map.moveLayer("cells-draft-hatch")
+    }
+
     return true
   }
 

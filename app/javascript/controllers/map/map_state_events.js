@@ -13,6 +13,10 @@ export class MapStateEvents {
 
   onUIModeChanged = (e) => {
     this.c._uiMode = e.detail?.mode
+
+    if (this.c._uiMode === "comparador") this.c._compareMode = "delta"
+    this.c.setCellsVisible(false)
+
     // opcional: si quieres limpiar al entrar comparador, lo mantienes acá
   }
 

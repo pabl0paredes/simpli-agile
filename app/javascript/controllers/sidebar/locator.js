@@ -41,7 +41,7 @@ export function createLocator(controller) {
 
         // ✅ clear + disable sidebar principal
         if (controller.hasOpportunitySelectTarget) {
-          controller.opportunitySelectTarget.value = "Seleccionar uso..."
+          controller.opportunitySelectTarget.value = "Seleccionar oportunidad..."
           controller.opportunitySelectTarget.disabled = true
         }
         controller.clearLayerButtonsUI()
