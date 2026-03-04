@@ -425,6 +425,28 @@ class CellsController < ApplicationController
       when "units"   then "units"
       end
 
+    visual_mode = VisualMode.find_by!(
+      municipality_code: mun_code,
+      opportunity_code: opp_code,
+      mode_code: metric
+    )
+
+    edges = [
+      visual_mode.bin&.bin_0,
+      visual_mode.bin&.bin_1,
+      visual_mode.bin&.bin_2,
+      visual_mode.bin&.bin_3,
+      visual_mode.bin&.bin_4,
+      visual_mode.bin&.bin_5
+    ].compact.map(&:to_f)
+
+    puts("hola", !!edges[0])
+
+    # fallback defensivo si no hay bins cargados
+    if edges.length < 2
+      edges = [0, 0, 0, 0, 0, 0]
+    end
+
     conn = ActiveRecord::Base.connection.raw_connection
 
     sql = <<~SQL
@@ -466,25 +488,27 @@ class CellsController < ApplicationController
 
     result = conn.exec_params(sql, [scenario_id, opp_code, mun_code])
 
-    values_for_breaks = []
+    # values_for_breaks = []
     rows = []
 
     result.each do |r|
-      v = r["value"].to_f
-      values_for_breaks << v if v > 0
+      # v = r["value"].to_f
+      # values_for_breaks << v if v > 0
       rows << r
     end
 
-    breaks = values_for_breaks.empty? ? [0, 0, 0, 0, 0, 0] : jenks_breaks(values_for_breaks, 5)
+    # breaks = values_for_breaks.empty? ? [0, 0, 0, 0, 0, 0] : jenks_breaks(values_for_breaks, 5)
+
+    breaks = edges
 
     features = rows.map do |r|
       v = r["value"].to_f
-      klass =
-        if v <= 0 || breaks.uniq.length <= 1
-          0
-        else
-          jenks_class(v, breaks)
-        end
+      klass = bin_class(v, breaks)
+        # if v <= 0 || breaks.uniq.length <= 1
+        #   0
+        # else
+        #   jenks_class(v, breaks)
+        # end
 
       {
         type: "Feature",
@@ -523,6 +547,28 @@ class CellsController < ApplicationController
     end
 
     travel_mode = TravelMode.find_by!(municipality_code: mun_code, mode: mode)
+
+    mode_code = "acc_#{mode}"  # ajusta si tu convención es otra
+
+    visual_mode = VisualMode.find_by!(
+      municipality_code: mun_code,
+      opportunity_code: opp_code,
+      mode_code: mode_code
+    )
+
+    edges = [
+      visual_mode.bin&.bin_0,
+      visual_mode.bin&.bin_1,
+      visual_mode.bin&.bin_2,
+      visual_mode.bin&.bin_3,
+      visual_mode.bin&.bin_4,
+      visual_mode.bin&.bin_5
+    ].compact.map(&:to_f)
+
+    # fallback defensivo si no hay bins cargados
+    if edges.length < 2
+      edges = [0, 0, 0, 0, 0, 0]
+    end
 
     conn = ActiveRecord::Base.connection.raw_connection
 
@@ -575,19 +621,11 @@ class CellsController < ApplicationController
           .select("cells.h3, cells.show_id, ST_AsGeoJSON(cells.geometry) AS geom_json, 0 AS value")
       end
 
-    values_for_breaks = rows.map { |r| r.attributes["value"].to_f }.select { |v| v > 0 }
-    breaks = values_for_breaks.empty? ? [0, 0, 0, 0, 0, 0] : jenks_breaks(values_for_breaks, 5)
+    breaks = edges
 
     features = rows.map do |r|
       v = r.attributes["value"].to_f
-      klass =
-        if breaks.uniq.length <= 1
-          1
-        else
-          # En accesibilidad, incluso v=0 debe caer en "Muy baja"
-          jenks_class(v, breaks)
-        end
-
+      klass = bin_class(v, breaks)
 
       {
         type: "Feature",
@@ -614,6 +652,27 @@ class CellsController < ApplicationController
 
 
   private
+
+  def bin_class(value, edges)
+    return 1 if edges.blank? || edges.length < 2
+    v = value.to_f
+
+    # Accesibilidad: v=0 debe ir a la clase 1
+    return 1 if v <= 0
+
+    # edges: [b0, b1, b2, ... bN]
+    # clases: 1..N
+    n = edges.length - 1
+
+    (1..n).each do |k|
+      lo = edges[k - 1]
+      hi = edges[k]
+      # intervalo [lo, hi] salvo que quieras semiabierto
+      return k if v <= hi
+    end
+
+    n
+  end
 
   # -------- Jenks (Natural Breaks) sin gem --------
   # Devuelve array de k+1 breaks: [min, b1, b2, ..., max]

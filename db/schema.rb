@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_02_19_182207) do
+ActiveRecord::Schema[7.1].define(version: 2026_03_02_193308) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "postgis"
@@ -38,6 +38,19 @@ ActiveRecord::Schema[7.1].define(version: 2026_02_19_182207) do
     t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.index ["municipality_code"], name: "index_availabilities_on_municipality_code"
     t.index ["user_id"], name: "index_availabilities_on_user_id"
+  end
+
+  create_table "bins", force: :cascade do |t|
+    t.bigint "visual_mode_id", null: false
+    t.float "bin_0", null: false
+    t.float "bin_1", null: false
+    t.float "bin_2", null: false
+    t.float "bin_3", null: false
+    t.float "bin_4", null: false
+    t.float "bin_5", null: false
+    t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.index ["visual_mode_id"], name: "index_bins_on_visual_mode_id"
   end
 
   create_table "cells", primary_key: "h3", id: :string, force: :cascade do |t|
@@ -179,12 +192,23 @@ ActiveRecord::Schema[7.1].define(version: 2026_02_19_182207) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  create_table "visual_modes", force: :cascade do |t|
+    t.string "mode_code", null: false
+    t.string "name", null: false
+    t.string "opportunity_code", null: false
+    t.integer "municipality_code", null: false
+    t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.index ["municipality_code", "opportunity_code", "mode_code"], name: "idx_visual_modes_unique_combo", unique: true
+  end
+
   add_foreign_key "accessibilities", "cells", column: "h3", primary_key: "h3"
   add_foreign_key "accessibilities", "opportunities", column: "opportunity_code", primary_key: "opportunity_code"
   add_foreign_key "accessibilities", "scenarios"
   add_foreign_key "accessibilities", "travel_modes"
   add_foreign_key "availabilities", "municipalities", column: "municipality_code", primary_key: "municipality_code"
   add_foreign_key "availabilities", "users"
+  add_foreign_key "bins", "visual_modes"
   add_foreign_key "cells", "municipalities", column: "municipality_code", primary_key: "municipality_code"
   add_foreign_key "info_cells", "cells", column: "h3", primary_key: "h3"
   add_foreign_key "info_cells", "opportunities", column: "opportunity_code", primary_key: "opportunity_code"
@@ -202,4 +226,6 @@ ActiveRecord::Schema[7.1].define(version: 2026_02_19_182207) do
   add_foreign_key "travel_times", "cells", column: "h3_destiny", primary_key: "h3"
   add_foreign_key "travel_times", "cells", column: "h3_origin", primary_key: "h3"
   add_foreign_key "travel_times", "travel_modes"
+  add_foreign_key "visual_modes", "municipalities", column: "municipality_code", primary_key: "municipality_code"
+  add_foreign_key "visual_modes", "opportunities", column: "opportunity_code", primary_key: "opportunity_code"
 end
