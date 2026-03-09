@@ -27,6 +27,44 @@ class ProjectsController < ApplicationController
     end
   end
 
+  def hover_info
+    project = Project
+      .joins(:opportunity)
+      .select(
+        "projects.id,
+        projects.h3,
+        projects.total_agents,
+        projects.surface_per_agent,
+        opportunities.name AS opportunity_name"
+      )
+      .find(params[:id])
+
+    render json: {
+      id: project.id,
+      h3: project.h3,
+      total_agents: project.total_agents,
+      surface_per_agent: project.surface_per_agent,
+      opportunity_name: project.opportunity_name
+    }
+  end
+
+  def destroy
+    project = Project.joins(:scenario).find(params[:id])
+
+    unless project.scenario.user_id == current_user.id
+      return render json: { error: "No autorizado" }, status: :forbidden
+    end
+
+    if project.scenario.status == "base"
+      return render json: { error: "No se puede modificar el escenario base" }, status: :unprocessable_entity
+    end
+
+    project.destroy!
+
+    render json: { ok: true, id: project.id }
+  end
+
+
   private
 
   def project_params
