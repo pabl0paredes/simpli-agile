@@ -12,6 +12,10 @@ export class MapLegend {
     if (this.c.hasLegendPanelTarget) this.c.legendPanelTarget.hidden = true
   }
 
+  show() {
+    if (this.c.hasLegendPanelTarget) this.c.legendPanelTarget.hidden = false
+  }
+
   showButtonIfNeeded() {
     const shouldShow = !!(this.c._cellsBreaks && this.c._cellsBreaks.length >= 2)
     if (this.c.hasLegendBtnTarget) this.c.legendBtnTarget.hidden = !shouldShow

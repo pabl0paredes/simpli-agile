@@ -258,7 +258,7 @@ export class MapAdminLayers {
 
   setMunicipalitiesVisible(visible) {
     const v = visible ? "visible" : "none"
-    ;["municipalities-fill", "municipalities-outline"].forEach((id) => {
+    ;["municipalities-fill", "municipalities-outline", "municipalities-hover"].forEach((id) => {
       if (this.c.map.getLayer(id)) this.c.map.setLayoutProperty(id, "visibility", v)
     })
   }

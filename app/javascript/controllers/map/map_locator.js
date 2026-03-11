@@ -24,7 +24,9 @@ export class MapLocator {
       fc: currentData ? structuredClone(currentData) : null,
       breaks: this.c._cellsBreaks ? [...this.c._cellsBreaks] : null,
       wasVisible: this.c.map.getLayoutProperty("cells-fill", "visibility") !== "none",
-      layerType: this.c._selectedLayerType || null
+      layerType: this.c._selectedLayerType || null,
+      metric: this.c._selectedMetric || null,
+      accessibilityMode: this.c._selectedAccessibilityMode || null
     }
   }
 
@@ -90,26 +92,60 @@ export class MapLocator {
     this.safeSetVisibility("cells-draft-hatch", false)
 
     const prev = this.c._locatorPrev
-    const source = this.c.map.getSource("cells")
 
-    if (prev?.fc && source) {
-      source.setData(prev.fc)
+    // restaurar solo metadata auxiliar, no la data cruda del locator
+    if (prev) {
       this.c._cellsBreaks = prev.breaks || null
       this.c._selectedLayerType = prev.layerType || this.c._selectedLayerType
-
-      this.c.setCellsVisible(!!prev.wasVisible)
-
-      if (prev.wasVisible) {
-        this.c.legend.render?.()
-        this.c.legend.showButtonIfNeeded?.()
-      }
-    } else {
-      if (source) source.setData({ type: "FeatureCollection", features: [] })
-      this.c._cellsBreaks = null
-      this.c.setCellsVisible(false)
-      this.c.legend.hide?.()
-      this.c.legend.showButtonIfNeeded?.()
     }
+
+    const layerType = this.c._selectedLayerType
+    const metric = this.c._selectedMetric
+    const accMode = this.c._selectedAccessibilityMode
+
+    // ✅ si hay capa temática activa, recargarla desde el estado actual
+    if (
+      layerType === "thematic" &&
+      this.c._selectedMunicipalityCode &&
+      this.c._selectedScenarioId &&
+      this.c._selectedOpportunityCode &&
+      metric
+    ) {
+      this.c.thematicLayer?.loadCellsThematic({
+        municipalityCode: this.c._selectedMunicipalityCode,
+        scenarioId: this.c._selectedScenarioId,
+        opportunityCode: this.c._selectedOpportunityCode,
+        metric: metric
+      })
+
+      this.c._locatorPrev = null
+      return
+    }
+
+    // ✅ si hay accesibilidad activa, re-disparar su carga
+    if (
+      layerType === "accessibility" &&
+      this.c._selectedMunicipalityCode &&
+      this.c._selectedScenarioId &&
+      this.c._selectedOpportunityCode &&
+      accMode
+    ) {
+      window.dispatchEvent(new CustomEvent("accessibility:mode_selected", {
+        detail: { mode: accMode }
+      }))
+
+      this.c._locatorPrev = null
+      return
+    }
+
+    // fallback: si no había capa activa, limpiar
+    const source = this.c.map.getSource("cells")
+    if (source) source.setData({ type: "FeatureCollection", features: [] })
+
+    this.c._cellsBreaks = null
+    this.c.setCellsVisible(false)
+    this.c.legend.hide?.()
+    this.c.legend.showButtonIfNeeded?.()
 
     this.c._locatorPrev = null
   }

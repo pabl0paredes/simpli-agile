@@ -45,7 +45,11 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :projects, only: [:create]
+  resources :projects, only: [:create, :destroy] do
+    member do
+      get :hover_info
+    end
+  end
 
   resources :opportunities, only: [:index]
 end

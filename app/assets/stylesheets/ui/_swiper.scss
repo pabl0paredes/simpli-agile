@@ -1,0 +1,59 @@
+/* línea vertical */
+.mapboxgl-compare {
+  width: 2px !important;
+  background: rgba(17, 24, 39, 0.22) !important;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+
+/* handle */
+.mapboxgl-compare .compare-swiper-vertical {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 34px;
+  height: 34px;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  background: rgba(17, 24, 39, 0.94);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.18),
+    0 4px 10px rgba(0, 0, 0, 0.12);
+  cursor: ew-resize;
+  transition:
+    transform 0.15s ease,
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+/* hover */
+.mapboxgl-compare .compare-swiper-vertical:hover {
+  background: rgba(31, 41, 55, 0.98);
+  transform: translate(-50%, -50%) scale(1.05);
+  box-shadow:
+    0 14px 30px rgba(0, 0, 0, 0.22),
+    0 6px 14px rgba(0, 0, 0, 0.15);
+}
+
+/* pseudo-flechas */
+.mapboxgl-compare .compare-swiper-vertical::before,
+.mapboxgl-compare .compare-swiper-vertical::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  margin-top: -4px;
+  border-top: 2px solid #fff;
+  border-right: 2px solid #fff;
+}
+
+.mapboxgl-compare .compare-swiper-vertical::before {
+  left: 9px;
+  transform: rotate(-135deg);
+}
+
+.mapboxgl-compare .compare-swiper-vertical::after {
+  right: 9px;
+  transform: rotate(45deg);
+}

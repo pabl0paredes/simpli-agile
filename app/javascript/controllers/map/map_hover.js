@@ -128,7 +128,7 @@ export class MapHover {
       moveTooltip(e.lngLat)
 
       // hover state — acá NO adivinamos: usamos feature.id
-      const id = f.id
+      const id = f.id ?? f.properties?.municipality_code
       if (id == null) return
 
       if (hoveredId !== null && hoveredId !== id) {

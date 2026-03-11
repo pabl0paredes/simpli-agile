@@ -71,6 +71,7 @@ export class MapThematicRunners {
 
     this.c.legend.render()
     this.c.legend.showButtonIfNeeded()
+    this.c.legend.show()
   }
 
   onComparisonDeltaSelected = async (event) => {
@@ -105,5 +106,6 @@ export class MapThematicRunners {
 
     this.c.legend.render()
     this.c.legend.showButtonIfNeeded()
+    this.c.legend.show()
   }
 }

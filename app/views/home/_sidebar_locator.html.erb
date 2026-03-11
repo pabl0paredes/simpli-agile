@@ -27,7 +27,7 @@
         type="text"
         placeholder="Ej: Cesfam Sector Norte"
         data-sidebar-target="projectNameInput"
-      />
+>
     </div>
 
 
@@ -40,7 +40,7 @@
         placeholder="Selecciona una celda..."
         data-sidebar-target="selectedCellDisplay"
         readonly
-      />
+>
 
       <button type="button"
               class="sidebar__secondary-btn"
@@ -49,7 +49,7 @@
       </button>
     </div>
 
-    <input type="hidden" data-sidebar-target="selectedCellH3" />
+    <input type="hidden" data-sidebar-target="selectedCellH3">
 
     <div class="sidebar__section">
       <div class="sidebar__label">OPORTUNIDAD</div>
@@ -68,7 +68,7 @@
         inputmode="numeric"
         placeholder="Ej: 10"
         data-sidebar-target="unitsInput"
-      />
+>
     </div>
 
     <div class="sidebar__section">
@@ -81,7 +81,7 @@
         inputmode="numeric"
         placeholder="Ej: 65"
         data-sidebar-target="areaPerUnitInput"
-      />
+>
     </div>
 
     <div class="sidebar__section">
@@ -89,7 +89,7 @@
               class="sidebar__primary-btn"
               data-sidebar-target="addBtn"
               data-action="click->sidebar#addProject">
-        Agregar
+        Agregar proyecto
       </button>
     </div>
 
@@ -98,7 +98,7 @@
               class="sidebar__secondary-btn"
               data-sidebar-target="saveRecalcBtn"
               data-action="click->sidebar#openPublishModal">
-        Guardar y recalcular
+        Guardar cambios
       </button>
     </div>
   </div>

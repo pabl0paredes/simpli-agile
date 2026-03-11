@@ -90,6 +90,8 @@ export default class extends Controller {
       window.addEventListener("locator:opened", this.onLocatorOpened)
       window.addEventListener("locator:closed", this.onLocatorClosed)
       window.addEventListener("cell:selection_clear", this.onCellSelectionClear)
+      window.addEventListener("project:hover", this.onProjectHover)
+      window.addEventListener("project:hover_end", this.onProjectHoverEnd)
     })
   }
 
@@ -110,6 +112,8 @@ export default class extends Controller {
     window.removeEventListener("locator:opened", this.onLocatorOpened)
     window.removeEventListener("locator:closed", this.onLocatorClosed)
     window.removeEventListener("cell:selection_clear", this.onCellSelectionClear)
+    window.removeEventListener("project:hover", this.onProjectHover)
+    window.removeEventListener("project:hover_end", this.onProjectHoverEnd)
   }
 
   onRegionSelected = (e) => this.adminLayers.onRegionSelected(e)
@@ -159,5 +163,59 @@ export default class extends Controller {
 
     // 2) Si estoy en comparador, refresca el renderer correcto
     this.syncCompareIfNeeded()
+  }
+
+  onProjectHover = (e) => {
+    const { h3, total_agents, surface_per_agent, opportunity_name } = e.detail
+    if (!h3) return
+
+    // limpiar cualquier hover anterior
+    this.onProjectHoverEnd()
+
+    this.selection?.setCellSelected(h3)
+
+    const tooltip = document.createElement("div")
+    tooltip.className = "cell-tooltip"
+    tooltip.style.position = "absolute"
+    tooltip.style.backgroundColor = "rgba(17, 24, 39, 0.95)"
+    tooltip.style.color = "#fff"
+    tooltip.style.padding = "10px 14px"
+    tooltip.style.borderRadius = "12px"
+    tooltip.style.fontWeight = "700"
+    tooltip.style.fontSize = "14px"
+    tooltip.style.pointerEvents = "none"
+    tooltip.style.whiteSpace = "nowrap"
+    tooltip.style.boxShadow = "0 10px 25px rgba(0,0,0,0.25)"
+
+    tooltip.innerHTML = `
+      <div>${opportunity_name}</div>
+      <div>Unidades: ${total_agents}</div>
+      <div>Superficie por unidad: ${surface_per_agent}</div>
+    `
+
+    this._projectTooltip = tooltip
+    this.map.getContainer().appendChild(tooltip)
+
+    const feature = this.map.querySourceFeatures("cells")?.find(
+      f => (f.properties?.h3 || f.id) === h3
+    )
+
+    if (feature?.geometry?.type === "Polygon") {
+      const coord = feature.geometry.coordinates?.[0]?.[0]
+      if (coord) {
+        const p = this.map.project(coord)
+        tooltip.style.left = `${p.x + 12}px`
+        tooltip.style.top = `${p.y - 56}px`
+      }
+    }
+  }
+
+  onProjectHoverEnd = () => {
+    this.selection?.clearCellSelected()
+
+    if (this._projectTooltip) {
+      this._projectTooltip.remove()
+      this._projectTooltip = null
+    }
   }
 }

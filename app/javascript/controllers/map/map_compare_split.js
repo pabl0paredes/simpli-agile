@@ -133,5 +133,6 @@ export class MapCompareSplit {
     c._cellsBreaks = payloadA?.breaks || payloadB?.breaks || c._cellsBreaks
     c.legend.render()
     c.legend.showButtonIfNeeded()
+    c.legend.show()
   }
 }

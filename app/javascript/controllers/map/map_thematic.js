@@ -61,6 +61,6 @@ export class MapThematic {
 
     this.ctx.legend.render()
     this.ctx.legend.showButtonIfNeeded()
-
+    this.ctx.legend.show()
   }
 }

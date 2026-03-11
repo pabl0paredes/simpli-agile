@@ -44,3 +44,78 @@
   color: #64748b;
   font-size: 12px;
 }
+
+.locator-projects {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.locator-project {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  background: #ffffff;
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.locator-project:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.locator-project__main {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.locator-project__name {
+  font-size: 14px;
+  line-height: 1.3;
+  color: #111827;
+  font-weight: 500;
+  word-break: break-word;
+}
+
+.locator-project__actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+.locator-project__icon-btn {
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  line-height: 1;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.locator-project__icon-btn:hover {
+  background: #e5e7eb;
+}
+
+.locator-project__icon-btn:active {
+  transform: scale(0.96);
+}
+
+.locator-project__icon-btn--danger:hover {
+  background: #fee2e2;
+}
+
+.locator-project--readonly .locator-project__name {
+  color: #374151;
+}
