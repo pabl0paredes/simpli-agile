@@ -54,6 +54,18 @@ export class MapCellsLayer {
       })
     }
 
+    const focusClass = this.c._legendFocusClass
+
+    if (map.getLayer("cells-fill")) {
+      const expr = (focusClass != null)
+        ? this.c.legend?.focusedFillOpacityExpr?.(focusClass)
+        : this.c.legend?.baseFillOpacityExpr?.()
+
+      if (expr) {
+        map.setPaintProperty("cells-fill", "fill-opacity", expr)
+      }
+    }
+
     if (!map.getLayer("cells-outline")) {
       map.addLayer({
         id: "cells-outline",
