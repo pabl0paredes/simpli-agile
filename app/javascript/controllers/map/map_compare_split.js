@@ -64,6 +64,8 @@ export class MapCompareSplit {
       await c.adminLayers.loadSelectedMunicipalityOutlineOn(this.mapBottom)
 
       await this.syncData()
+
+      this.bindCellsHoverSync()   // 👈 agregar esto
     }
 
     this.mapTop.once("load", onLoaded)
@@ -134,5 +136,146 @@ export class MapCompareSplit {
     c.legend.render()
     c.legend.showButtonIfNeeded()
     c.legend.show()
+  }
+
+  bindCellsHoverSync() {
+    const bind = (map, otherMap) => {
+      let hoveredId = null
+
+      const clearHover = () => {
+        map.getCanvas().style.cursor = ""
+
+        if (hoveredId !== null) {
+          if (map.getSource("cells")) {
+            map.setFeatureState({ source: "cells", id: hoveredId }, { hover: false })
+          }
+          if (otherMap.getSource("cells")) {
+            otherMap.setFeatureState({ source: "cells", id: hoveredId }, { hover: false })
+          }
+          hoveredId = null
+        }
+
+        this.clearTooltip(map)
+        this.clearTooltip(otherMap)
+      }
+
+      map.on("mouseenter", "cells-fill", () => {
+        map.getCanvas().style.cursor = "pointer"
+      })
+
+      map.on("mousemove", "cells-fill", (e) => {
+        const feature = e.features && e.features[0]
+        if (!feature) return
+
+        const id = feature.properties?.h3 || feature.id
+        if (!id) return
+
+        if (hoveredId !== null && hoveredId !== id) {
+          if (map.getSource("cells")) {
+            map.setFeatureState({ source: "cells", id: hoveredId }, { hover: false })
+          }
+          if (otherMap.getSource("cells")) {
+            otherMap.setFeatureState({ source: "cells", id: hoveredId }, { hover: false })
+          }
+        }
+
+        hoveredId = id
+
+        if (map.getSource("cells")) {
+          map.setFeatureState({ source: "cells", id }, { hover: true })
+        }
+        if (otherMap.getSource("cells")) {
+          otherMap.setFeatureState({ source: "cells", id }, { hover: true })
+        }
+
+        const otherFeature = otherMap
+          .querySourceFeatures("cells")
+          ?.find(f => (f.properties?.h3 || f.id) === id)
+
+        const tooltipA = this.ensureTooltip(map)
+        tooltipA.textContent = this.formatHoverText(feature)
+        this.moveTooltip(map, e.lngLat)
+
+        if (otherFeature) {
+          const tooltipB = this.ensureTooltip(otherMap)
+          tooltipB.textContent = this.formatHoverText(otherFeature)
+
+          const geom = otherFeature.geometry
+          let coord = null
+
+          if (geom?.type === "Polygon") {
+            coord = geom.coordinates?.[0]?.[0]
+          } else if (geom?.type === "MultiPolygon") {
+            coord = geom.coordinates?.[0]?.[0]?.[0]
+          }
+
+          if (coord) {
+            this.moveTooltip(otherMap, { lng: coord[0], lat: coord[1] })
+          }
+        }
+      })
+
+      map.on("mouseleave", "cells-fill", clearHover)
+    }
+
+    bind(this.mapTop, this.mapBottom)
+    bind(this.mapBottom, this.mapTop)
+  }
+
+  formatHoverText(feature) {
+    const label = this.c.hover?.currentCellsHoverLabel?.() || "Valor"
+
+    const layerType = this.c._selectedLayerType
+    const klass = Number(feature?.properties?.class ?? 0)
+    const rawValue = feature?.properties?.value ?? 0
+
+    let formatted
+
+    if (layerType === "accessibility") {
+      formatted = this.c.accessibilityLabelForClass
+        ? this.c.accessibilityLabelForClass(klass)
+        : (klass ? String(klass) : "-")
+    } else {
+      formatted = Number(rawValue).toLocaleString("es-CL")
+    }
+
+    return `${label}: ${formatted}`
+  }
+
+  ensureTooltip(map) {
+    if (map._compareTooltip) return map._compareTooltip
+
+    const el = document.createElement("div")
+    el.className = "cell-tooltip"
+    el.style.position = "absolute"
+    el.style.backgroundColor = "rgba(17, 24, 39, 0.95)"
+    el.style.color = "#fff"
+    el.style.padding = "10px 14px"
+    el.style.borderRadius = "12px"
+    el.style.fontWeight = "700"
+    el.style.fontSize = "14px"
+    el.style.pointerEvents = "none"
+    el.style.whiteSpace = "nowrap"
+    el.style.boxShadow = "0 10px 25px rgba(0,0,0,0.25)"
+
+    map.getContainer().appendChild(el)
+    map._compareTooltip = el
+    return el
+  }
+
+  moveTooltip(map, lngLat) {
+    const tooltip = map._compareTooltip
+    if (!tooltip) return
+
+    const p = map.project(lngLat)
+    tooltip.style.left = `${p.x + 12}px`
+    tooltip.style.top = `${p.y - 56}px`
+  }
+
+  clearTooltip(map) {
+    if (map._compareTooltip) {
+      map._compareTooltip.remove()
+      map._compareTooltip = null
+    }
   }
 }

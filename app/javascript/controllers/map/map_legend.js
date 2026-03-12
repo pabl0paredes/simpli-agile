@@ -77,20 +77,31 @@ export class MapLegend {
     return labels[klass] || "-"
   }
 
+  // applyClassFocus(klass) {
+  //   if (!this.c.map?.getLayer("cells-fill")) return
+  //   const k = Number(klass)
+  //   this.c._legendFocusClass = k
+
+  //   this.c.map.setPaintProperty("cells-fill", "fill-opacity", this.focusedFillOpacityExpr(k))
+  // }
+
   applyClassFocus(klass) {
-    if (!this.c.map?.getLayer("cells-fill")) return
     const k = Number(klass)
     this.c._legendFocusClass = k
-
-    this.c.map.setPaintProperty("cells-fill", "fill-opacity", this.focusedFillOpacityExpr(k))
+    this.applyOpacityToActiveMaps(this.focusedFillOpacityExpr(k))
   }
 
-  clearClassFocus() {
-    if (!this.c.map?.getLayer("cells-fill")) return
-    this.c._legendFocusClass = null
+  // clearClassFocus() {
+  //   if (!this.c.map?.getLayer("cells-fill")) return
+  //   this.c._legendFocusClass = null
 
-    // ✅ restaurar la regla base (class 0 transparente)
-    this.c.map.setPaintProperty("cells-fill", "fill-opacity", this.baseFillOpacityExpr())
+  //   // ✅ restaurar la regla base (class 0 transparente)
+  //   this.c.map.setPaintProperty("cells-fill", "fill-opacity", this.baseFillOpacityExpr())
+  // }
+
+  clearClassFocus() {
+    this.c._legendFocusClass = null
+    this.applyOpacityToActiveMaps(this.baseFillOpacityExpr())
   }
 
   bindHoverOnce() {
@@ -132,5 +143,30 @@ export class MapLegend {
       0.80,
       0
     ]
+  }
+
+  activeMaps() {
+    const maps = []
+
+    if (this.c.map) maps.push(this.c.map)
+
+    if (this.c.compareSlider?.enabled) {
+      if (this.c.compareSlider.mapLeft) maps.push(this.c.compareSlider.mapLeft)
+      if (this.c.compareSlider.mapRight) maps.push(this.c.compareSlider.mapRight)
+    }
+
+    if (this.c.compareSplit?.enabled) {
+      if (this.c.compareSplit.mapTop) maps.push(this.c.compareSplit.mapTop)
+      if (this.c.compareSplit.mapBottom) maps.push(this.c.compareSplit.mapBottom)
+    }
+
+    return maps
+  }
+
+  applyOpacityToActiveMaps(expr) {
+    this.activeMaps().forEach((map) => {
+      if (!map?.getLayer("cells-fill")) return
+      map.setPaintProperty("cells-fill", "fill-opacity", expr)
+    })
   }
 }

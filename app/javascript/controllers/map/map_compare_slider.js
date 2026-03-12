@@ -72,6 +72,9 @@ export class MapCompareSlider {
       await c.adminLayers.loadSelectedMunicipalityOutlineOn(this.mapRight)
 
       await this.syncData()
+
+      this.bindCellsHoverTooltip(this.mapLeft)
+      this.bindCellsHoverTooltip(this.mapRight)
     }
 
     this.mapLeft.once("load", onLoaded)
@@ -86,6 +89,9 @@ export class MapCompareSlider {
 
     try { this.compare?.remove?.() } catch {}
     this.compare = null
+
+    this.clearTooltip(this.mapLeft)
+    this.clearTooltip(this.mapRight)
 
     try { this.mapLeft?.remove() } catch {}
     try { this.mapRight?.remove() } catch {}
@@ -175,5 +181,117 @@ export class MapCompareSlider {
     c.legend.render()
     c.legend.showButtonIfNeeded()
     c.legend.show()
+  }
+
+  formatHoverText(feature) {
+    const label = this.currentHoverLabel()
+
+    const layerType = this.c._selectedLayerType
+    const klass = Number(feature?.properties?.class ?? 0)
+    const rawValue = feature?.properties?.value ?? 0
+
+    let formatted
+
+    if (layerType === "accessibility") {
+      formatted = this.c.accessibilityLabelForClass
+        ? this.c.accessibilityLabelForClass(klass)
+        : (klass ? String(klass) : "-")
+    } else {
+      formatted = Number(rawValue).toLocaleString("es-CL")
+    }
+
+    return `${label}: ${formatted}`
+  }
+
+  ensureTooltip(map) {
+    if (map._compareTooltip) return map._compareTooltip
+
+    const el = document.createElement("div")
+    el.className = "cell-tooltip"
+    el.style.position = "absolute"
+    el.style.backgroundColor = "rgba(17, 24, 39, 0.95)"
+    el.style.color = "#fff"
+    el.style.padding = "10px 14px"
+    el.style.borderRadius = "12px"
+    el.style.fontWeight = "700"
+    el.style.fontSize = "14px"
+    el.style.pointerEvents = "none"
+    el.style.whiteSpace = "nowrap"
+    el.style.boxShadow = "0 10px 25px rgba(0,0,0,0.25)"
+
+    map.getContainer().appendChild(el)
+    map._compareTooltip = el
+    return el
+  }
+
+  moveTooltip(map, lngLat) {
+    const tooltip = map._compareTooltip
+    if (!tooltip) return
+
+    const p = map.project(lngLat)
+    tooltip.style.left = `${p.x + 12}px`
+    tooltip.style.top = `${p.y - 56}px`
+  }
+
+  clearTooltip(map) {
+    if (map._compareTooltip) {
+      map._compareTooltip.remove()
+      map._compareTooltip = null
+    }
+  }
+
+  bindCellsHoverTooltip(map) {
+    let hoveredId = null
+
+    const clearHover = () => {
+      map.getCanvas().style.cursor = ""
+
+      if (hoveredId !== null && map.getSource("cells")) {
+        map.setFeatureState({ source: "cells", id: hoveredId }, { hover: false })
+        hoveredId = null
+      }
+
+      this.clearTooltip(map)
+    }
+
+    map.on("mouseenter", "cells-fill", () => {
+      map.getCanvas().style.cursor = "pointer"
+    })
+
+    map.on("mousemove", "cells-fill", (e) => {
+      const feature = e.features && e.features[0]
+      if (!feature) return
+
+      const id = feature.properties?.h3 || feature.id
+      if (!id) return
+
+      if (hoveredId !== null && hoveredId !== id && map.getSource("cells")) {
+        map.setFeatureState({ source: "cells", id: hoveredId }, { hover: false })
+      }
+
+      hoveredId = id
+
+      if (map.getSource("cells")) {
+        map.setFeatureState({ source: "cells", id }, { hover: true })
+      }
+
+      const tooltip = this.ensureTooltip(map)
+      tooltip.textContent = this.formatHoverText(feature)
+      this.moveTooltip(map, e.lngLat)
+    })
+
+    map.on("mouseleave", "cells-fill", clearHover)
+  }
+
+  currentHoverLabel() {
+    if (this.c._selectedLayerType === "accessibility") {
+      const mode = this.c._selectedAccessibilityMode || ""
+      return mode === "walk" ? "Accesibilidad (caminata)" : "Accesibilidad (auto)"
+    }
+
+    if (this.c._selectedMetric === "surface") return "Superficie"
+    if (this.c._selectedMetric === "units") return "Unidades"
+
+    return "Valor"
   }
 }

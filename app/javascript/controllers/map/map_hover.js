@@ -275,4 +275,27 @@ export class MapHover {
     if (this.controller._selectedMetric === "units") return "Unidades"
     return "Valor"
   }
+
+  showCompareTooltip(map, lngLat, text) {
+    if (!map._compareTooltip) {
+      const el = document.createElement("div")
+      el.className = "cell-tooltip"
+      el.style.position = "absolute"
+      el.style.background = "rgba(17,24,39,0.95)"
+      el.style.color = "#fff"
+      el.style.padding = "8px 12px"
+      el.style.borderRadius = "10px"
+      el.style.fontWeight = "600"
+      el.style.pointerEvents = "none"
+      el.style.boxShadow = "0 8px 20px rgba(0,0,0,0.25)"
+      map.getContainer().appendChild(el)
+      map._compareTooltip = el
+    }
+
+    const p = map.project(lngLat)
+
+    map._compareTooltip.textContent = text
+    map._compareTooltip.style.left = `${p.x + 10}px`
+    map._compareTooltip.style.top = `${p.y - 40}px`
+  }
 }
