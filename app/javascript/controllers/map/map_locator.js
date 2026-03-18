@@ -32,29 +32,23 @@ export class MapLocator {
 
   async onOpened(event) {
     const municipalityCode = event.detail?.municipality_code
-    const baseScenarioId = event.detail?.base_scenario_id
-    const draftScenarioId = event.detail?.draft_scenario_id
+    const scenarioId = event.detail?.scenario_id
 
     this.c._inLocator = true
 
-    // Si tu flujo depende de estos, mantenemos el guard
-    if (!municipalityCode || !baseScenarioId) {
-      console.warn("[locator] missing municipality_code/base_scenario_id", event.detail)
+    if (!municipalityCode || !scenarioId) {
+      console.warn("[locator] missing municipality_code/scenario_id", event.detail)
       return
     }
 
     this.snapshotBeforeOpen()
 
-    // Asegura cells + overlays (esto ya lo movimos a MapCellsLayer en Paso 2)
     this.c.ensureCellsLayer()
     const ok = this.c.ensureLocatorLayers()
     if (!ok) return
 
     try {
-      let url = `/cells/locator_status?municipality_code=${encodeURIComponent(municipalityCode)}&base_scenario_id=${encodeURIComponent(baseScenarioId)}`
-      if (draftScenarioId) {
-        url += `&draft_scenario_id=${encodeURIComponent(draftScenarioId)}`
-      }
+      const url = `/cells/locator_status?municipality_code=${encodeURIComponent(municipalityCode)}&scenario_id=${encodeURIComponent(scenarioId)}`
 
       const payload = await fetch(url, { headers: { "Accept": "application/json" } }).then(r => r.json())
 

@@ -52,12 +52,14 @@ export class MapThematicRunners {
     }
 
     const scenarioId = this.c._selectedScenarioId
+    const accType = this.c._selectedAccessibilityType || "surface"
 
     const url =
       `/cells/accessibility?municipality_code=${encodeURIComponent(this.c._selectedMunicipalityCode)}` +
       `&mode=${encodeURIComponent(mode)}` +
       `&opportunity_code=${encodeURIComponent(this.c._selectedOpportunityCode)}` +
-      `&scenario_id=${encodeURIComponent(scenarioId)}`
+      `&scenario_id=${encodeURIComponent(scenarioId)}` +
+      `&accessibility_type=${encodeURIComponent(accType)}`
 
     const fc = await fetch(url).then(r => r.json())
 

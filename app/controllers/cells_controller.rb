@@ -1,95 +1,50 @@
 class CellsController < ApplicationController
 
   def locator_status
-    mun_code = params.require(:municipality_code).to_i
-    selected_id = params.require(:base_scenario_id).to_i   # lo usas como "selected"
-    draft_id = params[:draft_scenario_id].presence&.to_i   # opcional
+    mun_code    = params.require(:municipality_code).to_i
+    scenario_id = params.require(:scenario_id).to_i
 
     conn = ActiveRecord::Base.connection.raw_connection
 
-    # 1) definir el "hist_root": desde dónde cuelga el historial
-    hist_root =
-      if draft_id
-        # draft existe => historial es el padre del draft (y sus padres)
-        Scenario.where(id: draft_id).pluck(:parent_id).first
-      else
-        # no hay draft => historial es el escenario seleccionado (y sus padres)
-        selected_id
-      end
+    # Recorre la cadena de ancestros del escenario actual.
+    # recalculated = true  → rojo  (accesibilidades ya calculadas).
+    # recalculated = false → hatch (pendientes de recalcular).
+    sql = <<~SQL
+      WITH RECURSIVE chain AS (
+        SELECT s.id, s.parent_id, 0 AS depth
+        FROM scenarios s
+        WHERE s.id = $1
+        UNION ALL
+        SELECT p.id, p.parent_id, c.depth + 1
+        FROM scenarios p
+        JOIN chain c ON p.id = c.parent_id
+        WHERE c.depth < 30
+      ),
+      red_projects AS (
+        SELECT DISTINCT pr.h3
+        FROM projects pr
+        JOIN chain c ON c.id = pr.scenario_id
+        WHERE pr.recalculated = true
+      ),
+      hatch_projects AS (
+        SELECT DISTINCT pr.h3
+        FROM projects pr
+        JOIN chain c ON c.id = pr.scenario_id
+        WHERE pr.recalculated = false
+      )
+      SELECT
+        c.h3,
+        c.show_id,
+        ST_AsGeoJSON(c.geometry) AS geom_json,
+        (rp.h3 IS NOT NULL) AS has_parent_projects,
+        (hp.h3 IS NOT NULL) AS has_draft_projects
+      FROM cells c
+      LEFT JOIN red_projects rp ON rp.h3 = c.h3
+      LEFT JOIN hatch_projects hp ON hp.h3 = c.h3
+      WHERE c.municipality_code = $2;
+    SQL
 
-    # si draft existe pero no tiene parent_id (debería), fallback al selected
-    hist_root ||= selected_id
-
-    if draft_id
-      sql = <<~SQL
-        WITH RECURSIVE
-        chain AS (
-          SELECT s.id, s.parent_id, 0 AS depth
-          FROM scenarios s
-          WHERE s.id = $1
-          UNION ALL
-          SELECT p.id, p.parent_id, c.depth + 1
-          FROM scenarios p
-          JOIN chain c ON p.id = c.parent_id
-          WHERE c.depth < 30
-        ),
-        parent_projects AS (
-          SELECT DISTINCT pr.h3
-          FROM projects pr
-          WHERE pr.scenario_id IN (SELECT id FROM chain)
-        ),
-        draft_projects AS (
-          SELECT DISTINCT pr.h3
-          FROM projects pr
-          WHERE pr.scenario_id = $2
-        )
-        SELECT
-          c.h3,
-          c.show_id,
-          ST_AsGeoJSON(c.geometry) AS geom_json,
-          (pp.h3 IS NOT NULL) AS has_parent_projects,
-          (dp.h3 IS NOT NULL) AS has_draft_projects
-        FROM cells c
-        LEFT JOIN parent_projects pp ON pp.h3 = c.h3
-        LEFT JOIN draft_projects dp ON dp.h3 = c.h3
-        WHERE c.municipality_code = $3;
-      SQL
-
-      result = conn.exec_params(sql, [hist_root, draft_id, mun_code])
-    else
-      sql = <<~SQL
-        WITH RECURSIVE
-        chain AS (
-          SELECT s.id, s.parent_id, 0 AS depth
-          FROM scenarios s
-          WHERE s.id = $1
-
-          UNION ALL
-
-          SELECT p.id, p.parent_id, c.depth + 1
-          FROM scenarios p
-          JOIN chain c ON p.id = c.parent_id
-          WHERE c.depth < 30
-        ),
-        parent_projects AS (
-          SELECT DISTINCT pr.h3
-          FROM projects pr
-          WHERE pr.scenario_id IN (SELECT id FROM chain)
-        )
-        SELECT
-          c.h3,
-          c.show_id,
-          ST_AsGeoJSON(c.geometry) AS geom_json,
-          pp.h3 AS pp_h3_debug,
-          (pp.h3 IS NOT NULL) AS has_parent_projects,
-          false AS has_draft_projects
-        FROM cells c
-        LEFT JOIN parent_projects pp ON pp.h3 = c.h3
-        WHERE c.municipality_code = $2;
-      SQL
-
-      result = conn.exec_params(sql, [hist_root, mun_code])
-    end
+    result = conn.exec_params(sql, [scenario_id, mun_code])
 
     bool = ActiveModel::Type::Boolean.new
 

@@ -56,9 +56,10 @@ export function createOpportunitiesLayers(controller) {
       controller.applyOpportunityCategory(category)
 
       window.dispatchEvent(new CustomEvent("opportunity:selected", {
-        detail: { opportunity_code: opportunityCode }
+        detail: { opportunity_code: opportunityCode, category }
       }))
       controller._selectedOpportunityCode = opportunityCode
+      controller._selectedOpportunityCategory = category
 
       // ✅ restaurar capa anterior si existe; si no, units
       queueMicrotask(() => {
@@ -102,6 +103,8 @@ export function createOpportunitiesLayers(controller) {
 
       const isComparator = (controller._uiMode === "comparador") // o como lo guardes tú
       const isDelta = (controller._compareMode === "delta")
+
+
 
       // toggle devuelve true si quedó activo
       const isActive = btn.classList.toggle("is-active")

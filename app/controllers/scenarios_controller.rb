@@ -111,23 +111,32 @@ class ScenariosController < ApplicationController
         conn.exec_params(chain_sql, [scenario.parent_id]).map { |r| r["id"].to_i }
       end
 
-    # Proyectos del historial (ancestros, read-only)
+    # Proyectos de ancestros (siempre localizados)
     previous_projects = is_base ? [] : Project
       .where(scenario_id: parent_chain_ids)
-      .select(:id, :name, :scenario_id, :created_at)
+      .select(:id, :name, :scenario_id, :created_at, :recalculated)
       .order(created_at: :desc)
 
-    # Proyectos propios del escenario actual (siempre editables, salvo base)
-    own_projects = is_base ? [] : Project
-      .where(scenario_id: viewing_id)
-      .select(:id, :name, :scenario_id, :created_at)
+    # Proyectos propios: separar por recalculated
+    own_recalculated = is_base ? [] : Project
+      .where(scenario_id: viewing_id, recalculated: true)
+      .select(:id, :name, :scenario_id, :created_at, :recalculated)
       .order(created_at: :desc)
+
+    own_pending = is_base ? [] : Project
+      .where(scenario_id: viewing_id, recalculated: false)
+      .select(:id, :name, :scenario_id, :created_at, :recalculated)
+      .order(created_at: :desc)
+
+    # PROYECTOS LOCALIZADOS = ancestros + propios ya recalculados
+    previous_projects = previous_projects.to_a + own_recalculated.to_a
+    draft_projects = own_pending
 
     render json: {
       viewing_scenario: { id: scenario.id, name: scenario.name, status: scenario.status },
       previous_projects: previous_projects.as_json(only: [:id, :name, :scenario_id]),
       draft_scenario: is_base ? nil : { id: scenario.id, status: scenario.status, parent_id: scenario.parent_id },
-      draft_projects: own_projects.as_json(only: [:id, :name, :scenario_id])
+      draft_projects: draft_projects.as_json(only: [:id, :name, :scenario_id])
     }
   rescue ActiveRecord::RecordNotFound
     render json: { error: "No autorizado." }, status: :forbidden

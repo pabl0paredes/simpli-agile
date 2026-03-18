@@ -18,16 +18,15 @@ module Scenarios
 
         deltas = build_deltas_from_projects(@scenario.id)
 
+        info_map = build_info_map(deltas)
+
         deltas.each do |d|
           key = [d[:h3], d[:opportunity_code]]
 
-          base_units, base_surface =
-            if parent_id.present?
-              parent_map.fetch(key, [0, 0])
-            else
-              ic = InfoCell.find_by(h3: d[:h3], opportunity_code: d[:opportunity_code])
-              [ic&.units.to_i, ic&.surface.to_d]
-            end
+          # parent_map tiene los totales del escenario padre (si existe y tiene scenario_cells).
+          # Si no encuentra la clave (p.ej. el padre es base y solo tiene info_cells),
+          # cae al info_map que siempre tiene los valores base reales.
+          base_units, base_surface = parent_map.fetch(key) { info_map.fetch(key, [0, 0]) }
 
           ScenarioCell.upsert(
             {
@@ -45,6 +44,8 @@ module Scenarios
 
         @scenario.update!(status: "published") if @scenario.status == "draft"
 
+        Project.where(scenario_id: @scenario.id).update_all(recalculated: true)
+
         opp_codes = Project.where(scenario_id: @scenario.id).distinct.pluck(:opportunity_code)
         opp_codes.each do |opp|
           recalc_accessibilities_surface!(scenario: @scenario, opportunity_code: opp)
@@ -55,6 +56,17 @@ module Scenarios
     end
 
     private
+
+    def build_info_map(deltas)
+      return {} if deltas.empty?
+
+      h3s       = deltas.map { |d| d[:h3] }.uniq
+      opp_codes = deltas.map { |d| d[:opportunity_code] }.uniq
+
+      InfoCell.where(h3: h3s, opportunity_code: opp_codes).each_with_object({}) do |ic, map|
+        map[[ic.h3, ic.opportunity_code]] = [ic.units.to_i, ic.surface.to_d]
+      end
+    end
 
     def build_parent_map(parent_id)
       map = {}

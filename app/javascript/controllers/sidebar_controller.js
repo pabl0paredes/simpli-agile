@@ -48,6 +48,7 @@ export default class extends Controller {
     "scenarioBSelect",
     "saveScenarioBtn",
     "scenarioParentDisplay",
+    "locatorBtn",
   ]
 
   connect() {
@@ -258,6 +259,10 @@ export default class extends Controller {
 
     if (this.hasSaveScenarioBtnTarget) {
       this.saveScenarioBtnTarget.hidden = inComparator || isBase
+    }
+
+    if (this.hasLocatorBtnTarget) {
+      this.locatorBtnTarget.disabled = isBase
     }
   }
 

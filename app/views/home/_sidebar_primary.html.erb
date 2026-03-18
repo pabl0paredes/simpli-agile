@@ -191,13 +191,19 @@
         data-sidebar-target="locateSection"
         hidden
       >
-        <button
-          type="button"
-          class="sidebar__primary-btn"
-          data-action="click->sidebar#toggleLocator"
-        >
-          📍 Localizar infraestructura
-        </button>
+        <div class="sidebar__tooltip-wrap" data-sidebar-target="locatorBtnWrap">
+          <button
+            type="button"
+            class="sidebar__primary-btn"
+            data-sidebar-target="locatorBtn"
+            data-action="click->sidebar#toggleLocator"
+          >
+            📍 Localizar infraestructura
+          </button>
+          <span class="sidebar__tooltip">
+            Crea un escenario para localizar nueva infraestructura
+          </span>
+        </div>
       </div>
 
     <div class="sidebar__bottom">

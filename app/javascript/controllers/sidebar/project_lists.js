@@ -176,8 +176,7 @@ export function createProjectLists(controller) {
             window.dispatchEvent(new CustomEvent("locator:opened", {
               detail: {
                 municipality_code: controller._selectedMunicipalityCode,
-                base_scenario_id: controller._selectedScenarioId,
-                draft_scenario_id: controller._selectedScenarioId
+                scenario_id: controller._selectedScenarioId
               }
             }))
           } catch (err) {

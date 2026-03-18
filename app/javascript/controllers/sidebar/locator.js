@@ -55,8 +55,7 @@ export function createLocator(controller) {
         window.dispatchEvent(new CustomEvent("locator:opened", {
           detail: {
             municipality_code: controller._selectedMunicipalityCode,
-            base_scenario_id: controller._selectedScenarioId,
-            draft_scenario_id: controller._draftScenarioId
+            scenario_id: controller._selectedScenarioId
           }
         }))
       } else {
@@ -171,8 +170,7 @@ export function createLocator(controller) {
       window.dispatchEvent(new CustomEvent("locator:opened", {
         detail: {
           municipality_code: controller._selectedMunicipalityCode,
-          base_scenario_id: scenarioId,
-          draft_scenario_id: scenarioId
+          scenario_id: scenarioId
         }
       }))
     }

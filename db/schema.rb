@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_03_02_193308) do
+ActiveRecord::Schema[7.1].define(version: 2026_03_17_134407) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "postgis"
@@ -24,6 +24,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_02_193308) do
     t.float "value"
     t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.index ["h3", "travel_mode_id", "opportunity_code", "scenario_id", "accessibility_type"], name: "uq_accessibilities", unique: true
     t.index ["h3"], name: "index_accessibilities_on_h3"
     t.index ["opportunity_code"], name: "index_accessibilities_on_opportunity_code"
     t.index ["scenario_id", "travel_mode_id", "opportunity_code", "accessibility_type"], name: "idx_accessibilities_query"
@@ -44,10 +45,10 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_02_193308) do
     t.bigint "visual_mode_id", null: false
     t.float "bin_0", null: false
     t.float "bin_1", null: false
-    t.float "bin_2", null: false
-    t.float "bin_3", null: false
-    t.float "bin_4", null: false
-    t.float "bin_5", null: false
+    t.float "bin_2"
+    t.float "bin_3"
+    t.float "bin_4"
+    t.float "bin_5"
     t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.index ["visual_mode_id"], name: "index_bins_on_visual_mode_id"
@@ -103,6 +104,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_02_193308) do
     t.integer "surface_per_agent"
     t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.boolean "recalculated", default: false, null: false
     t.index ["h3"], name: "index_projects_on_h3"
     t.index ["opportunity_code"], name: "index_projects_on_opportunity_code"
     t.index ["scenario_id", "opportunity_code"], name: "idx_projects_scenario_opp"
