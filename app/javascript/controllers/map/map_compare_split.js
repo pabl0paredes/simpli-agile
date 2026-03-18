@@ -84,6 +84,7 @@ export class MapCompareSplit {
   }
 
   async syncData() {
+
     if (!this.enabled) return
     if (!this.mapTop || !this.mapBottom) return
 
@@ -128,6 +129,7 @@ export class MapCompareSplit {
 
     const fcA = payloadA?.type === "FeatureCollection" ? payloadA : payloadA?.data || payloadA?.geojson
     const fcB = payloadB?.type === "FeatureCollection" ? payloadB : payloadB?.data || payloadB?.geojson
+
 
     if (fcA) this.mapTop.getSource("cells")?.setData(fcA)
     if (fcB) this.mapBottom.getSource("cells")?.setData(fcB)

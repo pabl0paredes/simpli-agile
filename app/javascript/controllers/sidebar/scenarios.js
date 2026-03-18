@@ -32,6 +32,7 @@ export function createScenarios(controller) {
         })
 
         selector.disabled = false
+        controller._hasBaseScenario = !!baseId
 
         // ✅ decide qué seleccionar
         const idToSelect = selectedId ? String(selectedId) : baseId
@@ -62,9 +63,9 @@ export function createScenarios(controller) {
       const previousStatus = controller._selectedScenarioStatus
 
       // 🔒 Bloqueo correcto: usar estado interno, no el select
-      if (previousStatus === "draft" && String(newScenarioId) !== String(previousScenarioId)) {
+      if (previousStatus === "draft" && controller._hasDraftProjects && String(newScenarioId) !== String(previousScenarioId)) {
         controller.scenarioSelectTarget.value = previousScenarioId
-        alert("Estás en un borrador. Publica/guarda antes de cambiar de escenario.")
+        alert("Estás en un borrador con proyectos. Guarda los cambios antes de cambiar de escenario.")
         return
       }
 
@@ -108,11 +109,66 @@ export function createScenarios(controller) {
 
     onScenarioSelected(e) {
       controller._selectedScenarioId = e.detail.scenario_id
+      controller._selectedScenarioStatus = e.detail.status
 
       const opt = controller.scenarioSelectTarget.selectedOptions?.[0]
       controller._selectedScenarioIsBase = (opt?.dataset?.isBase === "1")
 
+      if (e.detail.status === "draft") {
+        controller._draftScenarioId = e.detail.scenario_id
+      } else {
+        controller._draftScenarioId = null
+      }
+
       controller.refreshProjectsLists()
+    },
+
+    openCreateScenarioModal() {
+      if (!controller._selectedMunicipalityCode) return alert("Selecciona una comuna primero.")
+
+      const parentName = controller.scenarioSelectTarget?.selectedOptions?.[0]?.textContent?.trim() || "—"
+      if (controller.hasScenarioParentDisplayTarget) {
+        controller.scenarioParentDisplayTarget.textContent = parentName
+      }
+
+      controller.publishNameInputTarget.value = ""
+      controller.publishModalTarget.hidden = false
+      setTimeout(() => controller.publishNameInputTarget.focus(), 0)
+    },
+
+    closeCreateScenarioModal() {
+      controller.publishModalTarget.hidden = true
+    },
+
+    async confirmCreateScenario() {
+      const name = controller.publishNameInputTarget.value?.trim()
+      if (!name) return alert("Escribe un nombre para el escenario.")
+
+      const csrf = document.querySelector('meta[name="csrf-token"]').content
+
+      const baseScenarioId = controller._selectedScenarioIsBase
+        ? controller._selectedScenarioId
+        : null
+
+      const resp = await fetch("/scenarios", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-CSRF-Token": csrf },
+        body: JSON.stringify({
+          municipality_code: controller._selectedMunicipalityCode,
+          name,
+          base_scenario_id: baseScenarioId
+        })
+      })
+
+      const json = await resp.json()
+      if (!resp.ok) return alert(json.error || "Error creando escenario.")
+
+      controller.scenarios.closeCreateScenarioModal()
+
+      await controller.scenarios.loadScenariosIntoSelect(
+        controller._selectedMunicipalityCode,
+        json.scenario_id
+      )
     }
   }
 }

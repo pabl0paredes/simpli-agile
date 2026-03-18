@@ -75,8 +75,59 @@ export function createRegionsMunicipalities(controller) {
       }))
 
       controller.municipalitySelectTarget.value = ""
+      window.dispatchEvent(new CustomEvent("municipality:cleared"))
+
+      // Swap select → back button
+      const regionName = controller.regionSelectTarget.selectedOptions?.[0]?.textContent?.trim()
+      if (controller.hasRegionSelectWrapTarget) controller.regionSelectWrapTarget.hidden = true
+      if (controller.hasRegionBackBtnTarget) {
+        controller.regionBackBtnTarget.textContent = `← ${regionName || "Volver a seleccionar región"}`
+        controller.regionBackBtnTarget.hidden = false
+      }
+    },
+
+    clearRegion() {
+      // Swap back button → select
+      if (controller.hasRegionSelectWrapTarget) controller.regionSelectWrapTarget.hidden = false
+      if (controller.hasRegionBackBtnTarget) controller.regionBackBtnTarget.hidden = true
+
+      // Reset region select
+      if (controller.hasRegionSelectTarget) {
+        controller.regionSelectTarget.value = "Seleccionar región..."
+      }
+
+      // Reset municipality section to initial state
+      if (controller.hasMunicipalitySelectWrapTarget) controller.municipalitySelectWrapTarget.hidden = false
+      if (controller.hasMunicipalityBackBtnTarget) controller.municipalityBackBtnTarget.hidden = true
+      if (controller.hasMunicipalitySelectTarget) {
+        controller.municipalitySelectTarget.innerHTML = "<option>Seleccionar comuna...</option>"
+      }
+
+      // Reset sidebar UI state
+      controller._selectedMunicipalityCode = null
+      controller.resetAfterMunicipalityChange()
 
       window.dispatchEvent(new CustomEvent("municipality:cleared"))
+      window.dispatchEvent(new CustomEvent("region:cleared"))
+    },
+
+    clearMunicipality() {
+      // Cerrar localizador si está abierto
+      controller.closeLocator()
+
+      // Swap back button → select
+      if (controller.hasMunicipalitySelectWrapTarget) controller.municipalitySelectWrapTarget.hidden = false
+      if (controller.hasMunicipalityBackBtnTarget) controller.municipalityBackBtnTarget.hidden = true
+
+      // Region back button reappears
+      if (controller.hasRegionBackBtnTarget) controller.regionBackBtnTarget.hidden = false
+
+      // Reset sidebar UI state
+      controller._selectedMunicipalityCode = null
+      controller.resetAfterMunicipalityChange()
+
+      window.dispatchEvent(new CustomEvent("municipality:cleared"))
+      window.dispatchEvent(new CustomEvent("municipality:back"))
     },
 
     municipalityChanged(e) {
@@ -90,24 +141,35 @@ export function createRegionsMunicipalities(controller) {
       // ✅ Reset completo cada vez que cambia comuna (aunque venga una válida)
       controller.resetAfterMunicipalityChange()
 
-      controller.opportunitySelectTarget.disabled = false
-      controller.locateSectionTarget.hidden = false
       controller._selectedMunicipalityCode = munCode
+
+      // Para usuarios sin sesión (sin selector de escenario), mostrar oportunidad directamente.
+      // Para usuarios con sesión, la oportunidad/locator se muestran en syncScenarioActionsUI()
+      // una vez que haya un escenario válido seleccionado.
+      if (!controller.hasScenarioSelectTarget) {
+        controller.opportunitySelectTarget.disabled = false
+        if (controller.hasOpportunitySectionTarget) controller.opportunitySectionTarget.hidden = false
+        if (controller.hasLocateSectionTarget) controller.locateSectionTarget.hidden = false
+      }
 
       if (controller.hasModeToggleTarget) {
         controller.modeToggleTarget.hidden = false
       }
 
-      // Ocultar el hint de oportunidad seleccionada
-      const opportunityHint =
-        controller.opportunitySelectTarget
-          .closest('.sidebar__section')
-          .querySelector('.sidebar__hint')
-      if (opportunityHint) opportunityHint.style.display = 'none'
-
       window.dispatchEvent(new CustomEvent("municipality:selected", {
         detail: { municipality_code: munCode }
       }))
+
+      // Swap select → back button
+      const munName = controller.municipalitySelectTarget.selectedOptions?.[0]?.textContent?.trim()
+      if (controller.hasMunicipalitySelectWrapTarget) controller.municipalitySelectWrapTarget.hidden = true
+      if (controller.hasMunicipalityBackBtnTarget) {
+        controller.municipalityBackBtnTarget.textContent = `← ${munName || "Volver a seleccionar comuna"}`
+        controller.municipalityBackBtnTarget.hidden = false
+      }
+
+      // Hide region back button while a municipality is selected
+      if (controller.hasRegionBackBtnTarget) controller.regionBackBtnTarget.hidden = true
 
       if (controller.hasScenarioSelectTarget) {
         controller.scenarioSectionTarget.hidden = false

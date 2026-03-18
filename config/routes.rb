@@ -34,13 +34,12 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :scenarios, only: [:destroy] do
+  resources :scenarios, only: [:create, :destroy] do
     collection do
       get :names
-      post :ensure_draft
     end
     member do
-      post :publish
+      post :recalculate
       get :projects_lists
     end
   end

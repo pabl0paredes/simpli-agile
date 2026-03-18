@@ -75,8 +75,10 @@ export default class extends Controller {
       this.adminLayers.bindRegionsClick()
 
       window.addEventListener("region:selected", this.onRegionSelected)
+      window.addEventListener("region:cleared", this.onRegionCleared)
       window.addEventListener("municipality:selected", this.onMunicipalitySelected)
       window.addEventListener("municipality:cleared", this.onMunicipalityCleared)
+      window.addEventListener("municipality:back", this.onMunicipalityBack)
       window.addEventListener("layer:selected", this.onLayerSelected)
       window.addEventListener("opportunity:selected", this.onOpportunitySelected)
       window.addEventListener("accessibility:mode_selected", this.onAccessibilityModeSelected)
@@ -97,8 +99,10 @@ export default class extends Controller {
 
   disconnect() {
     window.removeEventListener("region:selected", this.onRegionSelected)
+    window.removeEventListener("region:cleared", this.onRegionCleared)
     window.removeEventListener("municipality:selected", this.onMunicipalitySelected)
     window.removeEventListener("municipality:cleared", this.onMunicipalityCleared)
+    window.removeEventListener("municipality:back", this.onMunicipalityBack)
     window.removeEventListener("layer:selected", this.onLayerSelected)
     window.removeEventListener("opportunity:selected", this.onOpportunitySelected)
     window.removeEventListener("accessibility:mode_selected", this.onAccessibilityModeSelected)
@@ -117,8 +121,10 @@ export default class extends Controller {
   }
 
   onRegionSelected = (e) => this.adminLayers.onRegionSelected(e)
+  onRegionCleared = () => this.adminLayers.onRegionCleared()
   onMunicipalitySelected = (e) => this.adminLayers.onMunicipalitySelected(e)
   onMunicipalityCleared = () => this.adminLayers.onMunicipalityCleared()
+  onMunicipalityBack = () => this.adminLayers.onMunicipalityBack()
   setRegionsVisible = (v) => this.adminLayers.setRegionsVisible(v)
   setMunicipalitiesVisible = (v) => this.adminLayers.setMunicipalitiesVisible(v)
 

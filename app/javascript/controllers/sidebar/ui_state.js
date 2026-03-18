@@ -29,21 +29,24 @@ export function createUIState(controller) {
         controller._selectedCellId = null
       }
 
+      // 2b) ocultar botones de acción de escenario
+      if (controller.hasAddScenarioBtnTarget) controller.addScenarioBtnTarget.hidden = true
+      if (controller.hasSaveScenarioBtnTarget) controller.saveScenarioBtnTarget.hidden = true
+      if (controller.hasDeleteScenarioBtnTarget) controller.deleteScenarioBtnTarget.hidden = true
+
       // 3) reset oportunidad
+      controller._hasBaseScenario = false
+      controller._hasDraftProjects = false
       if (controller.hasOpportunitySelectTarget) {
         controller.opportunitySelectTarget.value = "Seleccionar oportunidad..."
-        // controller.opportunitySelectTarget.disabled = true
+        controller.opportunitySelectTarget.disabled = true
       }
+      if (controller.hasOpportunitySectionTarget) controller.opportunitySectionTarget.hidden = true
 
       // 4) ocultar secciones que dependen de oportunidad/capas
       if (controller.hasLayerSectionTarget) controller.layerSectionTarget.hidden = true
       if (controller.hasLocateSectionTarget) controller.locateSectionTarget.hidden = true
 
-      // 5) (opcional) volver a mostrar el hint de oportunidad
-      const hint = controller.opportunitySelectTarget
-        ?.closest('.sidebar__section')
-        ?.querySelector('.sidebar__hint')
-      if (hint) hint.style.display = ''
     },
 
     clearLayerButtonsUI() {
@@ -74,18 +77,5 @@ export function createUIState(controller) {
       }
     },
 
-    openPublishModal() {
-      console.log("✅ openPublishModal() fired", controller._draftScenarioId)
-      if (!controller._draftScenarioId) return alert("No hay borrador para guardar.")
-      controller.publishNameInputTarget.value = ""
-      controller.publishModalTarget.hidden = false
-
-      // opcional UX: autofocus
-      setTimeout(() => controller.publishNameInputTarget.focus(), 0)
-    },
-
-    closePublishModal() {
-      controller.publishModalTarget.hidden = true
-    },
   }
 }

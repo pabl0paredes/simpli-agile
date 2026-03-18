@@ -62,23 +62,9 @@ class ProjectsController < ApplicationController
 
     project.destroy!
 
-    # 👇 revisar si el draft quedó vacío
-    if scenario.status == "draft" && scenario.projects.count == 0
-      parent_id = scenario.parent_id
-      scenario.destroy!
-
-      return render json: {
-        ok: true,
-        deleted_project_id: project.id,
-        draft_deleted: true,
-        parent_scenario_id: parent_id
-      }
-    end
-
     render json: {
       ok: true,
-      deleted_project_id: project.id,
-      draft_deleted: false
+      deleted_project_id: project.id
     }
   end
 

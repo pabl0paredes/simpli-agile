@@ -31,6 +31,31 @@
   margin-bottom: 12px;
 }
 
+.modal__parent-scenario {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 14px;
+  padding: 8px 10px;
+  background: #f1f5f9;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.modal__parent-label {
+  color: #64748b;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.modal__parent-name {
+  color: #0f172a;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .modal__actions {
   display: flex;
   justify-content: flex-end;

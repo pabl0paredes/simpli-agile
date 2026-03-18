@@ -37,7 +37,7 @@ export class MapStateEvents {
     const useSlider = (this.c._uiMode === "comparador" && this.c._compareMode === "slider")
     this.c.compareSlider?.setEnabled(useSlider)
 
-    if (useSlider) this.compareSlider?.syncData()
+    if (useSlider) this.c.compareSlider?.syncData()
 
     const useSplit = (this.c._uiMode === "comparador" && this.c._compareMode === "split")
     this.c.compareSplit?.setEnabled(useSplit)
@@ -46,6 +46,7 @@ export class MapStateEvents {
 
   onOpportunitySelected = (event) => {
     this.c._selectedOpportunityCode = event.detail.opportunity_code
+    this.c._selectedAccessibilityType = event.detail.category === "POI" ? "units" : "surface"
     if (this.c._uiMode === "comparador" && this.c._compareMode === "slider") {
       this.c.compareSlider?.syncData()
       return

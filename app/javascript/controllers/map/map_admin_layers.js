@@ -265,6 +265,7 @@ export class MapAdminLayers {
 
   onRegionSelected = async (event) => {
     const regionCode = event.detail.region_code
+    this.c._selectedRegionCode = regionCode
 
     const focus = await fetch(`/regions/focus?region_code=${encodeURIComponent(regionCode)}`).then(r => r.json())
     this.c.map.flyTo({
@@ -301,6 +302,31 @@ export class MapAdminLayers {
     const src = this.c.map.getSource("selected-municipality")
     if (!src) return
     src.setData({ type: "FeatureCollection", features: [] })
+  }
+
+  onMunicipalityBack = async () => {
+    const src = this.c.map.getSource("selected-municipality")
+    if (src) src.setData({ type: "FeatureCollection", features: [] })
+    this.setMunicipalitiesVisible(true)
+
+    const regionCode = this.c._selectedRegionCode
+    if (regionCode) {
+      const focus = await fetch(`/regions/focus?region_code=${encodeURIComponent(regionCode)}`).then(r => r.json())
+      this.c.map.flyTo({ center: focus.centroid, zoom: focus.zoom, essential: true })
+    }
+  }
+
+  onRegionCleared = () => {
+    this.c._selectedRegionCode = null
+    this.c._selectedMunicipalityCode = null
+
+    const src = this.c.map.getSource("selected-municipality")
+    if (src) src.setData({ type: "FeatureCollection", features: [] })
+
+    this.setMunicipalitiesVisible(false)
+    this.setRegionsVisible(true)
+
+    this.c.map.flyTo({ center: [-70.6371, -33.4378], zoom: 4, essential: true })
   }
 
   async loadSelectedMunicipalityOutlineOn(map, munCode = this.c._selectedMunicipalityCode) {

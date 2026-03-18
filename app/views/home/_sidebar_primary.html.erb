@@ -4,6 +4,14 @@
         <%= image_tag "Logo SimpliCity.png", alt: "Logo SimpliCity" %>
       </div>
 
+      <button
+        type="button"
+        class="sidebar__back-btn"
+        data-sidebar-target="municipalityBackBtn"
+        data-action="click->sidebar#clearMunicipality"
+        hidden
+      >← Volver a seleccionar comuna</button>
+
       <% if user_signed_in? %>
       <div class="sidebar__section" data-sidebar-target="comparatorSection" hidden>
         <div class="sidebar__label">ESCENARIO A</div>
@@ -60,17 +68,39 @@
       <div class="sidebar__section" data-sidebar-target="scenarioSection" hidden>
         <div class="sidebar__label">ESCENARIO</div>
 
-        <select class="sidebar__select"
-                data-sidebar-target="scenarioSelect"
-                data-action="change->sidebar#scenarioChanged"
-                disabled>
-          <option>Seleccionar escenario...</option>
-        </select>
+        <div class="sidebar__row">
+          <select class="sidebar__select"
+                  data-sidebar-target="scenarioSelect"
+                  data-action="change->sidebar#scenarioChanged"
+                  disabled>
+            <option>Seleccionar escenario...</option>
+          </select>
+
+          <button
+            type="button"
+            class="sidebar__icon-btn"
+            data-sidebar-target="addScenarioBtn"
+            data-action="click->sidebar#openCreateScenarioModal"
+            title="Nuevo escenario"
+            hidden
+          >+</button>
+        </div>
 
         <div class="sidebar__hint sidebar__hint--center" data-sidebar-target="scenarioHint">
           Selecciona una comuna para ver tus escenarios
         </div>
       </div>
+
+      <button
+        type="button"
+        class="sidebar__success-btn"
+        data-sidebar-target="saveScenarioBtn"
+        data-action="click->sidebar#recalculateAccessibilities"
+        disabled
+        hidden
+      >
+        <i class="fa-solid fa-floppy-disk"></i> Guardar cambios
+      </button>
 
       <button
         type="button"
@@ -88,27 +118,35 @@
 
 
       <div class="sidebar__section" data-sidebar-target="regionSection">
-        <div class="sidebar__label">REGIÓN</div>
-        <select class="sidebar__select" data-sidebar-target="regionSelect" data-action="change->sidebar#regionChanged">
-          <option>Seleccionar región...</option>
-        </select>
+        <div data-sidebar-target="regionSelectWrap">
+          <div class="sidebar__label">REGIÓN</div>
+          <select class="sidebar__select" data-sidebar-target="regionSelect" data-action="change->sidebar#regionChanged">
+            <option>Seleccionar región...</option>
+          </select>
+        </div>
+        <button
+          type="button"
+          class="sidebar__back-btn"
+          data-sidebar-target="regionBackBtn"
+          data-action="click->sidebar#clearRegion"
+          hidden
+        >← Volver a seleccionar región</button>
       </div>
 
       <div class="sidebar__section" data-sidebar-target="municipalitySection">
-        <div class="sidebar__label">COMUNA</div>
-        <select class="sidebar__select" data-sidebar-target="municipalitySelect" data-action="change->sidebar#municipalityChanged">
-          <option>Seleccionar comuna...</option>
-        </select>
+        <div data-sidebar-target="municipalitySelectWrap">
+          <div class="sidebar__label">COMUNA</div>
+          <select class="sidebar__select" data-sidebar-target="municipalitySelect" data-action="change->sidebar#municipalityChanged">
+            <option>Seleccionar comuna...</option>
+          </select>
+        </div>
       </div>
 
-      <div class="sidebar__section">
+      <div class="sidebar__section" data-sidebar-target="opportunitySection" hidden>
         <div class="sidebar__label">OPORTUNIDAD</div>
         <select class="sidebar__select" data-sidebar-target="opportunitySelect" data-action="change->sidebar#opportunityChanged" disabled>
           <option>Seleccionar oportunidad</option>
         </select>
-        <div class="sidebar__hint">
-          Selecciona primero una comuna en el mapa o en el buscador
-        </div>
       </div>
 
       <div class="sidebar__divider"></div>
@@ -172,13 +210,19 @@
         data-sidebar-target="locateSection"
         hidden
       >
-        <button
-          type="button"
-          class="sidebar__primary-btn"
-          data-action="click->sidebar#toggleLocator"
-        >
-          📍 Localizar infraestructura
-        </button>
+        <div class="sidebar__tooltip-wrap" data-sidebar-target="locatorBtnWrap">
+          <button
+            type="button"
+            class="sidebar__primary-btn"
+            data-sidebar-target="locatorBtn"
+            data-action="click->sidebar#toggleLocator"
+          >
+            📍 Localizar infraestructura
+          </button>
+          <span class="sidebar__tooltip">
+            Crea un escenario para localizar nueva infraestructura
+          </span>
+        </div>
       </div>
 
     <div class="sidebar__bottom">
