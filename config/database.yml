@@ -92,6 +92,5 @@ test:
 #
 production:
   <<: *default
-  database: simpli_agile_production
-  username: simpli_agile
-  password: <%= ENV["SIMPLI_AGILE_DATABASE_PASSWORD"] %>
+  adapter: postgis
+  url: <%= ENV["DATABASE_URL"]&.sub(/\Apostgres/, "postgis") %>
