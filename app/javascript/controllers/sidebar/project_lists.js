@@ -91,6 +91,7 @@ export function createProjectLists(controller) {
           renderDraftProjects(data.draft_projects, "No hay proyectos en borrador.")
 
         const hasDraftProjects = Array.isArray(data.draft_projects) && data.draft_projects.length > 0
+        controller._hasDraftProjects = hasDraftProjects
         if (controller.hasSaveScenarioBtnTarget && !controller.saveScenarioBtnTarget.hidden) {
           controller.saveScenarioBtnTarget.disabled = !hasDraftProjects
         }

@@ -19,6 +19,7 @@ export function createLocator(controller) {
             const option = document.createElement("option")
             option.value = op.opportunity_code
             option.textContent = op.name
+            option.dataset.category = op.category || ""
             selector.appendChild(option)
           })
 
@@ -93,6 +94,25 @@ export function createLocator(controller) {
       }
     },
 
+    locatorOpportunityChanged(e) {
+      const opt = e.target.selectedOptions?.[0]
+      const category = opt?.dataset?.category || ""
+      controller._locatorOpportunityCategory = category
+
+      const isPOI = category === "POI"
+
+      if (controller.hasUnitsSectionTarget) {
+        controller.unitsSectionTarget.hidden = !opt?.value || opt.value.includes("Seleccionar")
+      }
+      if (controller.hasAreaPerUnitSectionTarget) {
+        controller.areaPerUnitSectionTarget.hidden = isPOI || !opt?.value || opt.value.includes("Seleccionar")
+      }
+
+      // Limpiar valores al cambiar oportunidad
+      if (controller.hasUnitsInputTarget) controller.unitsInputTarget.value = ""
+      if (controller.hasAreaPerUnitInputTarget) controller.areaPerUnitInputTarget.value = ""
+    },
+
     onCellPicked(e) {
       const { h3, show_id } = e.detail
 
@@ -123,13 +143,14 @@ export function createLocator(controller) {
       const h3 = controller.selectedCellH3Target.value
       const opportunityCode = controller.locatorOpportunitySelectTarget.value
       const units = Number(controller.unitsInputTarget.value)
-      const areaPerUnit = Number(controller.areaPerUnitInputTarget.value)
+      const isPOI = controller._locatorOpportunityCategory === "POI"
+      const areaPerUnit = isPOI ? 1 : Number(controller.areaPerUnitInputTarget.value)
 
       if (!name) return alert("Pon un nombre al proyecto.")
       if (!h3) return alert("Selecciona una celda.")
       if (!opportunityCode || opportunityCode.includes("Seleccionar")) return alert("Selecciona una oportunidad.")
       if (!Number.isFinite(units) || units <= 0) return alert("Unidades debe ser > 0.")
-      if (!Number.isFinite(areaPerUnit) || areaPerUnit <= 0) return alert("Superficie por unidad debe ser > 0.")
+      if (!isPOI && (!Number.isFinite(areaPerUnit) || areaPerUnit <= 0)) return alert("Superficie por unidad debe ser > 0.")
 
       const csrf = document.querySelector('meta[name="csrf-token"]').content
 
@@ -161,6 +182,9 @@ export function createLocator(controller) {
       controller.selectedCellH3Target.value = ""
       controller.selectedCellDisplayTarget.value = ""
       controller.locatorOpportunitySelectTarget.value = "Seleccionar oportunidad..."
+      controller._locatorOpportunityCategory = null
+      if (controller.hasUnitsSectionTarget) controller.unitsSectionTarget.hidden = true
+      if (controller.hasAreaPerUnitSectionTarget) controller.areaPerUnitSectionTarget.hidden = true
 
       window.dispatchEvent(new CustomEvent("cell:pick_cancel"))
       window.dispatchEvent(new CustomEvent("cell:selection_clear"))

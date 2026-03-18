@@ -55,6 +55,8 @@ export default class extends Controller {
     "municipalityBackBtn",
     "opportunitySection",
     "addScenarioBtn",
+    "unitsSection",
+    "areaPerUnitSection",
   ]
 
   connect() {
@@ -127,6 +129,7 @@ export default class extends Controller {
   selectAccessibilityMode(e) { return this.opportunitiesLayers.selectAccessibilityMode(e) }
 
   loadLocatorOpportunitiesIntoSelect() { return this.locator.loadLocatorOpportunitiesIntoSelect() }
+  locatorOpportunityChanged(e) { return this.locator.locatorOpportunityChanged(e) }
   toggleLocator() { return this.locator.toggleLocator() }
   startPickCell() { return this.locator.startPickCell() }
   cancelPickCell() { return this.locator.cancelPickCell() }

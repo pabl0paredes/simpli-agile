@@ -63,9 +63,9 @@ export function createScenarios(controller) {
       const previousStatus = controller._selectedScenarioStatus
 
       // 🔒 Bloqueo correcto: usar estado interno, no el select
-      if (previousStatus === "draft" && String(newScenarioId) !== String(previousScenarioId)) {
+      if (previousStatus === "draft" && controller._hasDraftProjects && String(newScenarioId) !== String(previousScenarioId)) {
         controller.scenarioSelectTarget.value = previousScenarioId
-        alert("Estás en un borrador. Publica/guarda antes de cambiar de escenario.")
+        alert("Estás en un borrador con proyectos. Guarda los cambios antes de cambiar de escenario.")
         return
       }
 

@@ -30,7 +30,6 @@
 >
     </div>
 
-
     <div class="sidebar__label">CELDA</div>
 
     <div class="locator-cell">
@@ -53,12 +52,17 @@
 
     <div class="sidebar__section">
       <div class="sidebar__label">OPORTUNIDAD</div>
-      <select class="sidebar__select" data-sidebar-target="locatorOpportunitySelect" disabled>
+      <select
+        class="sidebar__select"
+        data-sidebar-target="locatorOpportunitySelect"
+        data-action="change->sidebar#locatorOpportunityChanged"
+        disabled
+      >
         <option>Seleccionar oportunidad</option>
       </select>
     </div>
 
-    <div class="sidebar__section">
+    <div class="sidebar__section" data-sidebar-target="unitsSection" hidden>
       <div class="sidebar__label">UNIDADES</div>
       <input
         class="sidebar__input"
@@ -71,7 +75,7 @@
 >
     </div>
 
-    <div class="sidebar__section">
+    <div class="sidebar__section" data-sidebar-target="areaPerUnitSection" hidden>
       <div class="sidebar__label">SUPERFICIE POR UNIDAD</div>
       <input
         class="sidebar__input"
