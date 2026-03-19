@@ -68,6 +68,7 @@ export class MapStateEvents {
     if (src) src.setData({ type: "FeatureCollection", features: [] })
 
     this.c._cellsBreaks = null
+    this.c._cellsFeatures = null
     this.c._selectedMetric = null
     this.c._selectedLayerType = null
     this.c._selectedAccessibilityMode = null
@@ -77,5 +78,6 @@ export class MapStateEvents {
     this.c.legend.hide()
     this.c.legend.showButtonIfNeeded()
     this.c.legend.clearClassFocus()
+    this.c.dashboard?.hide()
   }
 }

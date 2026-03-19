@@ -21,39 +21,69 @@
   <div class="user-menu__dropdown" data-user-menu-target="dropdown" hidden>
     <% if user_signed_in? %>
 
-      <div class="user-menu__item user-menu__item--muted">
-        <%= current_user.email %>
+      <div class="user-menu__profile">
+        <div class="user-menu__avatar">
+          <%= current_user.email.first.upcase %>
+        </div>
+        <div class="user-menu__profile-info">
+          <div class="user-menu__profile-label">Cuenta</div>
+          <div class="user-menu__profile-email"><%= current_user.email %></div>
+        </div>
       </div>
 
-      <%= button_to "Cerrar sesión",
-            destroy_user_session_path,
+      <div class="user-menu__divider"></div>
+
+      <%= button_to destroy_user_session_path,
             method: :delete,
             form: { data: { turbo: false } },
-            class: "user-menu__item user-menu__item--button" %>
+            class: "user-menu__signout-form" do %>
+        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+        Cerrar sesión
+      <% end %>
 
     <% else %>
 
-      <%= link_to "Iniciar sesión",
-            new_user_session_path,
-            class: "user-menu__item",
-            data: { action: "click->user-menu#openModal",
-                    turbo_frame: "auth_modal_frame" } %>
+      <div class="user-menu__guest-header">
+        <div class="user-menu__guest-icon">
+          <i class="fa-solid fa-circle-user"></i>
+        </div>
+        <div class="user-menu__guest-label">Accede a tu cuenta</div>
+      </div>
 
-      <%= link_to "Crear cuenta",
-            new_user_registration_path,
-            class: "user-menu__item",
+      <div class="user-menu__divider"></div>
+
+      <%= link_to new_user_session_path,
+            class: "user-menu__login-btn",
             data: { action: "click->user-menu#openModal",
-                    turbo_frame: "auth_modal_frame" } %>
+                    turbo_frame: "auth_modal_frame" } do %>
+        <i class="fa-solid fa-right-to-bracket"></i>
+        Iniciar sesión
+      <% end %>
+
+      <%= link_to new_user_session_path,
+            class: "user-menu__register-link",
+            data: { action: "click->user-menu#openModal",
+                    turbo_frame: "auth_modal_frame" } do %>
+        ¿No tienes cuenta? <strong>Registrarse</strong>
+      <% end %>
 
     <% end %>
   </div>
 
-  <!-- Modal -->
+  <!-- Modal de autenticación -->
   <div class="auth-modal" data-user-menu-target="modal" hidden>
     <div class="auth-modal__backdrop" data-action="click->user-menu#closeModal"></div>
 
     <div class="auth-modal__panel" role="dialog" aria-modal="true">
-      <button type="button" class="auth-modal__close" data-action="click->user-menu#closeModal">✖</button>
+      <button type="button" class="auth-modal__close" data-action="click->user-menu#closeModal">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="auth-modal__logo">
+        <%= image_tag "Logo SimpliCity.png", alt: "SimpliCity" %>
+      </div>
+      <h2 class="auth-modal__title">Bienvenido</h2>
+      <p class="auth-modal__subtitle">Inicia sesión para continuar</p>
 
       <turbo-frame id="auth_modal_frame"></turbo-frame>
     </div>

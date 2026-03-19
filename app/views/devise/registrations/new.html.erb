@@ -1,29 +1,23 @@
-<%= turbo_frame_tag "auth_modal_frame" do %>
-<h2>Registrarse</h2>
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <%= image_tag "Logo SimpliCity.png", alt: "SimpliCity" %>
+    </div>
 
-<%= simple_form_for(resource, as: resource_name,
-                              url: registration_path(resource_name),
-                              html: { data: { turbo_frame: "_top" } }) do |f| %>
-  <%= f.error_notification %>
+    <h1 class="auth-title">Crear cuenta</h1>
+    <p class="auth-subtitle">Para registrarte, contáctanos por correo</p>
 
-  <div class="form-inputs">
-    <%= f.input :email,
-                required: true,
-                autofocus: true,
-                input_html: { autocomplete: "email" }%>
-    <%= f.input :password,
-                required: true,
-                hint: ("#{@minimum_password_length} characters minimum" if @minimum_password_length),
-                input_html: { autocomplete: "new-password" } %>
-    <%= f.input :password_confirmation,
-                required: true,
-                input_html: { autocomplete: "new-password" } %>
+    <div class="auth-modal-icon" style="margin-bottom: 12px;">✉️</div>
+    <p class="auth-modal-text">
+      El acceso a SimpliCity es por invitación. Escríbenos y te damos acceso:
+    </p>
+    <div class="auth-modal-email-box">contacto@simpli-city.cl</div>
+    <a href="mailto:contacto@simpli-city.cl" class="auth-submit-btn" style="display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;margin-bottom:20px;">
+      <i class="fa-solid fa-envelope"></i> Enviar correo
+    </a>
+
+    <div class="auth-links">
+      <%= link_to "← Volver al inicio de sesión", new_session_path(resource_name) %>
+    </div>
   </div>
-
-  <div class="form-actions">
-    <%= f.button :submit, "Registrarse" %>
-  </div>
-<% end %>
-
-<%= render "devise/shared/links" %>
-<% end %>
+</div>

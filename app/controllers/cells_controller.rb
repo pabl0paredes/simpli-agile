@@ -182,6 +182,8 @@ class CellsController < ApplicationController
         jenks_breaks(deltas, k)
       end
 
+    proj_by_h3 = projects_by_h3_for_scenarios(scenario_a_id, scenario_b_id, opportunity_code: opportunity)
+
     features = rows.map do |r|
       v = r["delta_value"].to_f
       klass =
@@ -193,11 +195,14 @@ class CellsController < ApplicationController
           jenks_class(v, breaks)
         end
 
+      h3 = r["h3"]
+      names = proj_by_h3[h3] || []
+
       {
         type: "Feature",
         geometry: JSON.parse(r["geom_json"]),
         properties: {
-          h3: r["h3"],
+          h3: h3,
           show_id: r["show_id"],
           value: v,
           class: klass,
@@ -208,7 +213,9 @@ class CellsController < ApplicationController
           scenario_a_id: scenario_a_id,
           scenario_b_id: scenario_b_id,
           effective_a_id: eff_a,
-          effective_b_id: eff_b
+          effective_b_id: eff_b,
+          has_projects: names.any?,
+          project_names: names
         }
       }
     end
@@ -328,6 +335,8 @@ class CellsController < ApplicationController
         jenks_breaks(deltas_nonzero, k)
       end
 
+    proj_by_h3 = projects_by_h3_for_scenarios(scenario_a, scenario_b, opportunity_code: opp_code)
+
     features = rows.map do |r|
       v = r["delta_value"].to_f
       klass =
@@ -339,11 +348,14 @@ class CellsController < ApplicationController
           jenks_class(v, breaks) # 1..k
         end
 
+      h3 = r["h3"]
+      names = proj_by_h3[h3] || []
+
       {
         type: "Feature",
         geometry: JSON.parse(r["geom_json"]),
         properties: {
-          h3: r["h3"],
+          h3: h3,
           show_id: r["show_id"],
           value: v,
           class: klass,
@@ -351,7 +363,9 @@ class CellsController < ApplicationController
           opportunity_code: opp_code,
           metric: metric,
           scenario_a_id: scenario_a,
-          scenario_b_id: scenario_b
+          scenario_b_id: scenario_b,
+          has_projects: names.any?,
+          project_names: names
         }
       }
     end
@@ -443,18 +457,11 @@ class CellsController < ApplicationController
 
     result = conn.exec_params(sql, [scenario_id, opp_code, mun_code])
 
-    # values_for_breaks = []
     rows = []
-
-    result.each do |r|
-      # v = r["value"].to_f
-      # values_for_breaks << v if v > 0
-      rows << r
-    end
-
-    # breaks = values_for_breaks.empty? ? [0, 0, 0, 0, 0, 0] : jenks_breaks(values_for_breaks, 5)
+    result.each { |r| rows << r }
 
     breaks = edges
+    proj_by_h3 = projects_by_h3_for_scenarios(scenario_id, opportunity_code: opp_code)
 
     features = rows.map do |r|
       v = r["value"].to_f
@@ -465,18 +472,23 @@ class CellsController < ApplicationController
           bin_class(v, breaks)
         end
 
+      h3 = r["h3"]
+      names = proj_by_h3[h3] || []
+
       {
         type: "Feature",
         geometry: JSON.parse(r["geom_json"]),
         properties: {
-          h3: r["h3"],
+          h3: h3,
           show_id: r["show_id"],
           value: v,
           class: klass,
           municipality_code: mun_code,
           opportunity_code: opp_code,
           scenario_id: scenario_id,
-          metric: metric
+          metric: metric,
+          has_projects: names.any?,
+          project_names: names
         }
       }
     end
@@ -577,10 +589,12 @@ class CellsController < ApplicationController
       end
 
     breaks = edges
+    proj_by_h3 = projects_by_h3_for_scenarios(scenario_id, opportunity_code: opp_code)
 
     features = rows.map do |r|
       v = r.attributes["value"].to_f
       klass = bin_class(v, breaks)
+      names = proj_by_h3[r.h3] || []
 
       {
         type: "Feature",
@@ -595,7 +609,9 @@ class CellsController < ApplicationController
           opportunity_code: opp_code,
           scenario_id: scenario_id,
           effective_scenario_id: effective_scenario_id,
-          accessibility_type: acc_type
+          accessibility_type: acc_type,
+          has_projects: names.any?,
+          project_names: names
         }
       }
     end
@@ -607,6 +623,19 @@ class CellsController < ApplicationController
 
 
   private
+
+  # Returns hash { h3 => [project_name, ...] } for the given scenario ids, filtered by opportunity_code
+  def projects_by_h3_for_scenarios(*scenario_ids, opportunity_code:)
+    ids = Array(scenario_ids).flatten.compact.map(&:to_i).reject(&:zero?)
+    return {} if ids.empty?
+
+    result = {}
+    Project.where(scenario_id: ids, opportunity_code: opportunity_code).select(:h3, :name).each do |p|
+      result[p.h3] ||= []
+      result[p.h3] << p.name
+    end
+    result
+  end
 
   def bin_class(value, edges)
     return 1 if edges.blank? || edges.length < 2

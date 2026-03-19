@@ -15,6 +15,10 @@ export class MapCellsLayer {
     if (map.getLayer("cells-outline")) {
       map.setLayoutProperty("cells-outline", "visibility", visibility)
     }
+
+    if (map.getLayer("cells-project-outline")) {
+      map.setLayoutProperty("cells-project-outline", "visibility", visibility)
+    }
   }
 
   ensure = (map = this.c.map) => {
@@ -102,6 +106,20 @@ export class MapCellsLayer {
             0
           ]
         }
+      })
+    }
+
+    if (!map.getLayer("cells-project-outline")) {
+      map.addLayer({
+        id: "cells-project-outline",
+        type: "line",
+        source: "cells",
+        paint: {
+          "line-color": "#2563eb",
+          "line-width": 2.5,
+          "line-opacity": 0.9
+        },
+        filter: ["==", ["get", "has_projects"], true]
       })
     }
 

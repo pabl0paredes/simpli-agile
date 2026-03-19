@@ -21,7 +21,11 @@
       <i class="fa-solid fa-map"></i>
     </button>
 
-    <button type="button" class="map-fab__btn" aria-label="Gráfico">
+    <button type="button"
+            class="map-fab__btn"
+            aria-label="Gráfico"
+            data-action="click->map#toggleDashboard"
+            data-map-target="dashboardBtn">
       <i class="fa-solid fa-chart-bar"></i>
     </button>
 
@@ -60,8 +64,15 @@
   <% end %>
 
 
-  <div class="map-legend" data-map-target="legendPanel" hidden>
-    <div class="map-legend__title">Leyenda</div>
-    <div class="map-legend__items" data-map-target="legendItems"></div>
+  <div class="map-panels-right">
+    <div class="map-dashboard" data-map-target="dashboardPanel" hidden>
+      <div class="map-dashboard__title">Distribución por categoría</div>
+      <div data-map-target="dashboardChart"></div>
+    </div>
+
+    <div class="map-legend" data-map-target="legendPanel" hidden>
+      <div class="map-legend__title">Leyenda</div>
+      <div class="map-legend__items" data-map-target="legendItems"></div>
+    </div>
   </div>
 </main>

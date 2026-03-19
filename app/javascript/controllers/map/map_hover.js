@@ -245,16 +245,34 @@ export class MapHover {
       let formatted
 
       if (layerType === "accessibility") {
-        // accesibilidad: usar texto, no número
         formatted = this.controller.accessibilityLabelForClass
           ? this.controller.accessibilityLabelForClass(klass)
           : (klass ? String(klass) : "-")
       } else {
-        // thematic: seguir con número
         formatted = Number(rawValue).toLocaleString("es-CL")
       }
 
-      el.textContent = `${label}: ${formatted}`
+      // ✅ Proyectos localizados en esta celda
+      const hasProjects = f.properties?.has_projects === true
+      let projectNames = []
+      if (hasProjects) {
+        try {
+          const raw = f.properties?.project_names
+          projectNames = typeof raw === "string" ? JSON.parse(raw) : (Array.isArray(raw) ? raw : [])
+        } catch (_) {}
+      }
+
+      if (projectNames.length > 0) {
+        el.style.whiteSpace = "pre-line"
+        el.style.maxWidth = "240px"
+        const nameList = projectNames.map(n => `  • ${n}`).join("\n")
+        el.textContent = `${label}: ${formatted}\n📍 Proyectos:\n${nameList}`
+      } else {
+        el.style.whiteSpace = "nowrap"
+        el.style.maxWidth = ""
+        el.textContent = `${label}: ${formatted}`
+      }
+
       moveTooltip(e.lngLat)
 
     })

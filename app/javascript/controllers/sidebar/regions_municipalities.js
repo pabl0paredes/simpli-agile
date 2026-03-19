@@ -143,13 +143,32 @@ export function createRegionsMunicipalities(controller) {
 
       controller._selectedMunicipalityCode = munCode
 
-      // Para usuarios sin sesión (sin selector de escenario), mostrar oportunidad directamente.
+      // Para usuarios sin sesión (sin selector de escenario), mostrar oportunidad directamente
+      // y cargar el escenario base de la comuna para poder mostrar celdas.
       // Para usuarios con sesión, la oportunidad/locator se muestran en syncScenarioActionsUI()
       // una vez que haya un escenario válido seleccionado.
       if (!controller.hasScenarioSelectTarget) {
         controller.opportunitySelectTarget.disabled = false
         if (controller.hasOpportunitySectionTarget) controller.opportunitySectionTarget.hidden = false
-        if (controller.hasLocateSectionTarget) controller.locateSectionTarget.hidden = false
+
+        fetch(`/municipalities/base_scenario?municipality_code=${encodeURIComponent(munCode)}`)
+          .then(r => r.json())
+          .then(data => {
+            if (data.scenario_id) {
+              controller._selectedScenarioId = String(data.scenario_id)
+              controller._noBaseScenario = false
+              window.dispatchEvent(new CustomEvent("scenario:selected", {
+                detail: { scenario_id: String(data.scenario_id), status: "base" }
+              }))
+            } else {
+              controller._selectedScenarioId = null
+              controller._noBaseScenario = true
+            }
+          })
+          .catch(() => {
+            controller._selectedScenarioId = null
+            controller._noBaseScenario = true
+          })
       }
 
       if (controller.hasModeToggleTarget) {

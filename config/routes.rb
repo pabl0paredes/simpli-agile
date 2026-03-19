@@ -21,6 +21,7 @@ Rails.application.routes.draw do
     collection do
       get :names
       get :focus
+      get :base_scenario
     end
   end
 

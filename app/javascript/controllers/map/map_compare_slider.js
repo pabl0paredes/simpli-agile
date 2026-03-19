@@ -183,7 +183,7 @@ export class MapCompareSlider {
     c.legend.show()
   }
 
-  formatHoverText(feature) {
+  renderTooltipContent(el, feature) {
     const label = this.currentHoverLabel()
 
     const layerType = this.c._selectedLayerType
@@ -191,7 +191,6 @@ export class MapCompareSlider {
     const rawValue = feature?.properties?.value ?? 0
 
     let formatted
-
     if (layerType === "accessibility") {
       formatted = this.c.accessibilityLabelForClass
         ? this.c.accessibilityLabelForClass(klass)
@@ -200,7 +199,24 @@ export class MapCompareSlider {
       formatted = Number(rawValue).toLocaleString("es-CL")
     }
 
-    return `${label}: ${formatted}`
+    const hasProjects = feature?.properties?.has_projects === true
+    let projectNames = []
+    if (hasProjects) {
+      try {
+        const raw = feature?.properties?.project_names
+        projectNames = typeof raw === "string" ? JSON.parse(raw) : (Array.isArray(raw) ? raw : [])
+      } catch (_) {}
+    }
+
+    if (projectNames.length > 0) {
+      el.style.whiteSpace = "pre-line"
+      el.style.maxWidth = "240px"
+      el.textContent = `${label}: ${formatted}\n📍 Proyectos:\n${projectNames.map(n => `  • ${n}`).join("\n")}`
+    } else {
+      el.style.whiteSpace = "nowrap"
+      el.style.maxWidth = ""
+      el.textContent = `${label}: ${formatted}`
+    }
   }
 
   ensureTooltip(map) {
@@ -276,7 +292,7 @@ export class MapCompareSlider {
       }
 
       const tooltip = this.ensureTooltip(map)
-      tooltip.textContent = this.formatHoverText(feature)
+      this.renderTooltipContent(tooltip, feature)
       this.moveTooltip(map, e.lngLat)
     })
 

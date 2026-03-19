@@ -57,6 +57,7 @@ export default class extends Controller {
     "addScenarioBtn",
     "unitsSection",
     "areaPerUnitSection",
+    "noDataSection",
   ]
 
   connect() {

@@ -34,10 +34,12 @@ export class MapThematicRunners {
 
       this.c.map.getSource("cells").setData({ type: "FeatureCollection", features: fc.features })
       this.c._cellsBreaks = fc.breaks
+      this.c._cellsFeatures = fc.features
 
       this.c.setCellsVisible(true)
       this.c.legend.render()
       this.c.legend.showButtonIfNeeded()
+      if (this.c.dashboard && !this.c.dashboardPanelTarget?.hidden) this.c.dashboard.render()
       return
     }
 
@@ -69,11 +71,13 @@ export class MapThematicRunners {
     })
 
     this.c._cellsBreaks = fc.breaks
+    this.c._cellsFeatures = fc.features
     this.c.setCellsVisible(true)
 
     this.c.legend.render()
     this.c.legend.showButtonIfNeeded()
     this.c.legend.show()
+    if (this.c.dashboard && !this.c.dashboardPanelTarget?.hidden) this.c.dashboard.render()
   }
 
   onComparisonDeltaSelected = async (event) => {
@@ -104,10 +108,12 @@ export class MapThematicRunners {
     })
 
     this.c._cellsBreaks = payload.breaks
+    this.c._cellsFeatures = payload.features
     this.c.setCellsVisible(true)
 
     this.c.legend.render()
     this.c.legend.showButtonIfNeeded()
     this.c.legend.show()
+    if (this.c.dashboard && !this.c.dashboardPanelTarget?.hidden) this.c.dashboard.render()
   }
 }

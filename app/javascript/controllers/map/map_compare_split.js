@@ -195,12 +195,12 @@ export class MapCompareSplit {
           ?.find(f => (f.properties?.h3 || f.id) === id)
 
         const tooltipA = this.ensureTooltip(map)
-        tooltipA.textContent = this.formatHoverText(feature)
+        this.renderTooltipContent(tooltipA, feature)
         this.moveTooltip(map, e.lngLat)
 
         if (otherFeature) {
           const tooltipB = this.ensureTooltip(otherMap)
-          tooltipB.textContent = this.formatHoverText(otherFeature)
+          this.renderTooltipContent(tooltipB, otherFeature)
 
           const geom = otherFeature.geometry
           let coord = null
@@ -224,7 +224,7 @@ export class MapCompareSplit {
     bind(this.mapBottom, this.mapTop)
   }
 
-  formatHoverText(feature) {
+  renderTooltipContent(el, feature) {
     const label = this.c.hover?.currentCellsHoverLabel?.() || "Valor"
 
     const layerType = this.c._selectedLayerType
@@ -232,7 +232,6 @@ export class MapCompareSplit {
     const rawValue = feature?.properties?.value ?? 0
 
     let formatted
-
     if (layerType === "accessibility") {
       formatted = this.c.accessibilityLabelForClass
         ? this.c.accessibilityLabelForClass(klass)
@@ -241,7 +240,24 @@ export class MapCompareSplit {
       formatted = Number(rawValue).toLocaleString("es-CL")
     }
 
-    return `${label}: ${formatted}`
+    const hasProjects = feature?.properties?.has_projects === true
+    let projectNames = []
+    if (hasProjects) {
+      try {
+        const raw = feature?.properties?.project_names
+        projectNames = typeof raw === "string" ? JSON.parse(raw) : (Array.isArray(raw) ? raw : [])
+      } catch (_) {}
+    }
+
+    if (projectNames.length > 0) {
+      el.style.whiteSpace = "pre-line"
+      el.style.maxWidth = "240px"
+      el.textContent = `${label}: ${formatted}\n📍 Proyectos:\n${projectNames.map(n => `  • ${n}`).join("\n")}`
+    } else {
+      el.style.whiteSpace = "nowrap"
+      el.style.maxWidth = ""
+      el.textContent = `${label}: ${formatted}`
+    }
   }
 
   ensureTooltip(map) {

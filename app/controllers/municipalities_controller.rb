@@ -55,4 +55,11 @@ class MunicipalitiesController < ApplicationController
     }
   end
 
+  def base_scenario
+    mun_code = params[:municipality_code]
+    system_user = User.find_by(email: "system@simpli.cl")
+    base = Scenario.find_by(user_id: system_user&.id, municipality_code: mun_code)
+    render json: { scenario_id: base&.id }
+  end
+
 end

@@ -149,6 +149,10 @@
         </select>
       </div>
 
+      <div class="sidebar__section sidebar__no-data" data-sidebar-target="noDataSection" hidden>
+        <p class="sidebar__no-data-msg">No hay datos cargados para esta comuna.</p>
+      </div>
+
       <div class="sidebar__divider"></div>
 
       <div class="sidebar__section" data-sidebar-target="layerSection" hidden>
@@ -205,6 +209,7 @@
         </div>
       </div>
 
+      <% if user_signed_in? %>
       <div
         class="sidebar__section"
         data-sidebar-target="locateSection"
@@ -224,6 +229,7 @@
           </span>
         </div>
       </div>
+      <% end %>
 
     <div class="sidebar__bottom">
       <button class="sidebar__link" type="button">

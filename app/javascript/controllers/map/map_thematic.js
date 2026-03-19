@@ -57,10 +57,12 @@ export class MapThematic {
     })
 
     this.ctx._cellsBreaks = payload.breaks
+    this.ctx._cellsFeatures = payload.features
     this.ctx.setCellsVisible(true)
 
     this.ctx.legend.render()
     this.ctx.legend.showButtonIfNeeded()
     this.ctx.legend.show()
+    if (this.ctx.dashboard && !this.ctx.dashboardPanelTarget?.hidden) this.ctx.dashboard.render()
   }
 }
