@@ -1,6 +1,18 @@
 // app/javascript/controllers/sidebar/comparator.js
 
 export function createComparator(controller) {
+  function syncAccessibilityBtnVisibility() {
+    const accBtn = controller.element.querySelector('.sidebar__layer-btn[data-layer="accessibility"]')
+    if (!accBtn) return
+    const isDelta = controller._compareMode === "delta" && controller._uiMode === "comparador"
+    accBtn.hidden = isDelta
+    if (isDelta && accBtn.classList.contains("is-active")) {
+      accBtn.classList.remove("is-active")
+      if (controller.hasAccessibilityChoicesTarget) controller.accessibilityChoicesTarget.hidden = true
+      window.dispatchEvent(new CustomEvent("layer:cleared"))
+    }
+  }
+
   return {
     onUIModeChanged(e) {
       const mode = e.detail?.mode
@@ -60,6 +72,7 @@ export function createComparator(controller) {
       const deltaBtn = controller.element.querySelector('.compare-modes__btn[data-mode="delta"]')
       if (deltaBtn) deltaBtn.classList.add("is-active")
 
+      syncAccessibilityBtnVisibility()
       controller.syncComparatorGatingUI()
 
 
@@ -97,6 +110,9 @@ export function createComparator(controller) {
 
       controller.clearLayerButtonsUI()
       window.dispatchEvent(new CustomEvent("layer:cleared"))
+
+      // Restaurar visibilidad del botón de accesibilidad al salir del comparador
+      syncAccessibilityBtnVisibility()
 
       // Limpia estado comparador para que no “contamine”
       controller._scenarioAId = null
@@ -196,6 +212,7 @@ export function createComparator(controller) {
       btn.classList.add("is-active")
 
       controller._compareMode = mode
+      syncAccessibilityBtnVisibility()
 
       window.dispatchEvent(new CustomEvent("comparison:context_changed", {
         detail: {

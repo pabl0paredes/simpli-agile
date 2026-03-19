@@ -1,9 +1,6 @@
 .map-legend[hidden] { display: none; }
 
 .map-legend {
-  position: absolute;
-  right: 75px;
-  bottom: 28px;
   width: 220px;
   background: rgba(255,255,255,0.95);
   border: 1px solid rgba(17,24,39,0.12);
@@ -11,7 +8,6 @@
   padding: 12px;
   box-shadow: 0 12px 30px rgba(0,0,0,0.12);
   backdrop-filter: blur(6px);
-  z-index: 20;
 }
 
 .map-legend__title {

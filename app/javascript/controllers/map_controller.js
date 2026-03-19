@@ -10,6 +10,7 @@ import { MapStateEvents } from "./map/map_state_events"
 import { MapThematicRunners } from "./map/map_thematic_runners"
 import { MapCompareSlider } from "./map/map_compare_slider"
 import { MapCompareSplit } from "./map/map_compare_split"
+import { MapDashboard } from "./map/map_dashboard"
 
 export default class extends Controller {
   static values = { token: String }
@@ -18,6 +19,9 @@ export default class extends Controller {
     "legendPanel",
     "legendItems",
     "legendBtn",
+    "dashboardPanel",
+    "dashboardChart",
+    "dashboardBtn",
     "compareContainer",
     "compareLeft",
     "compareRight",
@@ -67,6 +71,7 @@ export default class extends Controller {
       this.thematicRunner = new MapThematicRunners(this)
       this.compareSlider = new MapCompareSlider(this)
       this.compareSplit = new MapCompareSplit(this)
+      this.dashboard = new MapDashboard(this)
 
       this.adminLayers.ensureMunicipalitiesLayer()
       this.hover.bindMunicipalitiesHoverTooltip()
@@ -138,6 +143,7 @@ export default class extends Controller {
   ensureLocatorLayers = () => this.cellsLayer.ensureLocatorOverlays()
 
   toggleLegend = () => this.legend.toggle()
+  toggleDashboard = () => this.dashboard.toggle()
 
   onScenarioSelected = (e) => this.stateEvents.onScenarioSelected(e)
   onUIModeChanged = (e) => this.stateEvents.onUIModeChanged(e)

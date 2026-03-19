@@ -1,0 +1,102 @@
+.map-dashboard[hidden] { display: none; }
+
+.map-dashboard {
+  width: 220px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(17, 24, 39, 0.12);
+  border-radius: 14px;
+  padding: 12px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+  backdrop-filter: blur(6px);
+}
+
+.map-dashboard__title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #111827;
+  margin-bottom: 10px;
+}
+
+.map-dashboard__row {
+  margin-bottom: 7px;
+}
+
+.map-dashboard__row-top {
+  display: grid;
+  grid-template-columns: 10px 1fr auto;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 3px;
+}
+
+.map-dashboard__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  border: 1px solid rgba(17, 24, 39, 0.10);
+}
+
+.map-dashboard__lbl {
+  font-size: 11px;
+  color: #6b7280;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.map-dashboard__cnt {
+  font-size: 11px;
+  font-weight: 600;
+  color: #111827;
+  text-align: right;
+}
+
+.map-dashboard__track {
+  height: 5px;
+  background: #f3f4f6;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-left: 16px;
+}
+
+.map-dashboard__bar {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 400ms ease;
+  min-width: 2px;
+}
+
+.map-dashboard__total {
+  font-size: 11px;
+  color: #9ca3af;
+  text-align: right;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.map-dashboard__empty {
+  font-size: 12px;
+  color: #9ca3af;
+  text-align: center;
+  font-style: italic;
+  padding: 4px 0;
+  margin: 0;
+}
+
+// Contenedor que apila dashboard + leyenda en columna (bottom-right)
+.map-panels-right {
+  position: absolute;
+  right: 75px;
+  bottom: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 20;
+  align-items: stretch;
+  pointer-events: none;
+
+  > * { pointer-events: auto; }
+}
