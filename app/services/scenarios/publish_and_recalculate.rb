@@ -52,7 +52,7 @@ module Scenarios
         # 2) recalculas SOLO las oportunidades que existen en projects de este draft
         opp_codes = Project.where(scenario_id: @scenario.id).distinct.pluck(:opportunity_code)
         opp_codes.each do |opp|
-          recalc_accessibilities_surface!(scenario: @scenario, opportunity_code: opp)
+          recalc_accessibilities!(scenario: @scenario, opportunity_code: opp)
         end
       end
 
@@ -96,25 +96,28 @@ module Scenarios
     end
 
 
-    def recalc_accessibilities_surface!(scenario:, opportunity_code:)
-      conn = ActiveRecord::Base.connection
-
+    def recalc_accessibilities!(scenario:, opportunity_code:)
+      conn        = ActiveRecord::Base.connection
       scenario_id = scenario.id
       mun_code    = scenario.municipality_code
+      category    = Opportunity.find_by(opportunity_code: opportunity_code)&.category
 
-      # Travel modes (en tu modelo ya existen param_1, etc.)
+      is_poi = category == "POI"
+      acc_type  = is_poi ? "units"   : "surface"
+      value_col = is_poi ? "units_total" : "surface_total"
+      base_col  = is_poi ? "units"   : "surface"
+      amplifier = is_poi ? "* 10000" : ""
+
       travel_modes = TravelMode.where(municipality_code: mun_code, mode: %w[walk car]).pluck(:id).map(&:to_i)
 
       travel_modes.each do |tm_id|
-        # 1) limpiar lo existente para no duplicar
         Accessibility.where(
           scenario_id: scenario_id,
           travel_mode_id: tm_id,
           opportunity_code: opportunity_code,
-          accessibility_type: "surface"
+          accessibility_type: acc_type
         ).delete_all
 
-        # 2) insertar recalculado (binds)
         sql = <<~SQL
           INSERT INTO accessibilities (
             h3, travel_mode_id, opportunity_code, scenario_id, accessibility_type, value
@@ -124,10 +127,10 @@ module Scenarios
             tm.id,
             $1,
             s.id,
-            'surface',
+            '#{acc_type}',
             SUM(
-              COALESCE(sc.surface_total, ic.surface, 0) * EXP(tm.param_1 * tt.travel_time)
-            ) AS value
+              COALESCE(sc.#{value_col}, ic.#{base_col}, 0) * EXP(tm.param_1 * tt.travel_time)
+            ) #{amplifier} AS value
           FROM scenarios s
           JOIN cells o
             ON o.municipality_code = s.municipality_code
