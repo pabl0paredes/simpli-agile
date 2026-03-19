@@ -43,6 +43,13 @@ export function createOpportunitiesLayers(controller) {
       const selectedOption = e.target.selectedOptions?.[0]
       const category = selectedOption?.dataset?.category
 
+      if (controller._noBaseScenario) {
+        if (controller.hasNoDataSectionTarget) controller.noDataSectionTarget.hidden = false
+        if (controller.hasLayerSectionTarget) controller.layerSectionTarget.hidden = true
+        return
+      }
+
+      if (controller.hasNoDataSectionTarget) controller.noDataSectionTarget.hidden = true
       controller.layerSectionTarget.hidden = false
 
       const inComparator = controller.hasComparatorSectionTarget && !controller.comparatorSectionTarget.hidden

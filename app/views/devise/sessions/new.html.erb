@@ -1,24 +1,67 @@
-<%= turbo_frame_tag "auth_modal_frame" do %>
-<h2>Iniciar sesión</h2>
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <%= image_tag "Logo SimpliCity.png", alt: "SimpliCity" %>
+    </div>
 
-<%= simple_form_for(resource, as: resource_name,
-                              url: session_path(resource_name),
-                              html: { data: { turbo_frame: "_top" } }) do |f| %>
-  <div class="form-inputs">
-    <%= f.input :email,
-                required: false,
-                autofocus: true,
-                input_html: { autocomplete: "email" } %>
-    <%= f.input :password,
-                required: false,
-                input_html: { autocomplete: "current-password" } %>
-    <%= f.input :remember_me, as: :boolean if devise_mapping.rememberable? %>
+    <h1 class="auth-title">Bienvenido</h1>
+    <p class="auth-subtitle">Inicia sesión para continuar</p>
+
+    <%= turbo_frame_tag "auth_modal_frame" do %>
+      <%= simple_form_for(resource, as: resource_name,
+                                    url: session_path(resource_name),
+                                    html: { data: { turbo_frame: "_top" } }) do |f| %>
+
+        <div class="auth-field">
+          <%= f.label :email, "Correo electrónico" %>
+          <%= f.email_field :email, autofocus: true, autocomplete: "email", placeholder: "tu@correo.cl" %>
+        </div>
+
+        <div class="auth-field">
+          <%= f.label :password, "Contraseña" %>
+          <%= f.password_field :password, autocomplete: "current-password", placeholder: "••••••••" %>
+        </div>
+
+        <% if devise_mapping.rememberable? %>
+          <div class="auth-remember">
+            <%= f.check_box :remember_me %>
+            <%= f.label :remember_me, "Recordarme" %>
+          </div>
+        <% end %>
+
+        <%= f.submit "Iniciar sesión", class: "auth-submit-btn" %>
+      <% end %>
+
+      <div class="auth-links">
+        <%= link_to "¿Olvidaste tu contraseña?", new_password_path(resource_name) %>
+      </div>
+
+      <div class="auth-divider"><span>¿No tienes cuenta?</span></div>
+
+      <div class="auth-register-row">
+        <button type="button" onclick="document.getElementById('register-modal').hidden = false">
+          Registrarse
+        </button>
+      </div>
+
+      <!-- Modal de registro -->
+      <div id="register-modal" class="register-modal-overlay" hidden>
+        <div class="register-modal">
+          <button type="button" class="register-modal-close" onclick="document.getElementById('register-modal').hidden = true">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+
+          <div class="auth-modal-icon">✉️</div>
+          <h3 class="auth-modal-title">¿Quieres unirte?</h3>
+          <p class="auth-modal-text">
+            Para crear una cuenta en SimpliCity, escríbenos a:
+          </p>
+          <div class="auth-modal-email-box">contacto@simpli-city.cl</div>
+          <a href="mailto:contacto@simpli-city.cl" class="auth-modal-btn">
+            <i class="fa-solid fa-envelope"></i> Enviar correo
+          </a>
+        </div>
+      </div>
+    <% end %>
   </div>
-
-  <div class="form-actions">
-    <%= f.button :submit, "Iniciar sesión" %>
-  </div>
-<% end %>
-
-<%= render "devise/shared/links" %>
-<% end %>
+</div>

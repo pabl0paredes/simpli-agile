@@ -37,6 +37,8 @@ export function createUIState(controller) {
       // 3) reset oportunidad
       controller._hasBaseScenario = false
       controller._hasDraftProjects = false
+      controller._noBaseScenario = false
+      if (controller.hasNoDataSectionTarget) controller.noDataSectionTarget.hidden = true
       if (controller.hasOpportunitySelectTarget) {
         controller.opportunitySelectTarget.value = "Seleccionar oportunidad..."
         controller.opportunitySelectTarget.disabled = true
