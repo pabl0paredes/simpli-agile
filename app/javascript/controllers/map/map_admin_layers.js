@@ -296,6 +296,20 @@ export class MapAdminLayers {
     this.setMunicipalitiesVisible(false)
 
     this.c.map.getSource("selected-municipality").setData(focus.geometry)
+
+    // If municipality was selected directly (no region chosen first), resolve the region
+    // context so back navigation can restore the region state correctly.
+    if (!this.c._selectedRegionCode && focus.region_code) {
+      this.c._selectedRegionCode = focus.region_code
+
+      // Preload municipalities GeoJSON for this region (hidden) so they appear on back.
+      const fc = await fetch(`/municipalities?region_code=${encodeURIComponent(focus.region_code)}`).then(r => r.json())
+      this.c.map.getSource("municipalities").setData(fc)
+
+      window.dispatchEvent(new CustomEvent("region:context_resolved", {
+        detail: { region_code: focus.region_code }
+      }))
+    }
   }
 
   onMunicipalityCleared = () => {

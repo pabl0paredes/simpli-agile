@@ -84,6 +84,7 @@ export default class extends Controller {
     window.addEventListener("scenario:selected", this.onScenarioSelected)
     window.addEventListener("ui:mode_changed", this.onUIModeChanged)
     window.addEventListener("comparison:context_changed", this.onComparisonContextChanged)
+    window.addEventListener("region:context_resolved", this.onRegionContextResolved)
   }
 
   disconnect() {
@@ -94,10 +95,12 @@ export default class extends Controller {
     window.removeEventListener("scenario:selected", this.onScenarioSelected)
     window.removeEventListener("ui:mode_changed", this.onUIModeChanged)
     window.removeEventListener("comparison:context_changed", this.onComparisonContextChanged)
+    window.removeEventListener("region:context_resolved", this.onRegionContextResolved)
   }
 
   loadRegionsIntoSelect() { return this.regionsMunicipalities.loadRegionsIntoSelect() }
   onRegionClicked = (e) => { return this.regionsMunicipalities.onRegionClicked(e) }
+  onRegionContextResolved = (e) => { return this.regionsMunicipalities.onRegionContextResolved(e) }
 
   loadMunicipalitiesIntoSelect(regionCode = null) {
     return this.regionsMunicipalities.loadMunicipalitiesIntoSelect(regionCode)

@@ -6,6 +6,25 @@ export function createRegionsMunicipalities(controller) {
     // Métodos (mismos nombres)
     // -------------------------
 
+    onRegionContextResolved(e) {
+      const regionCode = e.detail.region_code
+      if (!regionCode) return
+
+      // Set the region select value so clearMunicipality() detects an active region
+      if (controller.hasRegionSelectTarget) {
+        controller.regionSelectTarget.value = regionCode
+      }
+
+      // Set the region back button text (keep hidden — municipality is still active)
+      if (controller.hasRegionBackBtnTarget) {
+        const option = Array.from(controller.regionSelectTarget?.options || [])
+          .find(o => o.value === regionCode)
+        const regionName = option?.textContent?.trim()
+        controller.regionBackBtnTarget.textContent = `← ${regionName || "Volver a seleccionar región"}`
+        // Keep hidden — will be shown only when user clicks back on municipality
+      }
+    },
+
     loadRegionsIntoSelect() {
       fetch('/regions/names')
         .then(response => response.json())
@@ -99,9 +118,7 @@ export function createRegionsMunicipalities(controller) {
       // Reset municipality section to initial state
       if (controller.hasMunicipalitySelectWrapTarget) controller.municipalitySelectWrapTarget.hidden = false
       if (controller.hasMunicipalityBackBtnTarget) controller.municipalityBackBtnTarget.hidden = true
-      if (controller.hasMunicipalitySelectTarget) {
-        controller.municipalitySelectTarget.innerHTML = "<option>Seleccionar comuna...</option>"
-      }
+      controller.loadMunicipalitiesIntoSelect()
 
       // Reset sidebar UI state
       controller._selectedMunicipalityCode = null
@@ -115,12 +132,20 @@ export function createRegionsMunicipalities(controller) {
       // Cerrar localizador si está abierto
       controller.closeLocator()
 
-      // Swap back button → select
+      // Restore municipality select
       if (controller.hasMunicipalitySelectWrapTarget) controller.municipalitySelectWrapTarget.hidden = false
       if (controller.hasMunicipalityBackBtnTarget) controller.municipalityBackBtnTarget.hidden = true
 
-      // Region back button reappears
-      if (controller.hasRegionBackBtnTarget) controller.regionBackBtnTarget.hidden = false
+      // If a region was selected via UI, show its back button.
+      // If the municipality was selected directly (no region), restore the region select.
+      const regionValue = controller.regionSelectTarget?.value
+      const regionIsActive = regionValue && !regionValue.includes("Seleccionar")
+
+      if (regionIsActive) {
+        if (controller.hasRegionBackBtnTarget) controller.regionBackBtnTarget.hidden = false
+      } else {
+        if (controller.hasRegionSelectWrapTarget) controller.regionSelectWrapTarget.hidden = false
+      }
 
       // Reset sidebar UI state
       controller._selectedMunicipalityCode = null
@@ -179,7 +204,7 @@ export function createRegionsMunicipalities(controller) {
         detail: { municipality_code: munCode }
       }))
 
-      // Swap select → back button
+      // Swap municipality select → back button
       const munName = controller.municipalitySelectTarget.selectedOptions?.[0]?.textContent?.trim()
       if (controller.hasMunicipalitySelectWrapTarget) controller.municipalitySelectWrapTarget.hidden = true
       if (controller.hasMunicipalityBackBtnTarget) {
@@ -187,8 +212,14 @@ export function createRegionsMunicipalities(controller) {
         controller.municipalityBackBtnTarget.hidden = false
       }
 
-      // Hide region back button while a municipality is selected
+      // Hide region back button while a municipality is selected.
+      // If no region was selected via UI, also hide the region select wrap.
       if (controller.hasRegionBackBtnTarget) controller.regionBackBtnTarget.hidden = true
+      const regionValue = controller.regionSelectTarget?.value
+      const regionIsActive = regionValue && !regionValue.includes("Seleccionar")
+      if (!regionIsActive && controller.hasRegionSelectWrapTarget) {
+        controller.regionSelectWrapTarget.hidden = true
+      }
 
       if (controller.hasScenarioSelectTarget) {
         controller.scenarioSectionTarget.hidden = false
