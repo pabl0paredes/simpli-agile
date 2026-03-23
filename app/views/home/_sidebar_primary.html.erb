@@ -9,8 +9,8 @@
         class="sidebar__back-btn"
         data-sidebar-target="municipalityBackBtn"
         data-action="click->sidebar#clearMunicipality"
-        hidden
-      >← Volver a seleccionar comuna</button>
+        <%= @initial_municipality ? "" : "hidden" %>
+      >← <%= @initial_municipality ? @initial_municipality.name : "Volver a seleccionar comuna" %></button>
 
       <% if user_signed_in? %>
       <div class="sidebar__section" data-sidebar-target="comparatorSection" hidden>
@@ -118,7 +118,7 @@
 
 
       <div class="sidebar__section" data-sidebar-target="regionSection">
-        <div data-sidebar-target="regionSelectWrap">
+        <div data-sidebar-target="regionSelectWrap" <% if @initial_municipality %>hidden<% end %>>
           <div class="sidebar__label">REGIÓN</div>
           <select class="sidebar__select" data-sidebar-target="regionSelect" data-action="change->sidebar#regionChanged">
             <option>Seleccionar región...</option>
@@ -134,10 +134,14 @@
       </div>
 
       <div class="sidebar__section" data-sidebar-target="municipalitySection">
-        <div data-sidebar-target="municipalitySelectWrap">
+        <div data-sidebar-target="municipalitySelectWrap" <% if @initial_municipality %>hidden<% end %>>
           <div class="sidebar__label">COMUNA</div>
           <select class="sidebar__select" data-sidebar-target="municipalitySelect" data-action="change->sidebar#municipalityChanged">
-            <option>Seleccionar comuna...</option>
+            <% if @initial_municipality %>
+              <option value="<%= @initial_municipality.municipality_code %>" selected><%= @initial_municipality.name %></option>
+            <% else %>
+              <option>Seleccionar comuna...</option>
+            <% end %>
           </select>
         </div>
       </div>

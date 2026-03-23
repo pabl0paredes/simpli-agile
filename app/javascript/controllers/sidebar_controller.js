@@ -10,6 +10,8 @@ import { createPublishDelete } from "./sidebar/publish_delete"
 import { createComparator } from "./sidebar/comparator"
 
 export default class extends Controller {
+  static values = { defaultMunicipality: String }
+
   static targets = [
     "panel",
     "mapArea",
@@ -85,6 +87,7 @@ export default class extends Controller {
     window.addEventListener("ui:mode_changed", this.onUIModeChanged)
     window.addEventListener("comparison:context_changed", this.onComparisonContextChanged)
     window.addEventListener("region:context_resolved", this.onRegionContextResolved)
+    window.addEventListener("map:ready", this.onMapReady)
   }
 
   disconnect() {
@@ -96,11 +99,31 @@ export default class extends Controller {
     window.removeEventListener("ui:mode_changed", this.onUIModeChanged)
     window.removeEventListener("comparison:context_changed", this.onComparisonContextChanged)
     window.removeEventListener("region:context_resolved", this.onRegionContextResolved)
+    window.removeEventListener("map:ready", this.onMapReady)
   }
 
   loadRegionsIntoSelect() { return this.regionsMunicipalities.loadRegionsIntoSelect() }
   onRegionClicked = (e) => { return this.regionsMunicipalities.onRegionClicked(e) }
   onRegionContextResolved = (e) => { return this.regionsMunicipalities.onRegionContextResolved(e) }
+
+  onMapReady = () => {
+    this._mapReady = true
+    // If sidebar was pre-rendered in municipality state, just set internal state — no need to re-trigger UI
+    if (this.defaultMunicipalityValue && !this._pendingDefaultMunicipality) {
+      const munCode = this.defaultMunicipalityValue
+      this._selectedMunicipalityCode = munCode
+      return
+    }
+    if (this._pendingDefaultMunicipality) {
+      const munCode = this._pendingDefaultMunicipality
+      this._pendingDefaultMunicipality = null
+      if (this.hasMunicipalitySelectTarget) {
+        this.municipalitySelectTarget.value = munCode
+        this._instantMunicipalityLoad = true
+        this.municipalityChanged({ target: this.municipalitySelectTarget })
+      }
+    }
+  }
 
   loadMunicipalitiesIntoSelect(regionCode = null) {
     return this.regionsMunicipalities.loadMunicipalitiesIntoSelect(regionCode)

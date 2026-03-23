@@ -1,4 +1,6 @@
-<div class="app-shell" data-controller="sidebar">
+<div class="app-shell"
+     data-controller="sidebar"
+     data-sidebar-default-municipality-value="<%= user_signed_in? ? current_user.municipality_code.to_s : "" %>">
   <%= render "sidebar_primary" %>
   <%= render "sidebar_locator" %>
   <%= render "sidebar_collapse_btn" %>

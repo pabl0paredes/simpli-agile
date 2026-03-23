@@ -1,7 +1,9 @@
 <main class="map-area"
       data-sidebar-target="mapArea"
       data-controller="map"
-      data-map-token-value="<%= ENV.fetch("MAPBOX_TOKEN", "") %>">
+      data-map-token-value="<%= ENV.fetch("MAPBOX_TOKEN", "") %>"
+      data-map-initial-center-value="<%= @initial_center || "[-70.6371,-33.4378]" %>"
+      data-map-initial-zoom-value="<%= @initial_zoom || 4 %>">
 
   <div id="map" class="map" data-map-target="mapContainer"></div>
 

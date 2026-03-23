@@ -13,7 +13,7 @@ import { MapCompareSplit } from "./map/map_compare_split"
 import { MapDashboard } from "./map/map_dashboard"
 
 export default class extends Controller {
-  static values = { token: String }
+  static values = { token: String, initialCenter: Array, initialZoom: Number }
   static targets = [
     "mapContainer",
     "legendPanel",
@@ -46,11 +46,14 @@ export default class extends Controller {
 
     mapboxgl.accessToken = this.tokenValue
 
+    const center = this.initialCenterValue?.length === 2 ? this.initialCenterValue : [-70.6371, -33.4378]
+    const zoom   = this.initialZoomValue || 4
+
     this.map = new mapboxgl.Map({
       container: this.mapContainerTarget,
       style: "mapbox://styles/mapbox/streets-v11",
-      center: [-70.6371, -33.4378],
-      zoom: 4
+      center,
+      zoom
     })
 
     this.map.addControl(
@@ -99,6 +102,9 @@ export default class extends Controller {
       window.addEventListener("cell:selection_clear", this.onCellSelectionClear)
       window.addEventListener("project:hover", this.onProjectHover)
       window.addEventListener("project:hover_end", this.onProjectHoverEnd)
+
+      window._mapReady = true
+      window.dispatchEvent(new CustomEvent("map:ready"))
     })
   }
 

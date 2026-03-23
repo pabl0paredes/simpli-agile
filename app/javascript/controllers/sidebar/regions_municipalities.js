@@ -62,6 +62,7 @@ export function createRegionsMunicipalities(controller) {
         .then(response => response.json())
         .then(data => {
           const selector = controller.municipalitySelectTarget
+          const preSelected = selector.value && !selector.value.includes("Seleccionar") ? selector.value : null
           selector.innerHTML = "<option>Seleccionar comuna...</option>"
 
           data.forEach(municipality => {
@@ -70,6 +71,25 @@ export function createRegionsMunicipalities(controller) {
             option.textContent = municipality.name
             selector.appendChild(option)
           })
+
+          // Restore pre-selected value if sidebar was pre-rendered in municipality state
+          if (preSelected) selector.value = preSelected
+
+          // Auto-select default municipality on initial full load (no region filter)
+          if (!regionCode) {
+            const defaultCode = controller.defaultMunicipalityValue
+            if (defaultCode) {
+              selector.value = defaultCode
+              if (selector.value === defaultCode) {
+                if (controller._mapReady || window._mapReady) {
+                  controller._instantMunicipalityLoad = true
+                  controller.municipalityChanged({ target: selector })
+                } else {
+                  controller._pendingDefaultMunicipality = defaultCode
+                }
+              }
+            }
+          }
         })
         .catch(error => console.error("Error al cargar las comunas:", error))
     },
@@ -201,8 +221,9 @@ export function createRegionsMunicipalities(controller) {
       }
 
       window.dispatchEvent(new CustomEvent("municipality:selected", {
-        detail: { municipality_code: munCode }
+        detail: { municipality_code: munCode, instant: !!controller._instantMunicipalityLoad }
       }))
+      controller._instantMunicipalityLoad = false
 
       // Swap municipality select → back button
       const munName = controller.municipalitySelectTarget.selectedOptions?.[0]?.textContent?.trim()

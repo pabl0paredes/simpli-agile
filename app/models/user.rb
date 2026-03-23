@@ -4,6 +4,8 @@ class User < ApplicationRecord
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable
 
-  has_many :municipalities
+  belongs_to :default_municipality, class_name: "Municipality",
+             foreign_key: :municipality_code, primary_key: :municipality_code,
+             optional: true
   has_many :scenarios
 end

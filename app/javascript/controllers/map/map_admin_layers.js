@@ -286,11 +286,8 @@ export class MapAdminLayers {
     this.c._selectedMunicipalityCode = munCode
 
     const focus = await fetch(`/municipalities/focus?municipality_code=${encodeURIComponent(munCode)}`).then(r => r.json())
-    this.c.map.flyTo({
-      center: focus.centroid,
-      zoom: focus.zoom,
-      essential: true
-    })
+    const moveMethod = event.detail?.instant ? "jumpTo" : "flyTo"
+    this.c.map[moveMethod]({ center: focus.centroid, zoom: focus.zoom, essential: true })
 
     this.setRegionsVisible(false)
     this.setMunicipalitiesVisible(false)

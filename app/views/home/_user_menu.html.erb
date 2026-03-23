@@ -2,6 +2,7 @@
   class="user-menu"
   data-controller="user-menu"
   data-user-menu-open-value="false"
+  data-user-menu-default-municipality-value="<%= user_signed_in? ? current_user.municipality_code.to_s : "" %>"
 >
   <button type="button"
           class="user-menu__btn"
@@ -29,6 +30,17 @@
           <div class="user-menu__profile-label">Cuenta</div>
           <div class="user-menu__profile-email"><%= current_user.email %></div>
         </div>
+      </div>
+
+      <div class="user-menu__divider"></div>
+
+      <div class="user-menu__default-municipality">
+        <div class="user-menu__section-label">Comuna por defecto</div>
+        <select class="user-menu__municipality-select"
+                data-user-menu-target="municipalitySelect"
+                data-action="change->user-menu#saveDefaultMunicipality">
+          <option value="">Sin comuna por defecto</option>
+        </select>
       </div>
 
       <div class="user-menu__divider"></div>
