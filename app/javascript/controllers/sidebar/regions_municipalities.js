@@ -103,6 +103,9 @@ export function createRegionsMunicipalities(controller) {
         controller.municipalitySelectTarget.innerHTML = "<option>Seleccionar comuna...</option>"
       }
 
+      // Hide mode toggle (no municipality selected)
+      if (controller.hasModeToggleTarget) controller.modeToggleTarget.hidden = true
+
       // Reset sidebar UI state
       controller._selectedMunicipalityCode = null
       controller.resetAfterMunicipalityChange()
@@ -121,6 +124,9 @@ export function createRegionsMunicipalities(controller) {
 
       // Region back button reappears
       if (controller.hasRegionBackBtnTarget) controller.regionBackBtnTarget.hidden = false
+
+      // Hide mode toggle (no municipality selected)
+      if (controller.hasModeToggleTarget) controller.modeToggleTarget.hidden = true
 
       // Reset sidebar UI state
       controller._selectedMunicipalityCode = null

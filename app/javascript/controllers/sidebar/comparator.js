@@ -88,7 +88,9 @@ export function createComparator(controller) {
       if (controller.hasRegionSectionTarget) controller.regionSectionTarget.hidden = false
       if (controller.hasMunicipalitySectionTarget) controller.municipalitySectionTarget.hidden = false
 
-      if (controller.hasScenarioSectionTarget) controller.scenarioSectionTarget.hidden = false
+      if (controller.hasScenarioSectionTarget) {
+        controller.scenarioSectionTarget.hidden = !controller._selectedMunicipalityCode
+      }
 
       if (controller.hasComparatorSectionTarget) controller.comparatorSectionTarget.hidden = true
       if (controller.hasComparatorDividerTarget) controller.comparatorDividerTarget.hidden = true

@@ -169,7 +169,7 @@ export default class extends Controller {
 
     // ✅ Si el localizador está abierto, NO lo cierres: solo muévelo
     if (this.hasLocatorPanelTarget && !this.locatorPanelTarget.hidden) {
-      this.locatorPanelTarget.style.left = this.collapsed ? "0px" : "300px"
+      this.locatorPanelTarget.style.left = this.collapsed ? "0px" : "304px"
     }
 
     // Mantén esto por si el map_controller necesita resize

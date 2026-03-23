@@ -33,7 +33,7 @@ export function createLocator(controller) {
       controller.locatorPanelTarget.hidden = !controller.locatorPanelTarget.hidden
 
       if (!controller.locatorPanelTarget.hidden) {
-        controller.locatorPanelTarget.style.left = controller.collapsed ? "0px" : "300px"
+        controller.locatorPanelTarget.style.left = controller.collapsed ? "0px" : "304px"
       }
 
       if (opening) {
