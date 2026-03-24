@@ -108,14 +108,11 @@ export default class extends Controller {
 
   onMapReady = () => {
     this._mapReady = true
-    // If sidebar was pre-rendered in municipality state, notify the map so it hides regions immediately.
-    // (loadMunicipalitiesIntoSelect will skip its own dispatch because _selectedMunicipalityCode is already set)
+    // If sidebar was pre-rendered in municipality state, just set internal state.
+    // loadMunicipalitiesIntoSelect will call municipalityChanged to set up the full sidebar UI.
     if (this.defaultMunicipalityValue && !this._pendingDefaultMunicipality) {
       const munCode = this.defaultMunicipalityValue
       this._selectedMunicipalityCode = munCode
-      window.dispatchEvent(new CustomEvent("municipality:selected", {
-        detail: { municipality_code: munCode, instant: true }
-      }))
       return
     }
     if (this._pendingDefaultMunicipality) {
@@ -129,8 +126,8 @@ export default class extends Controller {
     }
   }
 
-  loadMunicipalitiesIntoSelect(regionCode = null) {
-    return this.regionsMunicipalities.loadMunicipalitiesIntoSelect(regionCode)
+  loadMunicipalitiesIntoSelect(regionCode = null, opts = {}) {
+    return this.regionsMunicipalities.loadMunicipalitiesIntoSelect(regionCode, opts)
   }
   onMunicipalityClicked = (e) => { return this.regionsMunicipalities.onMunicipalityClicked(e) }
 

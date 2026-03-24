@@ -177,7 +177,14 @@ export class MapCompareSlider {
     this.mapLeft.getSource("cells")?.setData(fcB)   // izquierda = B
     this.mapRight.getSource("cells")?.setData(fcA)  // derecha = A
 
-    c._cellsBreaks = payloadA?.breaks || payloadB?.breaks || c._cellsBreaks
+    // Use the breaks with the highest last value so the legend covers both scenarios
+    const breaksA = payloadA?.breaks
+    const breaksB = payloadB?.breaks
+    if (breaksA && breaksB) {
+      c._cellsBreaks = breaksA[breaksA.length - 1] >= breaksB[breaksB.length - 1] ? breaksA : breaksB
+    } else {
+      c._cellsBreaks = breaksA || breaksB || c._cellsBreaks
+    }
     c.legend.render()
     c.legend.showButtonIfNeeded()
     c.legend.show()
