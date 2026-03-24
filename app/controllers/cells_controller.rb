@@ -460,7 +460,15 @@ class CellsController < ApplicationController
     rows = []
     result.each { |r| rows << r }
 
-    breaks = edges
+    breaks = edges.dup
+
+    # If scenario modifications pushed values beyond the pre-calculated last bin,
+    # extend the last break to cover the actual data maximum so the legend stays accurate.
+    if rows.any?
+      actual_max = rows.map { |r| r["value"].to_f }.max
+      breaks[-1] = actual_max if actual_max > breaks.last
+    end
+
     proj_by_h3 = projects_by_h3_for_scenarios(scenario_id, opportunity_code: opp_code)
 
     features = rows.map do |r|

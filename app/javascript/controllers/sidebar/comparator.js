@@ -58,7 +58,8 @@ export function createComparator(controller) {
       if (controller.hasComparatorDividerTarget) controller.comparatorDividerTarget.hidden = false
       if (controller.hasCompareModeSectionTarget) controller.compareModeSectionTarget.hidden = false
 
-      // ❌ comparador no construye
+      // ❌ comparador no construye ni navega de vuelta
+      if (controller.hasMunicipalityBackBtnTarget) controller.municipalityBackBtnTarget.hidden = true
       if (controller.hasLocateSectionTarget) controller.locateSectionTarget.hidden = true
       if (controller.hasLocatorPanelTarget) controller.locatorPanelTarget.hidden = true
 
@@ -87,6 +88,10 @@ export function createComparator(controller) {
     enterConstructorMode() {
       if (controller.hasRegionSectionTarget) controller.regionSectionTarget.hidden = false
       if (controller.hasMunicipalitySectionTarget) controller.municipalitySectionTarget.hidden = false
+      // Restore back button only if a municipality is currently selected
+      if (controller.hasMunicipalityBackBtnTarget) {
+        controller.municipalityBackBtnTarget.hidden = !controller._selectedMunicipalityCode
+      }
 
       if (controller.hasScenarioSectionTarget) controller.scenarioSectionTarget.hidden = false
 
