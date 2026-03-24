@@ -211,6 +211,12 @@ export class MapAdminLayers {
         }
 
         this.c.hover.bindRegionsHoverTooltip()
+
+        // If a municipality is already selected (e.g. default municipality on page load),
+        // hide regions immediately after adding their layers.
+        if (this.c._selectedMunicipalityCode) {
+          this.setRegionsVisible(false)
+        }
       })
       .catch(err => console.error("Error cargando regiones:", err))
   }
