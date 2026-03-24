@@ -30,7 +30,7 @@ COPY . .
 
 RUN bundle exec bootsnap precompile app/ lib/
 
-RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
+RUN SECRET_KEY_BASE_DUMMY=1 DATABASE_URL=postgresql://localhost/dummy ./bin/rails assets:precompile
 
 FROM base
 
