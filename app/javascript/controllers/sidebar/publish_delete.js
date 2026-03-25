@@ -43,6 +43,11 @@ export function createPublishDelete(controller) {
           detail: { scenario_id: String(scenarioId), status: "published" }
         }))
 
+        controller._api?.trackEvent("scenario_saved", {
+          scenario_id: scenarioId,
+          municipality_code: controller._selectedMunicipalityCode
+        })
+
         alert("Accesibilidades recalculadas ✅")
       } finally {
         if (controller.hasAddBtnTarget) controller.addBtnTarget.disabled = false

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_03_23_194131) do
+ActiveRecord::Schema[7.1].define(version: 2026_03_25_145712) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "postgis"
@@ -30,6 +30,18 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_23_194131) do
     t.index ["scenario_id", "travel_mode_id", "opportunity_code", "accessibility_type"], name: "idx_accessibilities_query"
     t.index ["scenario_id"], name: "index_accessibilities_on_scenario_id"
     t.index ["travel_mode_id"], name: "index_accessibilities_on_travel_mode_id"
+  end
+
+  create_table "analytics_events", force: :cascade do |t|
+    t.bigint "user_id"
+    t.string "session_id", null: false
+    t.string "event_name", null: false
+    t.jsonb "metadata", default: {}, null: false
+    t.datetime "created_at", default: -> { "now()" }, null: false
+    t.index ["created_at"], name: "index_analytics_events_on_created_at"
+    t.index ["event_name"], name: "index_analytics_events_on_event_name"
+    t.index ["session_id"], name: "index_analytics_events_on_session_id"
+    t.index ["user_id"], name: "index_analytics_events_on_user_id"
   end
 
   create_table "availabilities", force: :cascade do |t|
@@ -209,6 +221,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_23_194131) do
   add_foreign_key "accessibilities", "opportunities", column: "opportunity_code", primary_key: "opportunity_code"
   add_foreign_key "accessibilities", "scenarios"
   add_foreign_key "accessibilities", "travel_modes"
+  add_foreign_key "analytics_events", "users"
   add_foreign_key "availabilities", "municipalities", column: "municipality_code", primary_key: "municipality_code"
   add_foreign_key "availabilities", "users"
   add_foreign_key "bins", "visual_modes"

@@ -37,6 +37,10 @@ export function createLocator(controller) {
       }
 
       if (opening) {
+        controller._api?.trackEvent("locator_opened", {
+          municipality_code: controller._selectedMunicipalityCode,
+          scenario_id: controller._selectedScenarioId
+        })
         // ✅ SNAPSHOT ANTES de modificar UI
         controller.snapshotSidebarBeforeOpen()
 
@@ -174,6 +178,13 @@ export function createLocator(controller) {
         console.error(json)
         return alert(json.error || (json.errors || ["Error guardando"]).join("\n"))
       }
+
+      controller._api?.trackEvent("project_added", {
+        municipality_code: controller._selectedMunicipalityCode,
+        scenario_id: scenarioId,
+        opportunity_code: opportunityCode,
+        h3
+      })
 
       // UX reset inputs
       controller.projectNameInputTarget.value = ""

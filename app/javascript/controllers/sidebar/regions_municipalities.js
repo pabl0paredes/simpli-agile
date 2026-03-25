@@ -209,6 +209,9 @@ export function createRegionsMunicipalities(controller) {
 
       controller._selectedMunicipalityCode = munCode
 
+      const trackedMunName = controller.municipalitySelectTarget.selectedOptions?.[0]?.textContent?.trim()
+      controller._api?.trackEvent("municipality_opened", { municipality_code: munCode, municipality_name: trackedMunName })
+
       // Para usuarios sin sesión (sin selector de escenario), mostrar oportunidad directamente
       // y cargar el escenario base de la comuna para poder mostrar celdas.
       // Para usuarios con sesión, la oportunidad/locator se muestran en syncScenarioActionsUI()

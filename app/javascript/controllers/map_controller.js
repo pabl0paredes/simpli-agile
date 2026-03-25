@@ -113,6 +113,10 @@ export default class extends Controller {
   }
 
   disconnect() {
+    // Reset global flag so Turbo navigations don't see a stale "map ready" state
+    window._mapReady = false
+    this.map?.remove()
+
     window.removeEventListener("region:selected", this.onRegionSelected)
     window.removeEventListener("region:cleared", this.onRegionCleared)
     window.removeEventListener("municipality:selected", this.onMunicipalitySelected)

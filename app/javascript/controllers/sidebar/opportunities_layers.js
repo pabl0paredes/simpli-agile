@@ -68,6 +68,13 @@ export function createOpportunitiesLayers(controller) {
       controller._selectedOpportunityCode = opportunityCode
       controller._selectedOpportunityCategory = category
 
+      const oppName = e.target.selectedOptions?.[0]?.textContent?.trim()
+      controller._api?.trackEvent("opportunity_selected", {
+        opportunity_code: opportunityCode,
+        opportunity_name: oppName,
+        municipality_code: controller._selectedMunicipalityCode
+      })
+
       // ✅ restaurar capa anterior si existe; si no, units
       queueMicrotask(() => {
         const isUsable = (btn) => btn && !btn.hidden
@@ -145,6 +152,11 @@ export function createOpportunitiesLayers(controller) {
         window.dispatchEvent(new CustomEvent("layer:selected", {
           detail: { metric }
         }))
+        controller._api?.trackEvent("layer_selected", {
+          layer: metric,
+          opportunity_code: controller._selectedOpportunityCode,
+          municipality_code: controller._selectedMunicipalityCode
+        })
       } else if (!isActive) {
         window.dispatchEvent(new CustomEvent("layer:cleared"))
       }
