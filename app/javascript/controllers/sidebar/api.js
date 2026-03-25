@@ -37,6 +37,17 @@ export async function deleteJSON(url) {
   return { ok: resp.ok, status: resp.status, data }
 }
 
+export function trackEvent(eventName, metadata = {}) {
+  fetch("/analytics/events", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRF-Token": csrfToken()
+    },
+    body: JSON.stringify({ event_name: eventName, metadata })
+  }).catch(() => {}) // fire-and-forget, never block the UI
+}
+
 // Para render seguro en innerHTML (tu caso de proyectos)
 export function escapeHTML(str) {
   return String(str ?? "")

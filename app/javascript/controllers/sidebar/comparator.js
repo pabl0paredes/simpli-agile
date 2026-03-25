@@ -219,6 +219,13 @@ export function createComparator(controller) {
       controller._compareMode = mode
       syncAccessibilityBtnVisibility()
 
+      controller._api?.trackEvent("compare_mode_changed", {
+        mode,
+        municipality_code: controller._selectedMunicipalityCode,
+        scenario_a_id: controller._scenarioAId,
+        scenario_b_id: controller._scenarioBId
+      })
+
       window.dispatchEvent(new CustomEvent("comparison:context_changed", {
         detail: {
           scenario_a_id: controller._scenarioAId,

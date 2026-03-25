@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { csrfToken, getJSON, postJSON, deleteJSON, escapeHTML } from "controllers/sidebar/api"
+import { csrfToken, getJSON, postJSON, deleteJSON, escapeHTML, trackEvent } from "controllers/sidebar/api"
 import { createUIState } from "controllers/sidebar/ui_state"
 import { createRegionsMunicipalities } from "controllers/sidebar/regions_municipalities"
 import { createScenarios } from "controllers/sidebar/scenarios"
@@ -77,7 +77,7 @@ export default class extends Controller {
     this.loadMunicipalitiesIntoSelect()
     this.loadOpportunitiesIntoSelect()
     this.loadLocatorOpportunitiesIntoSelect()
-    this._api = { csrfToken, getJSON, postJSON, deleteJSON, escapeHTML }
+    this._api = { csrfToken, getJSON, postJSON, deleteJSON, escapeHTML, trackEvent }
 
     window.addEventListener("region:clicked", this.onRegionClicked)
     window.addEventListener("municipality:clicked", this.onMunicipalityClicked)

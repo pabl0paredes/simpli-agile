@@ -62,7 +62,17 @@ export class MapStyle {
       c.adminLayers.loadSelectedMunicipalityOutlineOn(map)
     }
 
-    if (c._cellsFeatures?.length) {
+    if (c._inLocator) {
+      // Locator is open — re-trigger locator data load on the new style
+      c.cellsLayer.ensure(map)
+      c.ensureLocatorLayers()
+      window.dispatchEvent(new CustomEvent("locator:opened", {
+        detail: {
+          municipality_code: c._selectedMunicipalityCode,
+          scenario_id: c._selectedScenarioId
+        }
+      }))
+    } else if (c._cellsFeatures?.length) {
       c.cellsLayer.ensure(map)
       map.getSource("cells")?.setData({ type: "FeatureCollection", features: c._cellsFeatures })
       c.setCellsVisible(true)
