@@ -1503,6 +1503,35 @@
 
   .map-legend__label { flex: 1; line-height: 1.2; }
 
+  .map-legend__row--static { cursor: default; pointer-events: none; }
+
+  .map-legend__divider {
+    height: 1px;
+    background: rgb(9 9 11 / 0.07);
+    margin: 4px 0;
+  }
+
+  .map-legend__line-swatch {
+    width: 24px;
+    height: 2px;
+    flex: 0 0 auto;
+    border-radius: 1px;
+  }
+
+  .map-legend__line-swatch--dashed {
+    background: repeating-linear-gradient(
+      to right,
+      #111827 0px, #111827 4px,
+      transparent 4px, transparent 8px
+    );
+  }
+
+  .map-legend__line-swatch--study-area {
+    height: 2.5px;
+    background: #2bf89a;
+    box-shadow: 0 0 5px rgba(43, 248, 154, 0.55);
+  }
+
 
   /* ========== PICKCELL HINT ========== */
 

@@ -433,16 +433,18 @@ export class MapAdminLayers {
 
     if (feature) {
       src.setData({ type: "FeatureCollection", features: [feature] })
-      // Bring above cells so it's always visible
       if (map.getLayer("study-area-glow")) map.moveLayer("study-area-glow")
       if (map.getLayer("study-area-line")) map.moveLayer("study-area-line")
+      this.c._hasStudyArea = true
     } else {
       src.setData({ type: "FeatureCollection", features: [] })
+      this.c._hasStudyArea = false
     }
   }
 
   _clearStudyArea(map) {
     const src = map?.getSource("study-area")
     if (src) src.setData({ type: "FeatureCollection", features: [] })
+    this.c._hasStudyArea = false
   }
 }
