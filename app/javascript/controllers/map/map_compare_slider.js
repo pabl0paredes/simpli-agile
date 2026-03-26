@@ -45,53 +45,35 @@ export class MapCompareSlider {
     throw new Error("mapbox-gl-compare no está disponible en window (script no cargó)")
   }
 
-  // mapRight (A) is the "before" map → shown on the LEFT of the slider
-  // mapLeft  (B) is the "after"  map → shown on the RIGHT of the slider
-  this.compare = new CompareCtor(this.mapRight, this.mapLeft, this.c.compareContainerTarget)
+  // mapRight (A) shown on LEFT of slider, mapLeft (B) shown on RIGHT
+  this.compare = new CompareCtor(this.mapRight, this.mapLeft, c.compareContainerTarget)
 
-  // mapbox-gl-compare clips maps via the deprecated CSS `clip` property, which does not
-  // apply to WebGL composited layers (Mapbox GL renders in a GPU-promoted layer that
-  // "escapes" CSS clip). clip-path IS applied at the compositor level and works correctly.
-  // We use a MutationObserver to intercept every `clip` write and convert it to clip-path,
-  // regardless of whether the plugin calls _setPosition directly or through its internal
-  // closure (setSlider uses a captured reference that bypasses instance overrides).
-  this._clipObserver = new MutationObserver((entries) => {
-    for (const entry of entries) {
-      const el = entry.target
-      const clip = el.style.clip
-      if (!clip || clip === '') continue
-      el.style.clip = ''
-      // rect(top, right, bottom, left)
-      // Before (left) map:  rect(0, Xpx,  H, 0)    — right boundary = slider pos
-      // After  (right) map: rect(0, 999em, H, Xpx)  — left  boundary = slider pos
-      const m = clip.match(/rect\([^,]+,\s*([^,]+),\s*[^,]+,\s*([^)]+)\)/)
-      if (!m) continue
-      const rightStr = m[1].trim()
-      const leftPx   = parseFloat(m[2])
-      if (rightStr.includes('em') || parseFloat(rightStr) > 9000) {
-        // after (right) map
-        el.style.clipPath = `inset(0 0 0 ${leftPx}px)`
-      } else {
-        // before (left) map
-        const rightPx = parseFloat(rightStr)
-        el.style.clipPath = `inset(0 calc(100% - ${rightPx}px) 0 0)`
-      }
-    }
-  })
-  this._clipObserver.observe(this.mapRight.getContainer(), { attributes: true, attributeFilter: ['style'] })
-  this._clipObserver.observe(this.mapLeft.getContainer(),  { attributes: true, attributeFilter: ['style'] })
+  // mapbox-gl-compare uses the deprecated CSS `clip` property which does not clip
+  // WebGL-composited canvases. We override _setPosition synchronously so clip-path
+  // (which works at the compositor level) is applied on every slider movement.
+  const containerA = this.mapRight.getContainer()
+  const containerB = this.mapLeft.getContainer()
+  const origSetPos = this.compare._setPosition.bind(this.compare)
+  this.compare._setPosition = (x) => {
+    origSetPos(x)             // moves the slider handle + sets CSS clip
+    containerA.style.clip = ''
+    containerB.style.clip = ''
+    containerA.style.clipPath = `inset(0 calc(100% - ${x}px) 0 0)`
+    containerB.style.clipPath = `inset(0 0 0 ${x}px)`
+    // Also clip canvases directly in case clip-path on container doesn't clip WebGL
+    const canvasA = this.mapRight.getCanvas()
+    const canvasB = this.mapLeft.getCanvas()
+    if (canvasA) canvasA.style.clipPath = `inset(0 calc(100% - ${x}px) 0 0)`
+    if (canvasB) canvasB.style.clipPath = `inset(0 0 0 ${x}px)`
+  }
 
+  // Apply correct initial position once the layout is computed
   requestAnimationFrame(() => {
     this.mapLeft.resize()
     this.mapRight.resize()
+    const w = c.compareContainerTarget.getBoundingClientRect().width
+    if (w > 0) this.compare._setPosition(w / 2)
 
-    const w = this.c.compareContainerTarget.getBoundingClientRect().width
-    if (w > 0 && this.compare?.setSlider) this.compare.setSlider(w / 2)
-
-    requestAnimationFrame(() => {
-      this.mapLeft.resize()
-      this.mapRight.resize()
-    })
   })
 
   const sync = (src, dst) => {
@@ -115,8 +97,8 @@ export class MapCompareSlider {
     this.mapLeft.resize()
     this.mapRight.resize()
 
-    const w = this.c.compareContainerTarget.getBoundingClientRect().width
-    if (w > 0 && this.compare?.setSlider) this.compare.setSlider(w / 2)
+    const w = c.compareContainerTarget.getBoundingClientRect().width
+    if (w > 0) this.compare._setPosition(w / 2)
 
     await this.ensureCellsOn(this.mapLeft)
     await this.ensureCellsOn(this.mapRight)
@@ -147,9 +129,6 @@ export class MapCompareSlider {
 
     try { this.compare?.remove?.() } catch {}
     this.compare = null
-
-    this._clipObserver?.disconnect()
-    this._clipObserver = null
 
     this.clearTooltip(this.mapLeft)
     this.clearTooltip(this.mapRight)

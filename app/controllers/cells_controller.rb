@@ -474,8 +474,10 @@ class CellsController < ApplicationController
     features = rows.map do |r|
       v = r["value"].to_f
       klass =
-        if v <= 0 || breaks.uniq.length <= 1
+        if v <= 0
           0
+        elsif breaks.uniq.length <= 1
+          1
         else
           bin_class(v, breaks)
         end
