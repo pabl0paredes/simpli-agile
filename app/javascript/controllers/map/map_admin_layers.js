@@ -150,6 +150,40 @@ export class MapAdminLayers {
         }
       })
     }
+
+    if (!map.getSource("study-area")) {
+      map.addSource("study-area", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] }
+      })
+    }
+
+    if (!map.getLayer("study-area-glow")) {
+      map.addLayer({
+        id: "study-area-glow",
+        type: "line",
+        source: "study-area",
+        paint: {
+          "line-color": "#2bf89a",
+          "line-width": 10,
+          "line-opacity": 0.15,
+          "line-blur": 6
+        }
+      })
+    }
+
+    if (!map.getLayer("study-area-line")) {
+      map.addLayer({
+        id: "study-area-line",
+        type: "line",
+        source: "study-area",
+        paint: {
+          "line-color": "#2bf89a",
+          "line-width": 2.5,
+          "line-opacity": 0.95
+        }
+      })
+    }
   }
 
   loadRegionsIntoMap() {
@@ -311,6 +345,8 @@ export class MapAdminLayers {
 
     this.c.map.getSource("selected-municipality").setData(focus.geometry)
 
+    this._loadStudyArea(this.c.map, focus.study_area)
+
     // If municipality was selected directly (no region chosen first), resolve the region
     // context so back navigation can restore the region state correctly.
     if (!this.c._selectedRegionCode && focus.region_code) {
@@ -346,11 +382,13 @@ export class MapAdminLayers {
     const src = this.c.map.getSource("selected-municipality")
     if (!src) return
     src.setData({ type: "FeatureCollection", features: [] })
+    this._clearStudyArea(this.c.map)
   }
 
   onMunicipalityBack = async () => {
     const src = this.c.map.getSource("selected-municipality")
     if (src) src.setData({ type: "FeatureCollection", features: [] })
+    this._clearStudyArea(this.c.map)
     this.setMunicipalitiesVisible(true)
 
     const regionCode = this.c._selectedRegionCode
@@ -366,6 +404,7 @@ export class MapAdminLayers {
 
     const src = this.c.map.getSource("selected-municipality")
     if (src) src.setData({ type: "FeatureCollection", features: [] })
+    this._clearStudyArea(this.c.map)
 
     this.setMunicipalitiesVisible(false)
     this.setRegionsVisible(true)
@@ -384,5 +423,26 @@ export class MapAdminLayers {
 
     const src = map.getSource("selected-municipality")
     if (src) src.setData(focus.geometry)
+
+    this._loadStudyArea(map, focus.study_area)
+  }
+
+  _loadStudyArea(map, feature) {
+    const src = map.getSource("study-area")
+    if (!src) return
+
+    if (feature) {
+      src.setData({ type: "FeatureCollection", features: [feature] })
+      // Bring above cells so it's always visible
+      if (map.getLayer("study-area-glow")) map.moveLayer("study-area-glow")
+      if (map.getLayer("study-area-line")) map.moveLayer("study-area-line")
+    } else {
+      src.setData({ type: "FeatureCollection", features: [] })
+    }
+  }
+
+  _clearStudyArea(map) {
+    const src = map?.getSource("study-area")
+    if (src) src.setData({ type: "FeatureCollection", features: [] })
   }
 }

@@ -29,16 +29,22 @@ class MunicipalitiesController < ApplicationController
   end
 
   def focus
-    mun = Municipality.select(:name, :region_code, :municipality_code, :centroid, :zoom, :geometry)
+    mun = Municipality.select(:name, :region_code, :municipality_code, :centroid, :zoom, :geometry, :study_area)
       .find_by!(municipality_code: params[:municipality_code])
+
+    study_area_feature = mun.study_area ? {
+      type: "Feature",
+      geometry: RGeo::GeoJSON.encode(mun.study_area),
+      properties: { municipality_code: mun.municipality_code }
+    } : nil
 
     render json: {
       municipality_code: mun.municipality_code,
       region_code: mun.region_code,
       name: mun.name,
       zoom: mun.zoom,
-      # Asumiendo centroid es un POINT (PostGIS) en SRID 4326
-      centroid: [mun.centroid.x, mun.centroid.y], # [lng, lat]
+      centroid: [mun.centroid.x, mun.centroid.y],
+      study_area: study_area_feature,
       geometry: {
         type: "FeatureCollection",
         features: [
