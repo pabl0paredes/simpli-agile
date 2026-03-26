@@ -61,7 +61,7 @@ export default class extends Controller {
 
     this.map.addControl(
       new mapboxgl.NavigationControl({ showCompass: false }),
-      "top-right"
+      "bottom-right"
     )
 
     // ✅ todo lo que agrega layers/sources, dentro de "load"
@@ -171,6 +171,24 @@ export default class extends Controller {
   onComparisonDeltaSelected = (e) => this.thematicRunner.onComparisonDeltaSelected(e)
 
   onCellSelectionClear = () => this.selection?.clearCellSelected()
+
+  fitToCellsBounds(features = this._cellsFeatures, padding = 60) {
+    if (!features?.length) return
+    let minLng = Infinity, minLat = Infinity, maxLng = -Infinity, maxLat = -Infinity
+    const processCoords = (coords) => {
+      if (typeof coords[0] === "number") {
+        if (coords[0] < minLng) minLng = coords[0]
+        if (coords[0] > maxLng) maxLng = coords[0]
+        if (coords[1] < minLat) minLat = coords[1]
+        if (coords[1] > maxLat) maxLat = coords[1]
+      } else {
+        coords.forEach(processCoords)
+      }
+    }
+    features.forEach(f => { if (f.geometry?.coordinates) processCoords(f.geometry.coordinates) })
+    if (minLng === Infinity) return
+    this.map.fitBounds([[minLng, minLat], [maxLng, maxLat]], { padding, essential: true })
+  }
 
   syncCompareIfNeeded = () => {
     if (this._uiMode !== "comparador") return

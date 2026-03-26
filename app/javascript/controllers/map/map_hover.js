@@ -17,12 +17,13 @@ export class MapHover {
       tooltipDiv = document.createElement("div")
       tooltipDiv.className = "region-tooltip"
       tooltipDiv.style.position = "absolute"
-      tooltipDiv.style.backgroundColor = "rgba(17, 24, 39, 0.95)" // oscuro elegante
+      tooltipDiv.style.backgroundColor = "rgba(17, 24, 39, 0.95)"
       tooltipDiv.style.color = "#fff"
       tooltipDiv.style.padding = "10px 14px"
       tooltipDiv.style.borderRadius = "12px"
       tooltipDiv.style.fontWeight = "700"
-      tooltipDiv.style.fontSize = "18px"
+      tooltipDiv.style.fontSize = "16px"
+      tooltipDiv.style.fontFamily = "'Inter', ui-sans-serif, system-ui, sans-serif"
       tooltipDiv.style.pointerEvents = "none"
       tooltipDiv.style.whiteSpace = "nowrap"
       tooltipDiv.style.boxShadow = "0 10px 25px rgba(0,0,0,0.25)"
@@ -91,14 +92,15 @@ export class MapHover {
       // si quieres misma clase que regiones:
       tooltipDiv.className = "municipality-tooltip"
 
-      // mismos estilos “modernos”
+      // mismos estilos "modernos"
       tooltipDiv.style.position = "absolute"
       tooltipDiv.style.backgroundColor = "rgba(17, 24, 39, 0.95)"
       tooltipDiv.style.color = "#fff"
       tooltipDiv.style.padding = "10px 14px"
       tooltipDiv.style.borderRadius = "12px"
       tooltipDiv.style.fontWeight = "700"
-      tooltipDiv.style.fontSize = "18px"
+      tooltipDiv.style.fontSize = "16px"
+      tooltipDiv.style.fontFamily = "'Inter', ui-sans-serif, system-ui, sans-serif"
       tooltipDiv.style.pointerEvents = "none"
       tooltipDiv.style.whiteSpace = "nowrap"
       tooltipDiv.style.boxShadow = "0 10px 25px rgba(0,0,0,0.25)"
@@ -165,13 +167,14 @@ export class MapHover {
       tooltipDiv.style.position = "absolute"
       tooltipDiv.style.backgroundColor = "rgba(17, 24, 39, 0.95)"
       tooltipDiv.style.color = "#fff"
-      tooltipDiv.style.padding = "10px 14px"
-      tooltipDiv.style.borderRadius = "12px"
-      tooltipDiv.style.fontWeight = "700"
-      tooltipDiv.style.fontSize = "14px"
+      tooltipDiv.style.padding = "8px 12px"
+      tooltipDiv.style.borderRadius = "10px"
+      tooltipDiv.style.fontWeight = "500"
+      tooltipDiv.style.fontSize = "13px"
+      tooltipDiv.style.fontFamily = "'Inter', ui-sans-serif, system-ui, sans-serif"
       tooltipDiv.style.pointerEvents = "none"
       tooltipDiv.style.whiteSpace = "nowrap"
-      tooltipDiv.style.boxShadow = "0 10px 25px rgba(0,0,0,0.25)"
+      tooltipDiv.style.boxShadow = "0 8px 20px rgba(0,0,0,0.22)"
       this.map.getContainer().appendChild(tooltipDiv)
       return tooltipDiv
     }
@@ -303,9 +306,11 @@ export class MapHover {
       el.style.color = "#fff"
       el.style.padding = "8px 12px"
       el.style.borderRadius = "10px"
-      el.style.fontWeight = "600"
+      el.style.fontWeight = "500"
+      el.style.fontSize = "13px"
+      el.style.fontFamily = "'Inter', ui-sans-serif, system-ui, sans-serif"
       el.style.pointerEvents = "none"
-      el.style.boxShadow = "0 8px 20px rgba(0,0,0,0.25)"
+      el.style.boxShadow = "0 8px 20px rgba(0,0,0,0.22)"
       map.getContainer().appendChild(el)
       map._compareTooltip = el
     }

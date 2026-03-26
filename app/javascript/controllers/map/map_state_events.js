@@ -35,18 +35,33 @@ export class MapStateEvents {
     this.c._compareMode = e.detail?.compare_mode
 
     const useSlider = (this.c._uiMode === "comparador" && this.c._compareMode === "slider")
-    this.c.compareSlider?.setEnabled(useSlider)
-
-    if (useSlider) this.c.compareSlider?.syncData()
-
     const useSplit = (this.c._uiMode === "comparador" && this.c._compareMode === "split")
-    this.c.compareSplit?.setEnabled(useSplit)
-    if (useSplit) this.c.compareSplit?.syncData()
+
+    // Disable inactive modes first — avoids container visibility conflicts when switching modes
+    // (e.g. split.disable() sets mapContainer visible; if called AFTER slider.enable() it undoes it)
+    const sliderWasEnabled = this.c.compareSlider?.enabled
+    const splitWasEnabled = this.c.compareSplit?.enabled
+
+    if (!useSlider) this.c.compareSlider?.setEnabled(false)
+    if (!useSplit) this.c.compareSplit?.setEnabled(false)
+
+    if (useSlider) {
+      this.c.compareSlider?.setEnabled(true)
+      // Only call syncData() directly when slider was already running (maps are loaded).
+      // For a fresh enable, onBothLoaded handles the initial data load.
+      if (sliderWasEnabled) this.c.compareSlider?.syncData()
+    }
+
+    if (useSplit) {
+      this.c.compareSplit?.setEnabled(true)
+      if (splitWasEnabled) this.c.compareSplit?.syncData()
+    }
   }
 
   onOpportunitySelected = (event) => {
     this.c._selectedOpportunityCode = event.detail.opportunity_code
     this.c._selectedAccessibilityType = event.detail.category === "POI" ? "units" : "surface"
+    this.c._hasFitCells = false // reset so next cell load zooms to fit
     if (this.c._uiMode === "comparador" && this.c._compareMode === "slider") {
       this.c.compareSlider?.syncData()
       return

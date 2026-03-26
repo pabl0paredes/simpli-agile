@@ -81,6 +81,8 @@ export class MapCompareSplit {
     try { this.mapBottom?.remove() } catch {}
     this.mapTop = null
     this.mapBottom = null
+
+    requestAnimationFrame(() => c.map?.resize())
   }
 
   async syncData() {

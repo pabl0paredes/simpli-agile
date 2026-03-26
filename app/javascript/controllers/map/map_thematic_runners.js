@@ -74,6 +74,11 @@ export class MapThematicRunners {
     this.c._cellsFeatures = fc.features
     this.c.setCellsVisible(true)
 
+    if (!this.c._hasFitCells) {
+      this.c.fitToCellsBounds(fc.features)
+      this.c._hasFitCells = true
+    }
+
     this.c.legend.render()
     this.c.legend.showButtonIfNeeded()
     this.c.legend.show()

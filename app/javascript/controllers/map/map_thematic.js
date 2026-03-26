@@ -60,6 +60,11 @@ export class MapThematic {
     this.ctx._cellsFeatures = payload.features
     this.ctx.setCellsVisible(true)
 
+    if (!this.ctx._hasFitCells) {
+      this.ctx.fitToCellsBounds(payload.features)
+      this.ctx._hasFitCells = true
+    }
+
     this.ctx.legend.render()
     this.ctx.legend.showButtonIfNeeded()
     this.ctx.legend.show()

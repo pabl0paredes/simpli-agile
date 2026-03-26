@@ -1,9 +1,11 @@
 <aside class="sidebar" data-sidebar-target="panel">
-    <div class="sidebar__top">
+    <div class="sidebar__header-area">
       <div class="sidebar__brand">
         <%= image_tag "Logo SimpliCity.png", alt: "Logo SimpliCity" %>
       </div>
+    </div>
 
+    <div class="sidebar__top">
       <button
         type="button"
         class="sidebar__back-btn"
@@ -22,7 +24,7 @@
           <option>Seleccionar escenario A...</option>
         </select>
 
-        <div style="height: 10px"></div>
+        <div class="h-2.5"></div>
 
         <div class="sidebar__label">ESCENARIO B</div>
         <select class="sidebar__select"
@@ -33,7 +35,6 @@
         </select>
       </div>
 
-      <div class="sidebar__divider" data-sidebar-target="comparatorDivider" hidden></div>
 
       <div class="sidebar__section" data-sidebar-target="compareModeSection" hidden>
         <div class="sidebar__label">MODO DE COMPARACIÓN</div>
@@ -43,7 +44,8 @@
                   class="compare-modes__btn is-active"
                   data-mode="delta"
                   data-action="click->sidebar#compareModeSelected"
-                  aria-label="Delta">
+                  aria-label="Delta"
+                  data-tooltip="Diferencia entre escenarios">
             <i class="fa-solid fa-caret-up"></i>
           </button>
 
@@ -51,7 +53,8 @@
                   class="compare-modes__btn"
                   data-mode="split"
                   data-action="click->sidebar#compareModeSelected"
-                  aria-label="Split">
+                  aria-label="Split"
+                  data-tooltip="Pantalla dividida">
             <i class="fa-solid fa-table-columns"></i>
           </button>
 
@@ -59,7 +62,8 @@
                   class="compare-modes__btn"
                   data-mode="slider"
                   data-action="click->sidebar#compareModeSelected"
-                  aria-label="Swipe">
+                  aria-label="Swipe"
+                  data-tooltip="Deslizador comparativo">
             <i class="fa-solid fa-grip-lines-vertical"></i>
           </button>
         </div>
@@ -86,34 +90,35 @@
           >+</button>
         </div>
 
-        <div class="sidebar__hint sidebar__hint--center" data-sidebar-target="scenarioHint">
+        <div class="sidebar__hint sidebar__hint--center" data-sidebar-target="scenarioHint" style="display:none">
           Selecciona una comuna para ver tus escenarios
+        </div>
+
+        <div class="sidebar__scenario-actions">
+          <button
+            type="button"
+            class="sidebar__success-btn"
+            data-sidebar-target="saveScenarioBtn"
+            data-action="click->sidebar#recalculateAccessibilities"
+            disabled
+            hidden
+          >
+            <i class="fa-solid fa-floppy-disk"></i> Guardar cambios
+          </button>
+
+          <button
+            type="button"
+            class="sidebar__danger-btn"
+            data-sidebar-target="deleteScenarioBtn"
+            data-action="click->sidebar#deleteScenario"
+            hidden
+          >
+            <i class="fa-solid fa-trash"></i> Eliminar escenario
+          </button>
         </div>
       </div>
 
-      <button
-        type="button"
-        class="sidebar__success-btn"
-        data-sidebar-target="saveScenarioBtn"
-        data-action="click->sidebar#recalculateAccessibilities"
-        disabled
-        hidden
-      >
-        <i class="fa-solid fa-floppy-disk"></i> Guardar cambios
-      </button>
 
-      <button
-        type="button"
-        class="sidebar__danger-btn"
-        data-sidebar-target="deleteScenarioBtn"
-        data-action="click->sidebar#deleteScenario"
-        hidden
-      >
-        🗑️ Eliminar escenario
-      </button>
-
-
-      <div class="sidebar__divider"></div>
       <% end %>
 
 
@@ -157,10 +162,8 @@
         <p class="sidebar__no-data-msg">No hay datos cargados para esta comuna.</p>
       </div>
 
-      <div class="sidebar__divider"></div>
-
       <div class="sidebar__section" data-sidebar-target="layerSection" hidden>
-        <div class="sidebar__label">CAPAS DE DATOS</div>
+        <div class="sidebar__label">VISUALIZACIÓN</div>
 
         <div class="sidebar__layers">
           <button
@@ -187,29 +190,31 @@
             data-layer="accessibility"
             data-action="click->sidebar#selectLayer"
           >
-            🚶 Accesibilidad
+            <i class="fa-solid fa-person-walking"></i> Accesibilidad
+          </button>
+        </div>
+      </div>
+
+      <div class="sidebar__section" data-sidebar-target="accessibilityChoices" hidden>
+        <div class="sidebar__label">MODO DE TRANSPORTE</div>
+        <div class="sidebar__subchoices">
+          <button
+            type="button"
+            class="sidebar__subchoice-btn"
+            data-mode="walk"
+            data-action="click->sidebar#selectAccessibilityMode"
+          >
+            Caminata
           </button>
 
-          <div class="sidebar__subchoices" data-sidebar-target="accessibilityChoices" hidden>
-            <button
-              type="button"
-              class="sidebar__subchoice-btn"
-              data-mode="walk"
-              data-action="click->sidebar#selectAccessibilityMode"
-            >
-              Caminata
-            </button>
-
-            <button
-              type="button"
-              class="sidebar__subchoice-btn"
-              data-mode="car"
-              data-action="click->sidebar#selectAccessibilityMode"
-            >
-              Automóvil
-            </button>
-          </div>
-
+          <button
+            type="button"
+            class="sidebar__subchoice-btn"
+            data-mode="car"
+            data-action="click->sidebar#selectAccessibilityMode"
+          >
+            Automóvil
+          </button>
         </div>
       </div>
 
@@ -219,14 +224,15 @@
         data-sidebar-target="locateSection"
         hidden
       >
+        <div class="sidebar__label">HERRAMIENTAS DE ANÁLISIS</div>
         <div class="sidebar__tooltip-wrap" data-sidebar-target="locatorBtnWrap">
           <button
             type="button"
-            class="sidebar__primary-btn"
+            class="sidebar__nav-btn"
             data-sidebar-target="locatorBtn"
             data-action="click->sidebar#toggleLocator"
           >
-            📍 Localizar infraestructura
+            <i class="fa-solid fa-location-dot"></i> Localizar infraestructura
           </button>
           <span class="sidebar__tooltip">
             Crea un escenario para localizar nueva infraestructura
@@ -235,13 +241,14 @@
       </div>
       <% end %>
 
+    </div>
+
     <div class="sidebar__bottom">
       <button class="sidebar__link" type="button">
-        <span class="sidebar__icon">⚙️</span> Configuración
+        <span class="sidebar__icon"><i class="fa-solid fa-gear"></i></span> Configuración
       </button>
       <button class="sidebar__link" type="button">
-        <span class="sidebar__icon">❔</span> Ayuda
+        <span class="sidebar__icon"><i class="fa-regular fa-circle-question"></i></span> Ayuda
       </button>
     </div>
-  </div>
 </aside>

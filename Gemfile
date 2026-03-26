@@ -23,9 +23,7 @@ gem "turbo-rails"
 # Hotwire's modest JavaScript framework [https://stimulus.hotwired.dev]
 gem "stimulus-rails"
 
-gem "bootstrap", "~> 5.3"
 gem "simple_form"
-gem "sassc-rails"
 gem "devise"
 gem "activerecord-postgis-adapter"
 gem "rgeo-geojson"
@@ -74,3 +72,5 @@ group :test do
   gem "capybara"
   gem "selenium-webdriver"
 end
+
+gem "tailwindcss-rails", "~> 4.4"

@@ -294,8 +294,13 @@ export class MapAdminLayers {
     this.c._selectedMunicipalityCode = munCode
 
     const focus = await fetch(`/municipalities/focus?municipality_code=${encodeURIComponent(munCode)}`).then(r => r.json())
-    const moveMethod = event.detail?.instant ? "jumpTo" : "flyTo"
-    this.c.map[moveMethod]({ center: focus.centroid, zoom: focus.zoom, essential: true })
+
+    const bbox = this._bboxFromGeoJSON(focus.geometry)
+    if (bbox) {
+      this.c.map.fitBounds(bbox, { padding: 40, essential: true })
+    } else {
+      this.c.map.flyTo({ center: focus.centroid, zoom: focus.zoom, essential: true })
+    }
 
     this.setRegionsVisible(false)
     this.setMunicipalitiesVisible(false)
@@ -315,6 +320,22 @@ export class MapAdminLayers {
         detail: { region_code: focus.region_code }
       }))
     }
+  }
+
+  _bboxFromGeoJSON(geojson) {
+    let minLng = Infinity, minLat = Infinity, maxLng = -Infinity, maxLat = -Infinity
+    const processCoords = (coords) => {
+      if (typeof coords[0] === "number") {
+        if (coords[0] < minLng) minLng = coords[0]
+        if (coords[0] > maxLng) maxLng = coords[0]
+        if (coords[1] < minLat) minLat = coords[1]
+        if (coords[1] > maxLat) maxLat = coords[1]
+      } else {
+        coords.forEach(processCoords)
+      }
+    }
+    geojson.features?.forEach(f => { if (f.geometry?.coordinates) processCoords(f.geometry.coordinates) })
+    return minLng === Infinity ? null : [[minLng, minLat], [maxLng, maxLat]]
   }
 
   onMunicipalityCleared = () => {

@@ -80,7 +80,7 @@ export class MapCellsLayer {
             "case",
             ["boolean", ["feature-state", "selected"], false],
             "#2563eb",
-            "rgba(17,24,39,0.20)"
+            "rgba(17,24,39,0.10)"
           ],
           "line-width": [
             "case",

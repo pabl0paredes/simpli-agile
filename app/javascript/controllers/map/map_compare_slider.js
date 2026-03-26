@@ -17,69 +17,109 @@ export class MapCompareSlider {
   }
 
   enable() {
-    const c = this.c
-    if (!c.hasCompareContainerTarget || !c.hasCompareLeftTarget || !c.hasCompareRightTarget) {
-      console.error("[compare] faltan targets compareContainer/Left/Right")
-      return
-    }
-
-    c.mapContainerTarget.hidden = true
-    c.compareContainerTarget.hidden = false
-
-    const mapboxgl = window.mapboxgl
-    const baseOpts = {
-      style: "mapbox://styles/mapbox/streets-v11",
-      center: c.map.getCenter(),
-      zoom: c.map.getZoom(),
-      bearing: c.map.getBearing(),
-      pitch: c.map.getPitch(),
-      interactive: true
-    }
-
-    this.mapLeft = new mapboxgl.Map({ ...baseOpts, container: c.compareLeftTarget })
-    this.mapRight = new mapboxgl.Map({ ...baseOpts, container: c.compareRightTarget })
-
-    const CompareCtor = window.mapboxgl?.Compare || window.Compare
-    if (!CompareCtor) {
-      console.error("[slider] window.mapboxgl?.Compare:", window.mapboxgl?.Compare)
-      console.error("[slider] window.Compare:", window.Compare)
-      throw new Error("mapbox-gl-compare no está disponible en window (script no cargó)")
-    }
-
-    this.compare = new CompareCtor(this.mapLeft, this.mapRight, this.c.compareContainerTarget)
-
-    const sync = (src, dst) => {
-      if (this._syncing) return
-      this._syncing = true
-      const center = src.getCenter()
-      dst.jumpTo({
-        center,
-        zoom: src.getZoom(),
-        bearing: src.getBearing(),
-        pitch: src.getPitch()
-      })
-      this._syncing = false
-    }
-
-    this.mapLeft.on("move", () => sync(this.mapLeft, this.mapRight))
-    this.mapRight.on("move", () => sync(this.mapRight, this.mapLeft))
-
-    const onLoaded = async () => {
-      await this.ensureCellsOn(this.mapLeft)
-      await this.ensureCellsOn(this.mapRight)
-
-      await c.adminLayers.loadSelectedMunicipalityOutlineOn(this.mapLeft)
-      await c.adminLayers.loadSelectedMunicipalityOutlineOn(this.mapRight)
-
-      await this.syncData()
-
-      this.bindCellsHoverTooltip(this.mapLeft)
-      this.bindCellsHoverTooltip(this.mapRight)
-    }
-
-    this.mapLeft.once("load", onLoaded)
-    this.mapRight.once("load", onLoaded)
+  const c = this.c
+  if (!c.hasCompareContainerTarget || !c.hasCompareLeftTarget || !c.hasCompareRightTarget) {
+    console.error("[compare] faltan targets compareContainer/Left/Right")
+    return
   }
+
+  c.mapContainerTarget.hidden = true
+  c.compareContainerTarget.hidden = false
+
+  const mapboxgl = window.mapboxgl
+  const baseOpts = {
+    style: "mapbox://styles/mapbox/streets-v11",
+    center: c.map.getCenter(),
+    zoom: c.map.getZoom(),
+    bearing: c.map.getBearing(),
+    pitch: c.map.getPitch(),
+    interactive: true
+  }
+
+  this.mapLeft = new mapboxgl.Map({ ...baseOpts, container: c.compareLeftTarget })
+  this.mapRight = new mapboxgl.Map({ ...baseOpts, container: c.compareRightTarget })
+
+  const CompareCtor = window.mapboxgl?.Compare || window.Compare || window.MapboxCompare
+  if (!CompareCtor) {
+    console.error("[slider] globals disponibles:", Object.keys(window).filter(k => k.toLowerCase().includes("compare")))
+    throw new Error("mapbox-gl-compare no está disponible en window (script no cargó)")
+  }
+
+  // mapRight (A) shown on LEFT of slider, mapLeft (B) shown on RIGHT
+  this.compare = new CompareCtor(this.mapRight, this.mapLeft, c.compareContainerTarget)
+
+  // mapbox-gl-compare uses the deprecated CSS `clip` property which does not clip
+  // WebGL-composited canvases. We override _setPosition synchronously so clip-path
+  // (which works at the compositor level) is applied on every slider movement.
+  const containerA = this.mapRight.getContainer()
+  const containerB = this.mapLeft.getContainer()
+  const origSetPos = this.compare._setPosition.bind(this.compare)
+  this.compare._setPosition = (x) => {
+    origSetPos(x)             // moves the slider handle + sets CSS clip
+    containerA.style.clip = ''
+    containerB.style.clip = ''
+    containerA.style.clipPath = `inset(0 calc(100% - ${x}px) 0 0)`
+    containerB.style.clipPath = `inset(0 0 0 ${x}px)`
+    // Also clip canvases directly in case clip-path on container doesn't clip WebGL
+    const canvasA = this.mapRight.getCanvas()
+    const canvasB = this.mapLeft.getCanvas()
+    if (canvasA) canvasA.style.clipPath = `inset(0 calc(100% - ${x}px) 0 0)`
+    if (canvasB) canvasB.style.clipPath = `inset(0 0 0 ${x}px)`
+  }
+
+  // Apply correct initial position once the layout is computed
+  requestAnimationFrame(() => {
+    this.mapLeft.resize()
+    this.mapRight.resize()
+    const w = c.compareContainerTarget.getBoundingClientRect().width
+    if (w > 0) this.compare._setPosition(w / 2)
+
+  })
+
+  const sync = (src, dst) => {
+    if (this._syncing) return
+    this._syncing = true
+    const center = src.getCenter()
+    dst.jumpTo({
+      center,
+      zoom: src.getZoom(),
+      bearing: src.getBearing(),
+      pitch: src.getPitch()
+    })
+    this._syncing = false
+  }
+
+  this.mapLeft.on("move", () => sync(this.mapLeft, this.mapRight))
+  this.mapRight.on("move", () => sync(this.mapRight, this.mapLeft))
+
+  let loadCount = 0
+  const onBothLoaded = async () => {
+    this.mapLeft.resize()
+    this.mapRight.resize()
+
+    const w = c.compareContainerTarget.getBoundingClientRect().width
+    if (w > 0) this.compare._setPosition(w / 2)
+
+    await this.ensureCellsOn(this.mapLeft)
+    await this.ensureCellsOn(this.mapRight)
+
+    await c.adminLayers.loadSelectedMunicipalityOutlineOn(this.mapLeft)
+    await c.adminLayers.loadSelectedMunicipalityOutlineOn(this.mapRight)
+
+    await this.syncData()
+
+    this.bindCellsHoverTooltip(this.mapLeft)
+    this.bindCellsHoverTooltip(this.mapRight)
+  }
+
+  const onEachLoad = () => {
+    loadCount += 1
+    if (loadCount === 2) onBothLoaded()
+  }
+
+  this.mapLeft.once("load", onEachLoad)
+  this.mapRight.once("load", onEachLoad)
+}
 
   disable() {
     const c = this.c
@@ -93,10 +133,19 @@ export class MapCompareSlider {
     this.clearTooltip(this.mapLeft)
     this.clearTooltip(this.mapRight)
 
+    try {
+      const lc = this.mapLeft?.getContainer()
+      const rc = this.mapRight?.getContainer()
+      if (lc) { lc.style.clipPath = ''; lc.style.clip = '' }
+      if (rc) { rc.style.clipPath = ''; rc.style.clip = '' }
+    } catch {}
+
     try { this.mapLeft?.remove() } catch {}
     try { this.mapRight?.remove() } catch {}
     this.mapLeft = null
     this.mapRight = null
+
+    requestAnimationFrame(() => c.map?.resize())
   }
 
   async ensureCellsOn(map) {

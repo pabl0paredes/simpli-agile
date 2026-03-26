@@ -5,16 +5,29 @@
       data-map-initial-center-value="<%= @initial_center || "[-70.6371,-33.4378]" %>"
       data-map-initial-zoom-value="<%= @initial_zoom || 4 %>">
 
-  <div id="map" class="map" data-map-target="mapContainer"></div>
+  <% mapbox_token = ENV.fetch("MAPBOX_TOKEN", "") %>
 
-  <div class="map-compare" data-map-target="compareContainer" hidden>
-    <div class="map-compare__left" data-map-target="compareLeft"></div>
-    <div class="map-compare__right" data-map-target="compareRight"></div>
+  <% if mapbox_token.present? %>
+    <div id="map"
+         class="map w-full h-full min-h-screen"
+         data-map-target="mapContainer"></div>
+  <% else %>
+    <div class="map map--empty flex items-center justify-center w-full h-full min-h-screen p-6 text-center">
+      <div>
+        <strong>No se pudo cargar el mapa.</strong><br>
+        Falta configurar la variable de entorno <code>MAPBOX_TOKEN</code>.
+      </div>
+    </div>
+  <% end %>
+
+  <div class="map-compare w-full h-full min-h-screen" data-map-target="compareContainer" hidden>
+    <div class="map-compare__left" style="position:absolute;inset:0;" data-map-target="compareLeft"></div>
+    <div class="map-compare__right" style="position:absolute;inset:0;" data-map-target="compareRight"></div>
   </div>
 
-  <div class="map-split" data-map-target="splitContainer" hidden>
-    <div class="map-split__top" data-map-target="splitTop"></div>
-    <div class="map-split__bottom" data-map-target="splitBottom"></div>
+  <div class="map-split w-full h-full min-h-screen" data-map-target="splitContainer" hidden>
+    <div class="map-split__top w-full h-full" data-map-target="splitTop"></div>
+    <div class="map-split__bottom w-full h-full" data-map-target="splitBottom"></div>
   </div>
 
   <%# Botones flotantes (derecha) %>
