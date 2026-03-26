@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_03_25_145712) do
+ActiveRecord::Schema[7.1].define(version: 2026_03_26_201404) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "postgis"
@@ -94,9 +94,11 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_25_145712) do
     t.geometry "geometry", limit: {:srid=>4326, :type=>"geometry"}
     t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.geometry "study_area", limit: {:srid=>4326, :type=>"geometry"}
     t.index ["centroid"], name: "index_municipalities_on_centroid", using: :gist
     t.index ["geometry"], name: "index_municipalities_on_geometry", using: :gist
     t.index ["region_code"], name: "index_municipalities_on_region_code"
+    t.index ["study_area"], name: "index_municipalities_on_study_area", using: :gist
   end
 
   create_table "opportunities", primary_key: "opportunity_code", id: :string, force: :cascade do |t|
