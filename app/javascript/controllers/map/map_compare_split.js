@@ -242,8 +242,8 @@ export class MapCompareSplit {
 
     let formatted
     if (layerType === "accessibility") {
-      formatted = this.c.accessibilityLabelForClass
-        ? this.c.accessibilityLabelForClass(klass)
+      formatted = this.c.legend?.accessibilityLabelForClass
+        ? this.c.legend.accessibilityLabelForClass(klass)
         : (klass ? String(klass) : "-")
     } else {
       formatted = Number(rawValue).toLocaleString("es-CL")

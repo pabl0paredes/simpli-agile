@@ -248,8 +248,8 @@ export class MapHover {
       let formatted
 
       if (layerType === "accessibility") {
-        formatted = this.controller.accessibilityLabelForClass
-          ? this.controller.accessibilityLabelForClass(klass)
+        formatted = this.controller.legend?.accessibilityLabelForClass
+          ? this.controller.legend.accessibilityLabelForClass(klass)
           : (klass ? String(klass) : "-")
       } else {
         formatted = Number(rawValue).toLocaleString("es-CL")
