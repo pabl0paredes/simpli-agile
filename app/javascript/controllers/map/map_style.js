@@ -29,8 +29,37 @@ export class MapStyle {
     this.closePicker()
     this._updateActiveBtn()
 
-    this.c.map.setStyle(`mapbox://styles/mapbox/${styleId}`)
+    const url = `mapbox://styles/mapbox/${styleId}`
+
+    // Main map
+    this.c.map.setStyle(url)
     this.c.map.once("style.load", () => this._reinitializeLayers(this.c.map))
+
+    // Collect active compare maps
+    const slider = this.c.compareSlider
+    const split  = this.c.compareSplit
+    const compareMaps = [
+      ...(slider?.enabled ? [slider.mapLeft, slider.mapRight] : []),
+      ...(split?.enabled  ? [split.mapTop,  split.mapBottom]  : [])
+    ].filter(Boolean)
+
+    if (compareMaps.length === 0) return
+
+    // Track how many style loads remain before re-syncing data
+    let pending = compareMaps.length
+    const onAllLoaded = () => {
+      if (slider?.enabled) slider.syncData()
+      if (split?.enabled)  split.syncData()
+    }
+
+    compareMaps.forEach(map => {
+      map.setStyle(url)
+      map.once("style.load", async () => {
+        this.c.cellsLayer.ensure(map)
+        await this.c.adminLayers.loadSelectedMunicipalityOutlineOn(map)
+        if (--pending === 0) onAllLoaded()
+      })
+    })
   }
 
   _updateActiveBtn() {
