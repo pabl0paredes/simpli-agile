@@ -248,8 +248,8 @@ export class MapHover {
       let formatted
 
       if (layerType === "accessibility") {
-        formatted = this.controller.accessibilityLabelForClass
-          ? this.controller.accessibilityLabelForClass(klass)
+        formatted = this.controller.legend?.accessibilityLabelForClass
+          ? this.controller.legend.accessibilityLabelForClass(klass)
           : (klass ? String(klass) : "-")
       } else {
         formatted = Number(rawValue).toLocaleString("es-CL")
@@ -284,6 +284,74 @@ export class MapHover {
 
     // por si limpias source/capas
     this._clearCellsHover = clearHover
+  }
+
+  bindLocatorOverlayHoverTooltip() {
+    if (this._locatorOverlayHoverBound) return
+    this._locatorOverlayHoverBound = true
+
+    let tooltipDiv = null
+
+    const ensureTooltip = () => {
+      if (tooltipDiv) return tooltipDiv
+      tooltipDiv = document.createElement("div")
+      tooltipDiv.className = "cell-tooltip"
+      tooltipDiv.style.position = "absolute"
+      tooltipDiv.style.backgroundColor = "rgba(17, 24, 39, 0.95)"
+      tooltipDiv.style.color = "#fff"
+      tooltipDiv.style.padding = "10px 14px"
+      tooltipDiv.style.borderRadius = "12px"
+      tooltipDiv.style.fontWeight = "700"
+      tooltipDiv.style.fontSize = "14px"
+      tooltipDiv.style.pointerEvents = "none"
+      tooltipDiv.style.boxShadow = "0 10px 25px rgba(0,0,0,0.25)"
+      this.map.getContainer().appendChild(tooltipDiv)
+      return tooltipDiv
+    }
+
+    const moveTooltip = (lngLat) => {
+      if (!tooltipDiv) return
+      const p = this.map.project(lngLat)
+      tooltipDiv.style.left = `${p.x + 12}px`
+      tooltipDiv.style.top = `${p.y - 56}px`
+    }
+
+    const removeTooltip = () => {
+      if (tooltipDiv) { tooltipDiv.remove(); tooltipDiv = null }
+    }
+
+    const onMove = (layerKey) => (e) => {
+      const f = e.features && e.features[0]
+      if (!f) return
+
+      const showId = f.properties?.show_id
+      const namesRaw = f.properties?.[layerKey]
+      let names = []
+      try {
+        names = typeof namesRaw === "string" ? JSON.parse(namesRaw) : (Array.isArray(namesRaw) ? namesRaw : [])
+      } catch (_) {}
+
+      const el = ensureTooltip()
+      if (names.length > 0) {
+        el.style.whiteSpace = "pre-line"
+        el.style.maxWidth = "240px"
+        const label = showId != null ? `Celda ${showId}` : "Celda"
+        el.textContent = `${label}\n📍 Proyectos:\n${names.map(n => `  • ${n}`).join("\n")}`
+      } else {
+        el.style.whiteSpace = "nowrap"
+        el.style.maxWidth = ""
+        el.textContent = showId != null ? `Celda ${showId}` : "Celda"
+      }
+      moveTooltip(e.lngLat)
+    }
+
+    this.map.on("mouseenter", "cells-parent-fill", () => { this.map.getCanvas().style.cursor = "pointer" })
+    this.map.on("mousemove",  "cells-parent-fill", onMove("parent_project_names"))
+    this.map.on("mouseleave", "cells-parent-fill", () => { this.map.getCanvas().style.cursor = ""; removeTooltip() })
+
+    this.map.on("mouseenter", "cells-draft-hatch", () => { this.map.getCanvas().style.cursor = "pointer" })
+    this.map.on("mousemove",  "cells-draft-hatch", onMove("draft_project_names"))
+    this.map.on("mouseleave", "cells-draft-hatch", () => { this.map.getCanvas().style.cursor = ""; removeTooltip() })
   }
 
   currentCellsHoverLabel() {

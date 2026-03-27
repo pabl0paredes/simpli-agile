@@ -265,6 +265,8 @@ export default class extends Controller {
         const p = prev.layerButtons[i]
         b.disabled = !!p.disabled
         b.className = p.className || b.className
+        b.style.opacity = ""
+        b.style.cursor = ""
         if (p.ariaPressed !== null && p.ariaPressed !== undefined) {
           b.setAttribute("aria-pressed", p.ariaPressed)
         }
@@ -274,6 +276,8 @@ export default class extends Controller {
       btns.forEach((b) => {
         b.disabled = false
         b.classList.remove("is-disabled")
+        b.style.opacity = ""
+        b.style.cursor = ""
       })
     }
 
@@ -318,7 +322,7 @@ export default class extends Controller {
       this.opportunitySectionTarget.hidden = !hasValidScenario && !inComparator
     }
 
-    if (this.hasOpportunitySelectTarget && hasValidScenario) {
+    if (this.hasOpportunitySelectTarget && hasValidScenario && !inComparator) {
       this.opportunitySelectTarget.disabled = false
     }
 

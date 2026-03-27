@@ -59,6 +59,19 @@ export class MapLegend {
       }
     }
 
+    const boundaryRows = `
+      <div class="map-legend__divider"></div>
+      <div class="map-legend__row map-legend__row--static">
+        <span class="map-legend__line-swatch map-legend__line-swatch--dashed"></span>
+        <span class="map-legend__label">Límite comunal</span>
+      </div>
+      ${this.c._hasStudyArea ? `
+      <div class="map-legend__row map-legend__row--static">
+        <span class="map-legend__line-swatch map-legend__line-swatch--study-area"></span>
+        <span class="map-legend__label">Área de estudio</span>
+      </div>` : ""}
+    `
+
     this.c.legendItemsTarget.innerHTML = rows.map(r => {
       const color = colorsByClass[r.klass] || "#000"
       return `
@@ -67,7 +80,7 @@ export class MapLegend {
           <span class="map-legend__label">${r.label}</span>
         </div>
       `
-    }).join("")
+    }).join("") + boundaryRows
 
     this.bindHoverOnce()
   }

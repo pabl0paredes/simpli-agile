@@ -47,32 +47,47 @@ export class MapLocator {
     const ok = this.c.ensureLocatorLayers()
     if (!ok) return
 
+    // If a data layer is already visible, keep it — just overlay locator indicators on top
+    const hasActiveLayer = !!(this.c._selectedLayerType &&
+      this.c.map?.getLayoutProperty("cells-fill", "visibility") !== "none")
+
+    this.c._locatorDataWasKept = hasActiveLayer
+
+    // Clear any previously selected cell
+    this.c.selection?.clearCellSelected()
+
+    // Always fetch locator_status — populate cells-locator source for overlay layers
+    // (red parent cells + draft hatch), regardless of whether a data layer is active
     try {
       const url = `/cells/locator_status?municipality_code=${encodeURIComponent(municipalityCode)}&scenario_id=${encodeURIComponent(scenarioId)}`
 
       const payload = await fetch(url, { headers: { "Accept": "application/json" } }).then(r => r.json())
 
-      // payload debe ser FeatureCollection o algo que tu controller ya sabe consumir;
-      // por como lo tenías, asumimos que ya viene listo para setData del source "cells"
-      // Si tu payload viene como { features: [...] } o { data: ... }, ajustamos aquí.
       const fc = payload?.type === "FeatureCollection" ? payload : payload?.geojson || payload?.data
 
       if (fc) {
-        const src = this.c.map.getSource("cells")
-        if (src) src.setData(fc)
+        // Always update the locator overlay source
+        const locatorSrc = this.c.map.getSource("cells-locator")
+        if (locatorSrc) locatorSrc.setData(fc)
+
+        if (!hasActiveLayer) {
+          // No data layer: also show cells for picking (transparent fill, border only)
+          const cellsSrc = this.c.map.getSource("cells")
+          if (cellsSrc) cellsSrc.setData(fc)
+
+          this.c._locatorTransparentMode = true
+          if (this.c.map.getLayer("cells-fill")) {
+            this.c.map.setPaintProperty("cells-fill", "fill-opacity", 0)
+          }
+
+          this.c.setCellsVisible(true)
+        }
       } else {
         console.warn("[locator] unexpected payload", payload)
       }
 
-      // Mostrar overlays del locator (parent fill + hatch draft)
       this.safeSetVisibility("cells-draft-hatch", true)
       this.safeSetVisibility("cells-parent-fill", true)
-
-      // Importante: si el UX pide que al abrir locator se vean celdas, nos aseguramos
-      this.c.setCellsVisible(true)
-
-      // Si tu UI tiene botón de leyenda, normalmente en locator no la queremos;
-      // pero no lo cambio. Si quieres: this.c.hideLegend()
     } catch (err) {
       console.error("Error onLocatorOpened:", err)
     }
@@ -85,19 +100,35 @@ export class MapLocator {
     this.safeSetVisibility("cells-parent-fill", false)
     this.safeSetVisibility("cells-draft-hatch", false)
 
-    const prev = this.c._locatorPrev
+    // Clear locator overlay source
+    const locatorSrc = this.c.map.getSource("cells-locator")
+    if (locatorSrc) locatorSrc.setData({ type: "FeatureCollection", features: [] })
 
-    // restaurar solo metadata auxiliar, no la data cruda del locator
+    // Deselect any picked cell
+    this.c.selection?.clearCellSelected()
+
+    const prev = this.c._locatorPrev
+    const dataWasKept = !!this.c._locatorDataWasKept
+    this.c._locatorDataWasKept = false
+    this.c._locatorTransparentMode = false
+
+    // Restore metadata
     if (prev) {
       this.c._cellsBreaks = prev.breaks || null
       this.c._selectedLayerType = prev.layerType || this.c._selectedLayerType
+    }
+
+    // If cells data was never replaced, nothing to reload — leave as-is
+    if (dataWasKept) {
+      this.c._locatorPrev = null
+      return
     }
 
     const layerType = this.c._selectedLayerType
     const metric = this.c._selectedMetric
     const accMode = this.c._selectedAccessibilityMode
 
-    // ✅ si hay capa temática activa, recargarla desde el estado actual
+    // Restore thematic layer
     if (
       layerType === "thematic" &&
       this.c._selectedMunicipalityCode &&
@@ -116,7 +147,7 @@ export class MapLocator {
       return
     }
 
-    // ✅ si hay accesibilidad activa, re-disparar su carga
+    // Restore accessibility layer
     if (
       layerType === "accessibility" &&
       this.c._selectedMunicipalityCode &&
@@ -132,7 +163,16 @@ export class MapLocator {
       return
     }
 
-    // fallback: si no había capa activa, limpiar
+    // Fallback: no active layer — reset fill-opacity and hide cells
+    if (this.c.map.getLayer("cells-fill")) {
+      this.c.map.setPaintProperty("cells-fill", "fill-opacity", [
+        "case",
+        ["==", ["get", "class"], 0],
+        0,
+        0.75
+      ])
+    }
+
     const source = this.c.map.getSource("cells")
     if (source) source.setData({ type: "FeatureCollection", features: [] })
 

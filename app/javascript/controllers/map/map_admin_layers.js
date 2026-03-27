@@ -150,6 +150,40 @@ export class MapAdminLayers {
         }
       })
     }
+
+    if (!map.getSource("study-area")) {
+      map.addSource("study-area", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] }
+      })
+    }
+
+    if (!map.getLayer("study-area-glow")) {
+      map.addLayer({
+        id: "study-area-glow",
+        type: "line",
+        source: "study-area",
+        paint: {
+          "line-color": "#233141",
+          "line-width": 10,
+          "line-opacity": 0.12,
+          "line-blur": 6
+        }
+      })
+    }
+
+    if (!map.getLayer("study-area-line")) {
+      map.addLayer({
+        id: "study-area-line",
+        type: "line",
+        source: "study-area",
+        paint: {
+          "line-color": "#233141",
+          "line-width": 1.5,
+          "line-opacity": 0.95
+        }
+      })
+    }
   }
 
   loadRegionsIntoMap() {
@@ -275,18 +309,22 @@ export class MapAdminLayers {
     const regionCode = event.detail.region_code
     this.c._selectedRegionCode = regionCode
 
-    const focus = await fetch(`/regions/focus?region_code=${encodeURIComponent(regionCode)}`).then(r => r.json())
-    this.c.map.flyTo({
-      center: focus.centroid,
-      zoom: focus.zoom,
-      essential: true
-    })
+    try {
+      const focus = await fetch(`/regions/focus?region_code=${encodeURIComponent(regionCode)}`).then(r => r.json())
+      this.c.map.flyTo({
+        center: focus.centroid,
+        zoom: focus.zoom,
+        essential: true
+      })
 
-    const fc = await fetch(`/municipalities?region_code=${encodeURIComponent(regionCode)}`).then(r => r.json())
-    this.c.map.getSource("municipalities").setData(fc)
+      const fc = await fetch(`/municipalities?region_code=${encodeURIComponent(regionCode)}`).then(r => r.json())
+      this.c.map.getSource("municipalities").setData(fc)
 
-    this.setRegionsVisible(false)
-    this.setMunicipalitiesVisible(true)
+      this.setRegionsVisible(false)
+      this.setMunicipalitiesVisible(true)
+    } finally {
+      window.dispatchEvent(new CustomEvent("region:ready"))
+    }
   }
 
   onMunicipalitySelected = async (event) => {
@@ -307,18 +345,22 @@ export class MapAdminLayers {
 
     this.c.map.getSource("selected-municipality").setData(focus.geometry)
 
+    this._loadStudyArea(this.c.map, focus.study_area)
+
     // If municipality was selected directly (no region chosen first), resolve the region
     // context so back navigation can restore the region state correctly.
     if (!this.c._selectedRegionCode && focus.region_code) {
       this.c._selectedRegionCode = focus.region_code
 
-      // Preload municipalities GeoJSON for this region (hidden) so they appear on back.
-      const fc = await fetch(`/municipalities?region_code=${encodeURIComponent(focus.region_code)}`).then(r => r.json())
-      this.c.map.getSource("municipalities").setData(fc)
-
+      // Notify the sidebar immediately so _resolvedRegionCode is set before the user
+      // can click back — don't wait for the municipalities GeoJSON fetch below.
       window.dispatchEvent(new CustomEvent("region:context_resolved", {
         detail: { region_code: focus.region_code }
       }))
+
+      // Preload municipalities GeoJSON for this region (hidden) so they appear on back.
+      const fc = await fetch(`/municipalities?region_code=${encodeURIComponent(focus.region_code)}`).then(r => r.json())
+      this.c.map.getSource("municipalities").setData(fc)
     }
   }
 
@@ -342,11 +384,13 @@ export class MapAdminLayers {
     const src = this.c.map.getSource("selected-municipality")
     if (!src) return
     src.setData({ type: "FeatureCollection", features: [] })
+    this._clearStudyArea(this.c.map)
   }
 
   onMunicipalityBack = async () => {
     const src = this.c.map.getSource("selected-municipality")
     if (src) src.setData({ type: "FeatureCollection", features: [] })
+    this._clearStudyArea(this.c.map)
     this.setMunicipalitiesVisible(true)
 
     const regionCode = this.c._selectedRegionCode
@@ -362,6 +406,7 @@ export class MapAdminLayers {
 
     const src = this.c.map.getSource("selected-municipality")
     if (src) src.setData({ type: "FeatureCollection", features: [] })
+    this._clearStudyArea(this.c.map)
 
     this.setMunicipalitiesVisible(false)
     this.setRegionsVisible(true)
@@ -380,5 +425,29 @@ export class MapAdminLayers {
 
     const src = map.getSource("selected-municipality")
     if (src) src.setData(focus.geometry)
+
+    this._loadStudyArea(map, focus.study_area)
+  }
+
+  _loadStudyArea(map, feature) {
+    const src = map.getSource("study-area")
+    if (!src) return
+
+    if (feature) {
+      src.setData({ type: "FeatureCollection", features: [feature] })
+      ;["selected-municipality-outline", "study-area-glow", "study-area-line"].forEach(id => {
+        if (map.getLayer(id)) map.moveLayer(id)
+      })
+      this.c._hasStudyArea = true
+    } else {
+      src.setData({ type: "FeatureCollection", features: [] })
+      this.c._hasStudyArea = false
+    }
+  }
+
+  _clearStudyArea(map) {
+    const src = map?.getSource("study-area")
+    if (src) src.setData({ type: "FeatureCollection", features: [] })
+    this.c._hasStudyArea = false
   }
 }

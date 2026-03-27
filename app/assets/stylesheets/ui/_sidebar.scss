@@ -221,6 +221,13 @@
   opacity:1;
 }
 
+.sidebar__layer-btn:disabled,
+.sidebar__layer-btn.is-disabled {
+  opacity: 0.4 !important;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 // Localización de Infraestructura
 
 .sidebar__primary-btn{

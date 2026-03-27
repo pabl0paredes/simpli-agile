@@ -44,18 +44,17 @@ export function createLocator(controller) {
         // ✅ SNAPSHOT ANTES de modificar UI
         controller.snapshotSidebarBeforeOpen()
 
-        // ✅ clear + disable sidebar principal
+        // ✅ disable sidebar principal (keep visible so user can see current selection)
         if (controller.hasOpportunitySelectTarget) {
-          controller.opportunitySelectTarget.value = "Seleccionar oportunidad..."
           controller.opportunitySelectTarget.disabled = true
         }
         if (controller.hasScenarioSelectTarget) controller.scenarioSelectTarget.disabled = true
-        controller.clearLayerButtonsUI()
         controller.element.querySelectorAll(".sidebar__layer-btn").forEach(b => {
           b.disabled = true
           b.classList.add("is-disabled")
+          b.style.opacity = "0.4"
+          b.style.cursor = "not-allowed"
         })
-        if (controller.hasLayerSectionTarget) controller.layerSectionTarget.hidden = true
 
         window.dispatchEvent(new CustomEvent("locator:opened", {
           detail: {
@@ -72,6 +71,8 @@ export function createLocator(controller) {
         controller.element.querySelectorAll(".sidebar__layer-btn").forEach(b => {
           b.disabled = false
           b.classList.remove("is-disabled")
+          b.style.opacity = ""
+          b.style.cursor = ""
         })
 
         window.dispatchEvent(new CustomEvent("locator:closed"))

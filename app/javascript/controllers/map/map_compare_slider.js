@@ -28,7 +28,7 @@ export class MapCompareSlider {
 
   const mapboxgl = window.mapboxgl
   const baseOpts = {
-    style: "mapbox://styles/mapbox/streets-v11",
+    style: `mapbox://styles/mapbox/${c.styleManager?._currentStyle || "streets-v11"}`,
     center: c.map.getCenter(),
     zoom: c.map.getZoom(),
     bearing: c.map.getBearing(),
@@ -248,8 +248,8 @@ export class MapCompareSlider {
 
     let formatted
     if (layerType === "accessibility") {
-      formatted = this.c.accessibilityLabelForClass
-        ? this.c.accessibilityLabelForClass(klass)
+      formatted = this.c.legend?.accessibilityLabelForClass
+        ? this.c.legend.accessibilityLabelForClass(klass)
         : (klass ? String(klass) : "-")
     } else {
       formatted = Number(rawValue).toLocaleString("es-CL")

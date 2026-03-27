@@ -61,11 +61,28 @@ export function createRegionsMunicipalities(controller) {
         url += `?region_code=${regionCode}`
       }
 
+      // Lock UI while region data is loading (sidebar names + map municipalities + fly)
+      if (regionCode) {
+        const sel = controller.municipalitySelectTarget
+        sel.innerHTML = "<option>Cargando comunas...</option>"
+        sel.disabled = true
+        if (controller.hasRegionBackBtnTarget) controller.regionBackBtnTarget.disabled = true
+
+        // Unlock only when the map signals it has finished loading municipalities
+        window.addEventListener("region:ready", () => {
+          if (controller.hasMunicipalitySelectTarget) controller.municipalitySelectTarget.disabled = false
+          if (controller.hasRegionBackBtnTarget) controller.regionBackBtnTarget.disabled = false
+        }, { once: true })
+      }
+
       fetch(url)
         .then(response => response.json())
         .then(data => {
           const selector = controller.municipalitySelectTarget
-          const preSelected = selector.value && !selector.value.includes("Seleccionar") ? selector.value : null
+          const preSelected = selector.value &&
+            !selector.value.includes("Seleccionar") &&
+            !selector.value.includes("Cargando")
+            ? selector.value : null
           selector.innerHTML = "<option>Seleccionar comuna...</option>"
 
           data.forEach(municipality => {
@@ -173,6 +190,8 @@ export function createRegionsMunicipalities(controller) {
                              !!controller._resolvedRegionCode
 
       if (regionIsActive) {
+        // Hide the region select, show the back button
+        if (controller.hasRegionSelectWrapTarget) controller.regionSelectWrapTarget.hidden = true
         // Ensure select value is set (may have failed earlier if regions weren't loaded)
         if (controller._resolvedRegionCode && controller.hasRegionSelectTarget) {
           controller.regionSelectTarget.value = controller._resolvedRegionCode

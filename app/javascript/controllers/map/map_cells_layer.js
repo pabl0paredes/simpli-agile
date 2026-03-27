@@ -60,7 +60,7 @@ export class MapCellsLayer {
 
     const focusClass = this.c._legendFocusClass
 
-    if (map.getLayer("cells-fill")) {
+    if (map.getLayer("cells-fill") && !this.c._locatorTransparentMode) {
       const expr = (focusClass != null)
         ? this.c.legend?.focusedFillOpacityExpr?.(focusClass)
         : this.c.legend?.baseFillOpacityExpr?.()
@@ -123,6 +123,12 @@ export class MapCellsLayer {
       })
     }
 
+    // Boundary lines must always sit above cells — re-stack them on top.
+    // Order: selected-municipality-outline, study-area-glow, study-area-line (topmost).
+    ;["selected-municipality-outline", "study-area-glow", "study-area-line"].forEach(id => {
+      if (map.getLayer(id)) map.moveLayer(id)
+    })
+
     // Importante: el hover binding vive en MapHover, no acá,
     // pero acá es el lugar correcto para asegurarlo después de crear layers.
     this.c.hover?.bindCellsHoverTooltip?.()
@@ -141,11 +147,21 @@ export class MapCellsLayer {
       return false
     }
 
+    // Separate source so overlay layers always have locator_status data,
+    // independent of the main cells source (which may hold thematic data)
+    if (!map.getSource("cells-locator")) {
+      map.addSource("cells-locator", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+        promoteId: "h3"
+      })
+    }
+
     if (!map.getLayer("cells-parent-fill")) {
       map.addLayer({
         id: "cells-parent-fill",
         type: "fill",
-        source: "cells",
+        source: "cells-locator",
         paint: { "fill-opacity": 0.70, "fill-color": "#ef4444" },
         filter: ["==", ["get", "has_parent_projects"], true]
       })
@@ -156,19 +172,19 @@ export class MapCellsLayer {
       map.addLayer({
         id: "cells-draft-hatch",
         type: "fill",
-        source: "cells",
+        source: "cells-locator",
         paint: { "fill-opacity": 1, "fill-pattern": "hatch-60" },
         filter: ["==", ["get", "has_draft_projects"], true]
       })
       map.setLayoutProperty("cells-draft-hatch", "visibility", "none")
     }
 
-    // al final, antes del return true
     if (map.getLayer("cells-parent-fill") && map.getLayer("cells-draft-hatch")) {
-      // parent abajo, hatch arriba
       map.moveLayer("cells-parent-fill")
       map.moveLayer("cells-draft-hatch")
     }
+
+    this.c.hover?.bindLocatorOverlayHoverTooltip?.()
 
     return true
   }

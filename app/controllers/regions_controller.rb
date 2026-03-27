@@ -15,7 +15,7 @@ class RegionsController < ApplicationController
   end
 
   def names
-    regions = Region.select(:name, :region_code).all
+    regions = Region.select(:name, :region_code).order("ST_Y(centroid) DESC")
     render json: regions
   end
 

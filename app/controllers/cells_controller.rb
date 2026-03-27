@@ -46,17 +46,43 @@ class CellsController < ApplicationController
 
     result = conn.exec_params(sql, [scenario_id, mun_code])
 
+    # Fetch chain scenario IDs to look up project names
+    chain_sql = <<~SQL
+      WITH RECURSIVE chain AS (
+        SELECT s.id, s.parent_id, 0 AS depth FROM scenarios s WHERE s.id = $1
+        UNION ALL
+        SELECT p.id, p.parent_id, c.depth + 1 FROM scenarios p JOIN chain c ON p.id = c.parent_id WHERE c.depth < 30
+      )
+      SELECT id FROM chain;
+    SQL
+    chain_ids = conn.exec_params(chain_sql, [scenario_id]).map { |r| r["id"].to_i }
+
+    parent_by_h3 = {}
+    draft_by_h3  = {}
+    Project.where(scenario_id: chain_ids).select(:h3, :name, :recalculated).each do |p|
+      if p.recalculated
+        parent_by_h3[p.h3] ||= []
+        parent_by_h3[p.h3] << p.name
+      else
+        draft_by_h3[p.h3] ||= []
+        draft_by_h3[p.h3] << p.name
+      end
+    end
+
     bool = ActiveModel::Type::Boolean.new
 
     features = result.map do |r|
+      h3 = r["h3"]
       {
         type: "Feature",
         geometry: JSON.parse(r["geom_json"]),
         properties: {
-          h3: r["h3"],
+          h3: h3,
           show_id: r["show_id"],
           has_parent_projects: bool.cast(r["has_parent_projects"]),
-          has_draft_projects: bool.cast(r["has_draft_projects"])
+          has_draft_projects: bool.cast(r["has_draft_projects"]),
+          parent_project_names: parent_by_h3[h3] || [],
+          draft_project_names:  draft_by_h3[h3]  || []
         }
       }
     end

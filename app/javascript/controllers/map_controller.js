@@ -56,8 +56,14 @@ export default class extends Controller {
       container: this.mapContainerTarget,
       style: "mapbox://styles/mapbox/streets-v11",
       center,
-      zoom
+      zoom,
+      attributionControl: false
     })
+
+    this.map.addControl(
+      new mapboxgl.AttributionControl({ compact: true }),
+      "bottom-left"
+    )
 
     this.map.addControl(
       new mapboxgl.NavigationControl({ showCompass: false }),

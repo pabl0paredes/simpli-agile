@@ -17,28 +17,30 @@ class MunicipalitiesController < ApplicationController
   end
 
   def names
-    if params[:region_code]
-      municipalities = Municipality.where(region_code: params[:region_code]).map { |municipality| {
-        name: municipality.name, municipality_code: municipality.municipality_code
-      } }
-    else
-      municipalities = Municipality.select(:name, :municipality_code).all
-    end
-
+    scope = params[:region_code] ?
+      Municipality.where(region_code: params[:region_code]) :
+      Municipality.all
+    municipalities = scope.select(:name, :municipality_code).order(:name)
     render json: municipalities
   end
 
   def focus
-    mun = Municipality.select(:name, :region_code, :municipality_code, :centroid, :zoom, :geometry)
+    mun = Municipality.select(:name, :region_code, :municipality_code, :centroid, :zoom, :geometry, :study_area)
       .find_by!(municipality_code: params[:municipality_code])
+
+    study_area_feature = mun.study_area ? {
+      type: "Feature",
+      geometry: RGeo::GeoJSON.encode(mun.study_area),
+      properties: { municipality_code: mun.municipality_code }
+    } : nil
 
     render json: {
       municipality_code: mun.municipality_code,
       region_code: mun.region_code,
       name: mun.name,
       zoom: mun.zoom,
-      # Asumiendo centroid es un POINT (PostGIS) en SRID 4326
-      centroid: [mun.centroid.x, mun.centroid.y], # [lng, lat]
+      centroid: [mun.centroid.x, mun.centroid.y],
+      study_area: study_area_feature,
       geometry: {
         type: "FeatureCollection",
         features: [
