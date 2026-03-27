@@ -1,3 +1,5 @@
+import { dataFetch } from "controllers/sidebar/api"
+
 export class MapLocator {
   constructor(controller) {
     this.c = controller
@@ -61,7 +63,7 @@ export class MapLocator {
     try {
       const url = `/cells/locator_status?municipality_code=${encodeURIComponent(municipalityCode)}&scenario_id=${encodeURIComponent(scenarioId)}`
 
-      const payload = await fetch(url, { headers: { "Accept": "application/json" } }).then(r => r.json())
+      const payload = await dataFetch(url).then(r => r.json())
 
       const fc = payload?.type === "FeatureCollection" ? payload : payload?.geojson || payload?.data
 

@@ -5,8 +5,18 @@ export function csrfToken() {
   return meta?.content || ""
 }
 
+// Fetch con CSRF token — usar para todos los endpoints de datos protegidos
+export function dataFetch(url) {
+  return fetch(url, {
+    headers: {
+      "Accept": "application/json",
+      "X-CSRF-Token": csrfToken()
+    }
+  })
+}
+
 export async function getJSON(url) {
-  const resp = await fetch(url, { headers: { "Accept": "application/json" } })
+  const resp = await dataFetch(url)
   const data = await resp.json().catch(() => ({}))
   return { ok: resp.ok, status: resp.status, data }
 }

@@ -1,3 +1,5 @@
+import { dataFetch } from "controllers/sidebar/api"
+
 export class MapCompareSlider {
   constructor(controller) {
     this.c = controller
@@ -196,7 +198,7 @@ export class MapCompareSlider {
     const urlB = urlFor(B)
     if (!urlA || !urlB) return
 
-    const [respA, respB] = await Promise.all([fetch(urlA), fetch(urlB)])
+    const [respA, respB] = await Promise.all([dataFetch(urlA), dataFetch(urlB)])
 
     if (!respA.ok || !respB.ok) {
       console.error("[slider] error fetching compare data", {

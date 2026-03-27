@@ -1,3 +1,5 @@
+import { dataFetch } from "controllers/sidebar/api"
+
 export class MapThematicRunners {
   constructor(controller) {
     this.c = controller
@@ -30,7 +32,7 @@ export class MapThematicRunners {
         `&scenario_a_id=${encodeURIComponent(this.c._scenarioAId)}` +
         `&scenario_b_id=${encodeURIComponent(this.c._scenarioBId)}`
 
-      const fc = await fetch(url).then(r => r.json())
+      const fc = await dataFetch(url).then(r => r.json())
 
       this.c.map.getSource("cells").setData({ type: "FeatureCollection", features: fc.features })
       this.c._cellsBreaks = fc.breaks
@@ -63,7 +65,7 @@ export class MapThematicRunners {
       `&scenario_id=${encodeURIComponent(scenarioId)}` +
       `&accessibility_type=${encodeURIComponent(accType)}`
 
-    const fc = await fetch(url).then(r => r.json())
+    const fc = await dataFetch(url).then(r => r.json())
 
     this.c.map.getSource("cells").setData({
       type: "FeatureCollection",
@@ -105,7 +107,7 @@ export class MapThematicRunners {
       `&opportunity_code=${encodeURIComponent(opportunity_code)}` +
       `&metric=${encodeURIComponent(metric)}`
 
-    const payload = await fetch(url).then(r => r.json())
+    const payload = await dataFetch(url).then(r => r.json())
 
     this.c.map.getSource("cells").setData({
       type: "FeatureCollection",

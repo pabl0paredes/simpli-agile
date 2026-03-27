@@ -1,3 +1,5 @@
+import { dataFetch } from "controllers/sidebar/api"
+
 export class MapCompareSplit {
   constructor(controller) {
     this.c = controller
@@ -125,8 +127,8 @@ export class MapCompareSplit {
     }
 
     const [payloadA, payloadB] = await Promise.all([
-      fetch(urlFor(A)).then(r => r.json()),
-      fetch(urlFor(B)).then(r => r.json())
+      dataFetch(urlFor(A)).then(r => r.json()),
+      dataFetch(urlFor(B)).then(r => r.json())
     ])
 
     const fcA = payloadA?.type === "FeatureCollection" ? payloadA : payloadA?.data || payloadA?.geojson

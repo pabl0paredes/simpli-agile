@@ -26,6 +26,15 @@ class ApplicationController < ActionController::Base
     raise Pundit::NotAuthorizedError unless current_user.availabilities.exists?(municipality_code: municipality_code.to_i)
   end
 
+  # Exige que el request venga de la plataforma (lleva CSRF token válido).
+  # Protege endpoints GET de datos contra descarga directa por URL.
+  def verify_data_request!
+    token = request.headers["X-CSRF-Token"]
+    unless valid_authenticity_token?(session, token)
+      render json: { error: "Acceso no permitido." }, status: :forbidden
+    end
+  end
+
   def user_not_authorized
     render json: { error: "No autorizado." }, status: :forbidden
   end

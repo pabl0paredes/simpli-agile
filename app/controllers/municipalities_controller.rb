@@ -1,4 +1,6 @@
 class MunicipalitiesController < ApplicationController
+  before_action :verify_data_request!, only: [:focus]
+
   def index
     municipalities = Municipality.select(
       :municipality_code, :name, :region_code, :geometry

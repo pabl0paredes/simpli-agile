@@ -1,3 +1,5 @@
+import { dataFetch } from "controllers/sidebar/api"
+
 export class MapAdminLayers {
   constructor(controller) {
     this.c = controller
@@ -331,7 +333,7 @@ export class MapAdminLayers {
     const munCode = event.detail.municipality_code
     this.c._selectedMunicipalityCode = munCode
 
-    const focus = await fetch(`/municipalities/focus?municipality_code=${encodeURIComponent(munCode)}`).then(r => r.json())
+    const focus = await dataFetch(`/municipalities/focus?municipality_code=${encodeURIComponent(munCode)}`).then(r => r.json())
 
     const bbox = this._bboxFromGeoJSON(focus.geometry)
     if (bbox) {
@@ -419,7 +421,7 @@ export class MapAdminLayers {
 
     this.ensureMunicipalitiesLayer(map)
 
-    const focus = await fetch(
+    const focus = await dataFetch(
       `/municipalities/focus?municipality_code=${encodeURIComponent(munCode)}`
     ).then(r => r.json())
 

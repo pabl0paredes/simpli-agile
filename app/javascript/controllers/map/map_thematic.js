@@ -1,4 +1,6 @@
 // app/javascript/controllers/map_thematic.js
+import { dataFetch } from "controllers/sidebar/api"
+
 export class MapThematic {
   constructor(ctx) {
     this.ctx = ctx // ctx = map_controller (tiene this.map, estado, ensureCellsLayer, etc.)
@@ -49,7 +51,7 @@ export class MapThematic {
       `&opportunity_code=${encodeURIComponent(opportunityCode)}` +
       `&metric=${encodeURIComponent(metric)}`
 
-    const payload = await fetch(url).then(r => r.json())
+    const payload = await dataFetch(url).then(r => r.json())
 
     this.ctx.map.getSource("cells").setData({
       type: "FeatureCollection",

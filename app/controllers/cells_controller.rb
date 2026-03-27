@@ -1,4 +1,5 @@
 class CellsController < ApplicationController
+  before_action :verify_data_request!, only: [:thematic, :accessibility, :delta, :accessibility_delta]
   before_action :authenticate_user!, only: [:locator_status]
   before_action :check_locator_access!, only: [:locator_status]
 
