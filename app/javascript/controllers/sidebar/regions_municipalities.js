@@ -190,6 +190,8 @@ export function createRegionsMunicipalities(controller) {
                              !!controller._resolvedRegionCode
 
       if (regionIsActive) {
+        // Hide the region select, show the back button
+        if (controller.hasRegionSelectWrapTarget) controller.regionSelectWrapTarget.hidden = true
         // Ensure select value is set (may have failed earlier if regions weren't loaded)
         if (controller._resolvedRegionCode && controller.hasRegionSelectTarget) {
           controller.regionSelectTarget.value = controller._resolvedRegionCode

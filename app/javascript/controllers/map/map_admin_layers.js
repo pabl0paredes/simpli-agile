@@ -352,13 +352,15 @@ export class MapAdminLayers {
     if (!this.c._selectedRegionCode && focus.region_code) {
       this.c._selectedRegionCode = focus.region_code
 
-      // Preload municipalities GeoJSON for this region (hidden) so they appear on back.
-      const fc = await fetch(`/municipalities?region_code=${encodeURIComponent(focus.region_code)}`).then(r => r.json())
-      this.c.map.getSource("municipalities").setData(fc)
-
+      // Notify the sidebar immediately so _resolvedRegionCode is set before the user
+      // can click back — don't wait for the municipalities GeoJSON fetch below.
       window.dispatchEvent(new CustomEvent("region:context_resolved", {
         detail: { region_code: focus.region_code }
       }))
+
+      // Preload municipalities GeoJSON for this region (hidden) so they appear on back.
+      const fc = await fetch(`/municipalities?region_code=${encodeURIComponent(focus.region_code)}`).then(r => r.json())
+      this.c.map.getSource("municipalities").setData(fc)
     }
   }
 
