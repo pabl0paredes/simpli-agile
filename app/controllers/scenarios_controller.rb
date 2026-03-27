@@ -1,5 +1,6 @@
 class ScenariosController < ApplicationController
   before_action :authenticate_user!
+  before_action :check_municipality_access!, only: [:names, :create]
 
   SYSTEM_EMAIL = "system@simpli.cl".freeze
 
@@ -156,6 +157,11 @@ class ScenariosController < ApplicationController
     render json: { error: "No autorizado." }, status: :forbidden
   end
 
+  private
 
+  def check_municipality_access!
+    municipality_code = params[:municipality_code].to_i
+    require_municipality_access!(municipality_code)
+  end
 
 end

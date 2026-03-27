@@ -1,10 +1,14 @@
 class ProjectsController < ApplicationController
+  before_action :authenticate_user!, only: [:create, :destroy]
+
   def create
     scenario = Scenario.find(params[:scenario_id])
 
     unless scenario.user_id == current_user.id
       return render json: { error: "No autorizado" }, status: :forbidden
     end
+
+    require_municipality_access!(scenario.municipality_code)
 
     # 🔒 Evitar escribir en escenario base
     if scenario.status == "base"
@@ -55,6 +59,8 @@ class ProjectsController < ApplicationController
     unless scenario.user_id == current_user.id
       return render json: { error: "No autorizado" }, status: :forbidden
     end
+
+    require_municipality_access!(scenario.municipality_code)
 
     if scenario.status == "base"
       return render json: { error: "No se puede modificar el escenario base" }, status: :unprocessable_entity

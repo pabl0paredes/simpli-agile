@@ -49,6 +49,10 @@ export function createUIState(controller) {
       if (controller.hasLayerSectionTarget) controller.layerSectionTarget.hidden = true
       if (controller.hasLocateSectionTarget) controller.locateSectionTarget.hidden = true
 
+      // 5) reset municipality access flag + hide no-access notice
+      controller._hasAccess = false
+      if (controller.hasNoAccessSectionTarget) controller.noAccessSectionTarget.hidden = true
+
     },
 
     clearLayerButtonsUI() {

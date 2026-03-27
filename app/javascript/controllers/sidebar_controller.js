@@ -60,6 +60,7 @@ export default class extends Controller {
     "unitsSection",
     "areaPerUnitSection",
     "noDataSection",
+    "noAccessSection",
   ]
 
   connect() {
@@ -140,6 +141,32 @@ export default class extends Controller {
   resetAfterMunicipalityChange() { return this.ui.resetAfterMunicipalityChange() }
   clearLayerButtonsUI() { return this.ui.clearLayerButtonsUI() }
   applyOpportunityCategory(category) { return this.ui.applyOpportunityCategory(category) }
+
+  // Muestra oportunidad y carga escenario base (igual que usuario sin sesión)
+  _loadGuestMunicipalityView(munCode) {
+    if (this.hasOpportunitySelectTarget) this.opportunitySelectTarget.disabled = false
+    if (this.hasOpportunitySectionTarget) this.opportunitySectionTarget.hidden = false
+    if (this.hasNoAccessSectionTarget) this.noAccessSectionTarget.hidden = false
+
+    fetch(`/municipalities/base_scenario?municipality_code=${encodeURIComponent(munCode)}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data.scenario_id) {
+          this._selectedScenarioId = String(data.scenario_id)
+          this._noBaseScenario = false
+          window.dispatchEvent(new CustomEvent("scenario:selected", {
+            detail: { scenario_id: String(data.scenario_id), status: "base" }
+          }))
+        } else {
+          this._selectedScenarioId = null
+          this._noBaseScenario = true
+        }
+      })
+      .catch(() => {
+        this._selectedScenarioId = null
+        this._noBaseScenario = true
+      })
+  }
 
   openCreateScenarioModal() { return this.scenarios.openCreateScenarioModal() }
   closePublishModal() { return this.scenarios.closeCreateScenarioModal() }

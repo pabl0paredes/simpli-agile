@@ -564,6 +564,29 @@
     line-height: 1.4;
   }
 
+  .sidebar__no-access {
+    padding: 0 18px;
+  }
+
+  .sidebar__no-access .sidebar__divider {
+    display: block;
+    height: 1px;
+    background: rgb(9 9 11 / 0.07);
+    margin: 12px 0;
+  }
+
+  .sidebar__no-access .sidebar__no-data-msg {
+    font-style: normal;
+    color: #a1a1aa;
+  }
+
+  .sidebar__no-access .sidebar__no-data-msg i {
+    display: block;
+    font-size: 16px;
+    margin-bottom: 6px;
+    color: #d4d4d8;
+  }
+
 
   /* ========== SIDEBAR SECONDARY ========== */
 

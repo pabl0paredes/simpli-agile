@@ -25,6 +25,7 @@ gem "stimulus-rails"
 
 gem "simple_form"
 gem "devise"
+gem "pundit"
 gem "activerecord-postgis-adapter"
 gem "rgeo-geojson"
 

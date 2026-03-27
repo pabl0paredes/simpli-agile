@@ -1,4 +1,6 @@
 class CellsController < ApplicationController
+  before_action :authenticate_user!, only: [:locator_status]
+  before_action :check_locator_access!, only: [:locator_status]
 
   def locator_status
     mun_code    = params.require(:municipality_code).to_i
@@ -750,6 +752,11 @@ class CellsController < ApplicationController
 
     breaks[0] = data[0]
     breaks
+  end
+
+  def check_locator_access!
+    municipality_code = params[:municipality_code].to_i
+    require_municipality_access!(municipality_code)
   end
 
   # Devuelve 1..5 según breaks [min,b1,b2,b3,b4,max]

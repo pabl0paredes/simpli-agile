@@ -245,38 +245,6 @@ export function createRegionsMunicipalities(controller) {
       const trackedMunName = controller.municipalitySelectTarget.selectedOptions?.[0]?.textContent?.trim()
       controller._api?.trackEvent("municipality_opened", { municipality_code: munCode, municipality_name: trackedMunName })
 
-      // Para usuarios sin sesión (sin selector de escenario), mostrar oportunidad directamente
-      // y cargar el escenario base de la comuna para poder mostrar celdas.
-      // Para usuarios con sesión, la oportunidad/locator se muestran en syncScenarioActionsUI()
-      // una vez que haya un escenario válido seleccionado.
-      if (!controller.hasScenarioSelectTarget) {
-        controller.opportunitySelectTarget.disabled = false
-        if (controller.hasOpportunitySectionTarget) controller.opportunitySectionTarget.hidden = false
-
-        fetch(`/municipalities/base_scenario?municipality_code=${encodeURIComponent(munCode)}`)
-          .then(r => r.json())
-          .then(data => {
-            if (data.scenario_id) {
-              controller._selectedScenarioId = String(data.scenario_id)
-              controller._noBaseScenario = false
-              window.dispatchEvent(new CustomEvent("scenario:selected", {
-                detail: { scenario_id: String(data.scenario_id), status: "base" }
-              }))
-            } else {
-              controller._selectedScenarioId = null
-              controller._noBaseScenario = true
-            }
-          })
-          .catch(() => {
-            controller._selectedScenarioId = null
-            controller._noBaseScenario = true
-          })
-      }
-
-      if (controller.hasModeToggleTarget) {
-        controller.modeToggleTarget.hidden = false
-      }
-
       window.dispatchEvent(new CustomEvent("municipality:selected", {
         detail: { municipality_code: munCode, instant: !!controller._instantMunicipalityLoad }
       }))
@@ -299,10 +267,47 @@ export function createRegionsMunicipalities(controller) {
         controller.regionSelectWrapTarget.hidden = true
       }
 
-      if (controller.hasScenarioSelectTarget) {
-        controller.scenarioSectionTarget.hidden = false
-        controller.loadScenariosIntoSelect(munCode)
+      // Para usuarios sin sesión: mostrar oportunidad directamente y cargar escenario base.
+      if (!controller.hasScenarioSelectTarget) {
+        controller.opportunitySelectTarget.disabled = false
+        if (controller.hasOpportunitySectionTarget) controller.opportunitySectionTarget.hidden = false
+
+        fetch(`/municipalities/base_scenario?municipality_code=${encodeURIComponent(munCode)}`)
+          .then(r => r.json())
+          .then(data => {
+            if (data.scenario_id) {
+              controller._selectedScenarioId = String(data.scenario_id)
+              controller._noBaseScenario = false
+              window.dispatchEvent(new CustomEvent("scenario:selected", {
+                detail: { scenario_id: String(data.scenario_id), status: "base" }
+              }))
+            } else {
+              controller._selectedScenarioId = null
+              controller._noBaseScenario = true
+            }
+          })
+          .catch(() => {
+            controller._selectedScenarioId = null
+            controller._noBaseScenario = true
+          })
+        return
       }
+
+      // Para usuarios con sesión: verificar acceso a la comuna antes de mostrar features especiales.
+      fetch(`/municipalities/access?municipality_code=${encodeURIComponent(munCode)}`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.has_access) {
+            controller._hasAccess = true
+            if (controller.hasModeToggleTarget) controller.modeToggleTarget.hidden = false
+            controller.scenarioSectionTarget.hidden = false
+            controller.loadScenariosIntoSelect(munCode)
+          } else {
+            // Sin acceso: comportarse igual que un usuario sin sesión
+            controller._loadGuestMunicipalityView(munCode)
+          }
+        })
+        .catch(() => { controller._loadGuestMunicipalityView(munCode) })
     }
   }
 }

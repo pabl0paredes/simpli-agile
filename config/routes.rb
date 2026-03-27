@@ -22,6 +22,7 @@ Rails.application.routes.draw do
       get :names
       get :focus
       get :base_scenario
+      get :access
     end
   end
 

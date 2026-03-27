@@ -64,4 +64,10 @@ class MunicipalitiesController < ApplicationController
     render json: { scenario_id: base&.id }
   end
 
+  def access
+    municipality_code = params.require(:municipality_code).to_i
+    has_access = user_signed_in? && current_user.availabilities.exists?(municipality_code: municipality_code)
+    render json: { has_access: has_access }
+  end
+
 end

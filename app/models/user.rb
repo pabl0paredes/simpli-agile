@@ -8,4 +8,5 @@ class User < ApplicationRecord
              foreign_key: :municipality_code, primary_key: :municipality_code,
              optional: true
   has_many :scenarios
+  has_many :availabilities
 end
