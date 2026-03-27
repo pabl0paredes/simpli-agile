@@ -35,11 +35,15 @@ export class MapCompareSlider {
     zoom: c.map.getZoom(),
     bearing: c.map.getBearing(),
     pitch: c.map.getPitch(),
-    interactive: true
+    interactive: true,
+    attributionControl: false
   }
 
   this.mapLeft = new mapboxgl.Map({ ...baseOpts, container: c.compareLeftTarget })
   this.mapRight = new mapboxgl.Map({ ...baseOpts, container: c.compareRightTarget })
+
+  this.mapLeft.addControl(new mapboxgl.AttributionControl({ compact: true }), "bottom-left")
+  this.mapRight.addControl(new mapboxgl.AttributionControl({ compact: true }), "bottom-left")
 
   const CompareCtor = window.mapboxgl?.Compare || window.Compare || window.MapboxCompare
   if (!CompareCtor) {
