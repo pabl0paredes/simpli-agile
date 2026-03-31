@@ -1,0 +1,131 @@
+<div class="help-modal"
+     data-controller="help-modal"
+     data-help-modal-active-tab-value="definitions"
+     hidden>
+
+  <div class="help-modal__backdrop" data-action="click->help-modal#close"></div>
+
+  <div class="help-modal__panel" role="dialog" aria-modal="true" aria-label="Ayuda">
+    <button type="button" class="help-modal__close" data-action="click->help-modal#close">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+
+    <div class="help-modal__header">
+      <div class="help-modal__title">Ayuda</div>
+      <div class="help-modal__tabs">
+        <button type="button"
+                class="help-modal__tab is-active"
+                data-help-modal-target="tab"
+                data-action="click->help-modal#switchTab"
+                data-tab="definitions">
+          Definiciones
+        </button>
+        <button type="button"
+                class="help-modal__tab"
+                data-help-modal-target="tab"
+                data-action="click->help-modal#switchTab"
+                data-tab="faqs">
+          FAQs
+        </button>
+      </div>
+    </div>
+
+    <div class="help-modal__body">
+
+      <%# Tab: Definiciones %>
+      <div class="help-modal__pane" data-help-modal-target="pane" data-pane="definitions">
+        <dl class="help-modal__definitions">
+
+          <div class="help-modal__def">
+            <dt>Escenario</dt>
+            <dd>Una copia editable del estado base de una comuna. Permite localizar proyectos hipotéticos de infraestructura y calcular su impacto en la accesibilidad sin modificar los datos oficiales.</dd>
+          </div>
+
+          <div class="help-modal__def">
+            <dt>Oportunidad</dt>
+            <dd>Tipo de destino al que se mide la accesibilidad desde cada celda del mapa: educación, salud, trabajo, comercio, entre otros.</dd>
+          </div>
+
+          <div class="help-modal__def">
+            <dt>Accesibilidad</dt>
+            <dd>Indicador que mide cuántas unidades de una oportunidad son alcanzables desde cada celda en un tiempo o distancia determinados, según el modo de transporte seleccionado.</dd>
+          </div>
+
+          <div class="help-modal__def">
+            <dt>Unidades construidas</dt>
+            <dd>Número de unidades funcionales (viviendas, camas, matrícula, puestos de trabajo, etc.) asignadas a los proyectos localizados en una celda.</dd>
+          </div>
+
+          <div class="help-modal__def">
+            <dt>Superficie construida</dt>
+            <dd>Total de metros cuadrados de los proyectos localizados en una celda del mapa.</dd>
+          </div>
+
+          <div class="help-modal__def">
+            <dt>Área de estudio</dt>
+            <dd>Zona geográfica de análisis dentro de la comuna, delimitada por una línea de referencia que aparece en el mapa.</dd>
+          </div>
+
+          <div class="help-modal__def">
+            <dt>Localización de infraestructura</dt>
+            <dd>Herramienta que permite agregar proyectos hipotéticos en celdas del mapa para evaluar cómo impactarían en la accesibilidad de la comuna antes de tomar decisiones de planificación.</dd>
+          </div>
+
+          <div class="help-modal__def">
+            <dt>Modo Constructor</dt>
+            <dd>Vista principal donde se crean y editan escenarios, se localizan proyectos y se exploran las capas temáticas de una comuna.</dd>
+          </div>
+
+          <div class="help-modal__def">
+            <dt>Modo Comparador</dt>
+            <dd>Vista que permite comparar lado a lado dos escenarios distintos para visualizar las diferencias en accesibilidad o métricas de construcción.</dd>
+          </div>
+
+        </dl>
+      </div>
+
+      <%# Tab: FAQs %>
+      <div class="help-modal__pane" data-help-modal-target="pane" data-pane="faqs" hidden>
+        <div class="help-modal__faqs">
+
+          <details class="help-modal__faq">
+            <summary>¿Cómo creo un escenario nuevo?</summary>
+            <p>Selecciona una región y luego una comuna. Una vez cargada, usa el botón <strong>+</strong> junto al selector de escenarios para crear uno nuevo a partir del escenario base. Ponle un nombre y confirma.</p>
+          </details>
+
+          <details class="help-modal__faq">
+            <summary>¿Qué diferencia hay entre el modo Constructor y el modo Comparador?</summary>
+            <p>En el <strong>modo Constructor</strong> trabajas sobre un único escenario: localizas proyectos y exploras las capas de datos. En el <strong>modo Comparador</strong> seleccionas dos escenarios (A y B) y visualizás las diferencias entre ellos en accesibilidad o superficie.</p>
+          </details>
+
+          <details class="help-modal__faq">
+            <summary>¿Puedo comparar dos escenarios al mismo tiempo?</summary>
+            <p>Sí. Activa el <strong>modo Comparador</strong> desde el toggle en la parte superior del mapa. Luego selecciona el escenario A y B, elige una oportunidad y un modo de comparación: delta, swipe o pantalla dividida.</p>
+          </details>
+
+          <details class="help-modal__faq">
+            <summary>¿Qué significa "delta" en la comparación?</summary>
+            <p>El modo delta muestra la diferencia de accesibilidad entre los dos escenarios celda por celda: celdas en verde mejoran, celdas en rojo empeoran y celdas neutras no cambian.</p>
+          </details>
+
+          <details class="help-modal__faq">
+            <summary>¿Qué son los proyectos en borrador?</summary>
+            <p>Son proyectos localizados en un escenario que aún no fueron recalculados. Aparecen con una trama en el mapa. Para que su impacto se refleje en las métricas de accesibilidad, es necesario guardar el escenario (ejecutar el recálculo).</p>
+          </details>
+
+          <details class="help-modal__faq">
+            <summary>¿Cómo se calculan las accesibilidades?</summary>
+            <p>Se utiliza un modelo de accesibilidad gravitacional o de umbral que considera la red de transporte de la comuna, el modo de desplazamiento (caminata o automóvil) y la cantidad de unidades de oportunidad disponibles en cada destino.</p>
+          </details>
+
+          <details class="help-modal__faq">
+            <summary>¿Cómo cambio el estilo del mapa?</summary>
+            <p>Abre el panel de <strong>Configuración</strong> en la parte inferior del sidebar y selecciona entre los estilos disponibles: Clásico, Satelital o Claro.</p>
+          </details>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

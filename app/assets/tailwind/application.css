@@ -926,6 +926,180 @@
   .user-menu__register-link strong { color: #3b82f6; font-weight: 600; }
   .user-menu__register-link:hover { color: #52525b; }
 
+  /* ========== HELP MODAL ========== */
+
+  .help-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    font-family: var(--font-sans);
+  }
+
+  .help-modal[hidden] { display: none; }
+
+  .help-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgb(9 9 11 / 0.40);
+    backdrop-filter: blur(2px);
+  }
+
+  .help-modal__panel {
+    position: relative;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 24px 64px rgb(9 9 11 / 0.18);
+    width: 100%;
+    max-width: 560px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .help-modal__close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    color: #a1a1aa;
+    font-size: 14px;
+    transition: background 120ms ease, color 120ms ease;
+    z-index: 1;
+  }
+
+  .help-modal__close:hover { background: #f4f4f5; color: #18181b; }
+
+  .help-modal__header {
+    padding: 20px 24px 0;
+    flex-shrink: 0;
+  }
+
+  .help-modal__title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 16px;
+  }
+
+  .help-modal__tabs {
+    display: flex;
+    gap: 2px;
+    border-bottom: 1px solid rgb(9 9 11 / 0.08);
+  }
+
+  .help-modal__tab {
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #a1a1aa;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: color 120ms ease, border-color 120ms ease;
+    margin-bottom: -1px;
+    font-family: var(--font-sans);
+  }
+
+  .help-modal__tab:hover { color: #3f3f46; }
+
+  .help-modal__tab.is-active {
+    color: #0f172a;
+    border-bottom-color: #233141;
+  }
+
+  .help-modal__body {
+    overflow-y: auto;
+    flex: 1;
+    padding: 20px 24px 24px;
+  }
+
+  /* Definitions */
+  .help-modal__definitions { margin: 0; }
+
+  .help-modal__def {
+    padding: 12px 0;
+    border-bottom: 1px solid rgb(9 9 11 / 0.06);
+  }
+
+  .help-modal__def:last-child { border-bottom: none; }
+
+  .help-modal__def dt {
+    font-size: 13px;
+    font-weight: 700;
+    color: #18181b;
+    margin-bottom: 3px;
+  }
+
+  .help-modal__def dd {
+    font-size: 13px;
+    color: #52525b;
+    line-height: 1.55;
+    margin: 0;
+  }
+
+  /* FAQs */
+  .help-modal__faqs { display: flex; flex-direction: column; gap: 4px; }
+
+  .help-modal__faq {
+    border: 1px solid rgb(9 9 11 / 0.08);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .help-modal__faq summary {
+    padding: 12px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #18181b;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
+  }
+
+  .help-modal__faq summary::-webkit-details-marker { display: none; }
+
+  .help-modal__faq summary::after {
+    content: "+";
+    font-size: 16px;
+    font-weight: 400;
+    color: #a1a1aa;
+    flex-shrink: 0;
+    transition: transform 150ms ease;
+  }
+
+  .help-modal__faq[open] summary::after {
+    content: "−";
+  }
+
+  .help-modal__faq[open] {
+    background: #fafafa;
+  }
+
+  .help-modal__faq p {
+    padding: 0 14px 12px;
+    font-size: 13px;
+    color: #52525b;
+    line-height: 1.55;
+    margin: 0;
+  }
+
   /* Auth modal */
   .auth-modal {
     position: fixed !important;

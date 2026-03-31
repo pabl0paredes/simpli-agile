@@ -220,6 +220,10 @@ export default class extends Controller {
     this.configPanelTarget.hidden = !this.configPanelTarget.hidden
   }
 
+  openHelp() {
+    window.dispatchEvent(new CustomEvent("help:open"))
+  }
+
   selectMapStyle(e) {
     const styleId = e.currentTarget.dataset.styleId
     if (!styleId) return
