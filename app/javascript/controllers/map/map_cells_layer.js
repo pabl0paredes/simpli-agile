@@ -1,4 +1,4 @@
-import { fillColorExpr } from "./palettes"
+import { fillColorExpr } from "controllers/map/palettes"
 
 export class MapCellsLayer {
   constructor(controller) {
