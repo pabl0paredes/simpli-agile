@@ -1,4 +1,4 @@
-import { PALETTES } from "./palettes"
+import { PALETTES } from "controllers/map/palettes"
 
 export class MapLegend {
   constructor(controller) {
