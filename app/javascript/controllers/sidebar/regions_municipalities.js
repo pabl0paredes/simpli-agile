@@ -61,18 +61,12 @@ export function createRegionsMunicipalities(controller) {
         url += `?region_code=${regionCode}`
       }
 
-      // Lock UI while region data is loading (sidebar names + map municipalities + fly)
+      // Lock UI while names are loading
       if (regionCode) {
         const sel = controller.municipalitySelectTarget
         sel.innerHTML = "<option>Cargando comunas...</option>"
         sel.disabled = true
         if (controller.hasRegionBackBtnTarget) controller.regionBackBtnTarget.disabled = true
-
-        // Unlock only when the map signals it has finished loading municipalities
-        window.addEventListener("region:ready", () => {
-          if (controller.hasMunicipalitySelectTarget) controller.municipalitySelectTarget.disabled = false
-          if (controller.hasRegionBackBtnTarget) controller.regionBackBtnTarget.disabled = false
-        }, { once: true })
       }
 
       fetch(url)
@@ -94,6 +88,12 @@ export function createRegionsMunicipalities(controller) {
 
           // Restore pre-selected value if sidebar was pre-rendered in municipality state
           if (preSelected) selector.value = preSelected
+
+          // Unlock dropdown as soon as names are ready (don't wait for map)
+          if (regionCode) {
+            selector.disabled = false
+            if (controller.hasRegionBackBtnTarget) controller.regionBackBtnTarget.disabled = false
+          }
 
           // Auto-select default municipality on initial full load (no region filter)
           if (!regionCode && autoSelect) {

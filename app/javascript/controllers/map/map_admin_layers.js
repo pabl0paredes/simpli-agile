@@ -121,7 +121,7 @@ export class MapAdminLayers {
           "fill-opacity": [
             "case",
             ["boolean", ["feature-state", "hover"], false],
-            0.3,
+            0.30,
             0
           ]
         }
@@ -145,10 +145,10 @@ export class MapAdminLayers {
         type: "line",
         source: "selected-municipality",
         paint: {
-          "line-color": "#111827",
-          "line-width": 2.5,
+          "line-color": "#3E748F",
+          "line-width": 2,
           "line-opacity": 0.9,
-          "line-dasharray": [2, 2]
+          "line-dasharray": [4, 3]
         }
       })
     }
@@ -166,10 +166,10 @@ export class MapAdminLayers {
         type: "line",
         source: "study-area",
         paint: {
-          "line-color": "#233141",
-          "line-width": 10,
-          "line-opacity": 0.12,
-          "line-blur": 6
+          "line-color": "rgba(17,24,39,0.18)",
+          "line-width": 8,
+          "line-opacity": 0.18,
+          "line-blur": 5
         }
       })
     }
@@ -180,9 +180,9 @@ export class MapAdminLayers {
         type: "line",
         source: "study-area",
         paint: {
-          "line-color": "#233141",
+          "line-color": "rgba(17,24,39,0.40)",
           "line-width": 1.5,
-          "line-opacity": 0.95
+          "line-opacity": 0.6,
         }
       })
     }
@@ -437,7 +437,11 @@ export class MapAdminLayers {
 
     if (feature) {
       src.setData({ type: "FeatureCollection", features: [feature] })
-      ;["selected-municipality-outline", "study-area-glow", "study-area-line"].forEach(id => {
+      // Keep selected-municipality-outline below cells; study-area layers above.
+      if (map.getLayer("selected-municipality-outline") && map.getLayer("cells-fill")) {
+        map.moveLayer("selected-municipality-outline", "cells-fill")
+      }
+      ;["study-area-glow", "study-area-line"].forEach(id => {
         if (map.getLayer(id)) map.moveLayer(id)
       })
       this.c._hasStudyArea = true
@@ -451,5 +455,74 @@ export class MapAdminLayers {
     const src = map?.getSource("study-area")
     if (src) src.setData({ type: "FeatureCollection", features: [] })
     this.c._hasStudyArea = false
+  }
+
+  applyStreetsOnTop(enabled) {
+    const map = this.c.map
+    // Order from bottom to top: municipalities → municipality-outline → cells → study-area → locator
+    const layers = [
+      "municipalities-fill", "municipalities-outline", "municipalities-hover",
+      "selected-municipality-outline",
+      "cells-fill", "cells-outline", "cells-hover", "cells-project-outline",
+      "study-area-glow", "study-area-line",
+      "cells-parent-fill", "cells-draft-hatch"
+    ]
+    if (enabled) {
+      const ourLayerSet = new Set(layers)
+      const allStyleLayers = map.getStyle().layers
+
+      // Step 1: move our layers to the top of the stack
+      layers.forEach(id => { if (map.getLayer(id)) map.moveLayer(id) })
+
+      // Step 2: move car-road and traffic line layers above our cells.
+      // Includes traffic-* so navigation-day congestion overlays appear above cells.
+      allStyleLayers
+        .filter(l =>
+          !ourLayerSet.has(l.id) && l.type === "line" &&
+          (l.id.startsWith("road-") || l.id.startsWith("bridge-") || l.id.startsWith("tunnel-") || l.id.startsWith("traffic-")) &&
+          !l.id.includes("path") && !l.id.includes("pedestrian") && !l.id.includes("sidewalk")
+        )
+        .forEach(l => { if (map.getLayer(l.id)) map.moveLayer(l.id) })
+
+      // Step 3: move road/place label layers above road lines.
+      // Only exclude clear non-geographic labels: POIs, airports, transit.
+      // Place names (cities, neighborhoods, etc.) are intentionally included.
+      allStyleLayers
+        .filter(l =>
+          !ourLayerSet.has(l.id) && l.type === "symbol" &&
+          !l.id.includes("poi") && !l.id.includes("airport") && !l.id.includes("transit")
+        )
+        .forEach(l => { if (map.getLayer(l.id)) map.moveLayer(l.id) })
+
+      // Step 4: boost road and traffic line opacity to 1.0 so they stand out above cells.
+      // Skip layers using expression-based opacity (typeof object) to avoid breaking them.
+      this._savedRoadOpacities = {}
+      allStyleLayers
+        .filter(l =>
+          !ourLayerSet.has(l.id) && l.type === "line" &&
+          (l.id.startsWith("road-") || l.id.startsWith("bridge-") || l.id.startsWith("tunnel-") || l.id.startsWith("traffic-")) &&
+          !l.id.includes("path") && !l.id.includes("pedestrian") && !l.id.includes("sidewalk")
+        )
+        .forEach(l => {
+          if (!map.getLayer(l.id)) return
+          const current = map.getPaintProperty(l.id, "line-opacity")
+          this._savedRoadOpacities[l.id] = current
+          if (typeof current !== "object") {
+            map.setPaintProperty(l.id, "line-opacity", 1.0)
+          }
+        })
+    } else {
+      // Restore road line opacities
+      if (this._savedRoadOpacities) {
+        Object.entries(this._savedRoadOpacities).forEach(([id, opacity]) => {
+          if (map.getLayer(id) && opacity !== undefined) {
+            map.setPaintProperty(id, "line-opacity", opacity)
+          }
+        })
+        this._savedRoadOpacities = null
+      }
+      // Move in bottom-to-top order so the last moved ends up on top.
+      layers.forEach(id => { if (map.getLayer(id)) map.moveLayer(id) })
+    }
   }
 }

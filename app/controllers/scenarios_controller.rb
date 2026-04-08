@@ -2,12 +2,9 @@ class ScenariosController < ApplicationController
   before_action :authenticate_user!
   before_action :check_municipality_access!, only: [:names, :create]
 
-  SYSTEM_EMAIL = "system@simpli.cl".freeze
-
   def names
     mun_code = params.require(:municipality_code).to_i
 
-    system_user = User.find_by(email: SYSTEM_EMAIL)
     base = Scenario.find_by(user_id: system_user&.id, municipality_code: mun_code)
 
     user_scenarios = Scenario
@@ -80,10 +77,7 @@ class ScenariosController < ApplicationController
   def projects_lists
     scenario =
       current_user.scenarios.find_by(id: params[:id]) ||
-      begin
-        system_user = User.find_by(email: SYSTEM_EMAIL)
-        Scenario.find_by(id: params[:id], user_id: system_user&.id)
-      end
+      Scenario.find_by(id: params[:id], user_id: system_user&.id)
 
     return render json: { error: "No autorizado." }, status: :forbidden unless scenario
 
