@@ -54,7 +54,7 @@ export default class extends Controller {
 
     this.map = new mapboxgl.Map({
       container: this.mapContainerTarget,
-      style: "mapbox://styles/mapbox/streets-v11",
+      style: "mapbox://styles/mapbox/streets-v12",
       center,
       zoom,
       attributionControl: false
@@ -114,6 +114,7 @@ export default class extends Controller {
       window.addEventListener("project:hover_end", this.onProjectHoverEnd)
       window.addEventListener("map:style-selected", this.onStyleSelected)
       window.addEventListener("map:palette-selected", this.onPaletteSelected)
+      window.addEventListener("map:streets-on-top", this.onStreetsOnTopToggled)
 
       window._mapReady = true
       window.dispatchEvent(new CustomEvent("map:ready"))
@@ -147,9 +148,14 @@ export default class extends Controller {
     window.removeEventListener("project:hover_end", this.onProjectHoverEnd)
     window.removeEventListener("map:style-selected", this.onStyleSelected)
     window.removeEventListener("map:palette-selected", this.onPaletteSelected)
+    window.removeEventListener("map:streets-on-top", this.onStreetsOnTopToggled)
   }
 
   onStyleSelected = (e) => this.styleManager?.select(e.detail.styleId)
+  onStreetsOnTopToggled = (e) => {
+    this._streetsOnTop = e.detail.enabled
+    this.adminLayers?.applyStreetsOnTop(e.detail.enabled)
+  }
 
   onPaletteSelected = (e) => {
     const palette = e.detail.palette

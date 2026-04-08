@@ -2,27 +2,40 @@ class MunicipalitiesController < ApplicationController
   before_action :verify_data_request!, only: [:focus]
 
   def index
-    municipalities = Municipality.select(
-      :municipality_code, :name, :region_code, :geometry
-    ).where(region_code: params[:region_code])
+    region_code = params[:region_code].to_i
+    sql = <<~SQL
+      SELECT json_build_object(
+        'type', 'FeatureCollection',
+        'features', COALESCE(json_agg(
+          json_build_object(
+            'type', 'Feature',
+            'geometry', ST_AsGeoJSON(ST_Simplify(geometry, 0.003))::json,
+            'properties', json_build_object(
+              'municipality_code', municipality_code,
+              'region_code', region_code,
+              'name', name
+            )
+          )
+        ), '[]'::json)
+      ) AS geojson
+      FROM municipalities
+      WHERE region_code = ?
+    SQL
 
-    # Iterar sobre las regiones y convertirlas a GeoJSON
-    features = municipalities.map { |mun| mun.to_geojson }
-
-    # Convertirlo en un FeatureCollection
-    geojson = {
-      type: "FeatureCollection",
-      features: features
-    }
-
-    render json: geojson
+    geojson = ActiveRecord::Base.connection.select_value(
+      ApplicationRecord.sanitize_sql_array([sql, region_code])
+    )
+    render plain: geojson, content_type: "application/json"
   end
 
   def names
-    scope = params[:region_code] ?
-      Municipality.where(region_code: params[:region_code]) :
-      Municipality.all
-    municipalities = scope.select(:name, :municipality_code).order(:name)
+    cache_key = "municipalities:names:#{params[:region_code] || 'all'}"
+    municipalities = Rails.cache.fetch(cache_key, expires_in: 1.day) do
+      scope = params[:region_code] ?
+        Municipality.where(region_code: params[:region_code]) :
+        Municipality.all
+      scope.select(:name, :municipality_code).order(:name).to_a
+    end
     render json: municipalities
   end
 
@@ -61,7 +74,6 @@ class MunicipalitiesController < ApplicationController
 
   def base_scenario
     mun_code = params[:municipality_code]
-    system_user = User.find_by(email: "system@simpli.cl")
     base = Scenario.find_by(user_id: system_user&.id, municipality_code: mun_code)
     render json: { scenario_id: base&.id }
   end

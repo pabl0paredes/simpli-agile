@@ -65,6 +65,7 @@ export default class extends Controller {
     "configBtn",
     "mapStyleBtn",
     "paletteBtn",
+    "streetsOnTopBtn",
   ]
 
   connect() {
@@ -232,6 +233,14 @@ export default class extends Controller {
       btn.classList.toggle("is-active", btn.dataset.styleId === styleId)
     })
     window.dispatchEvent(new CustomEvent("map:style-selected", { detail: { styleId } }))
+  }
+
+  toggleStreetsOnTop() {
+    const btn = this.streetsOnTopBtnTarget
+    const enabled = btn.getAttribute("aria-pressed") !== "true"
+    btn.setAttribute("aria-pressed", String(enabled))
+    btn.classList.toggle("is-active", enabled)
+    window.dispatchEvent(new CustomEvent("map:streets-on-top", { detail: { enabled } }))
   }
 
   selectPalette(e) {

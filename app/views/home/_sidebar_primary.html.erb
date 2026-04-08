@@ -268,9 +268,9 @@
         <button type="button" class="palette-picker__btn"
                 data-action="click->sidebar#selectPalette"
                 data-sidebar-target="paletteBtn"
-                data-palette="orange">
-          <span class="palette-picker__swatch palette-picker__swatch--orange"></span>
-          <span>Naranja</span>
+                data-palette="verde">
+          <span class="palette-picker__swatch palette-picker__swatch--verde"></span>
+          <span>Verde</span>
         </button>
       </div>
 
@@ -279,7 +279,7 @@
         <button type="button" class="map-style-picker__btn is-active"
                 data-action="click->sidebar#selectMapStyle"
                 data-sidebar-target="mapStyleBtn"
-                data-style-id="streets-v11">
+                data-style-id="streets-v12">
           <i class="fa-solid fa-map"></i><span>Clásico</span>
         </button>
         <button type="button" class="map-style-picker__btn"
@@ -291,8 +291,22 @@
         <button type="button" class="map-style-picker__btn"
                 data-action="click->sidebar#selectMapStyle"
                 data-sidebar-target="mapStyleBtn"
-                data-style-id="light-v11">
-          <i class="fa-solid fa-sun"></i><span>Claro</span>
+                data-style-id="navigation-day-v1">
+          <i class="fa-solid fa-route"></i><span>Navegación</span>
+        </button>
+      </div>
+
+      <div style="margin-top:14px; display:flex; align-items:center; justify-content:space-between; gap:8px;">
+        <div class="sidebar__config-panel__label" style="margin-top:0; margin-bottom:0;">CALLES Y NOMBRES</div>
+        <button type="button"
+                class="config-toggle-row"
+                style="width:auto; padding:0; flex-shrink:0;"
+                data-action="click->sidebar#toggleStreetsOnTop"
+                data-sidebar-target="streetsOnTopBtn"
+                aria-pressed="false">
+          <span class="config-toggle-track">
+            <span class="config-toggle-thumb"></span>
+          </span>
         </button>
       </div>
     </div>

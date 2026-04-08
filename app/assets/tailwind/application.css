@@ -631,11 +631,58 @@
   }
 
   .palette-picker__swatch--blue {
-    background: linear-gradient(to right, #dbeafe, #93c5fd, #3b82f6, #1d4ed8, #0b3aa4);
+    background: linear-gradient(to right, #A8DBFC, #7CB6DA, #5A93B3, #3E748F, #233141);
   }
 
-  .palette-picker__swatch--orange {
-    background: linear-gradient(to right, #ffedd5, #fdba74, #f97316, #c2410c, #7c2d12);
+  .palette-picker__swatch--verde {
+    background: linear-gradient(to right, #B2EDD4, #7DCAAA, #4EA880, #2E7D5E, #1A5040);
+  }
+
+  .config-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 7px 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    color: #52525b;
+    font-weight: 500;
+    gap: 10px;
+  }
+
+  .config-toggle-row:hover { color: #18181b; }
+
+  .config-toggle-track {
+    position: relative;
+    flex-shrink: 0;
+    width: 34px;
+    height: 18px;
+    background: #d4d4d8;
+    border-radius: 9px;
+    transition: background 0.2s;
+  }
+
+  .config-toggle-thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 14px;
+    height: 14px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.20);
+    transition: left 0.2s;
+  }
+
+  .config-toggle-row.is-active .config-toggle-track {
+    background: #233141;
+  }
+
+  .config-toggle-row.is-active .config-toggle-thumb {
+    left: 18px;
   }
 
   .sidebar__no-access {
@@ -1540,9 +1587,9 @@
   /* Nav controls centered vertically on the right */
   .mapboxgl-ctrl-bottom-right {
     right: 14px !important;
-    bottom: auto !important;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
+    bottom: 116px !important;
+    top: auto !important;
+    transform: none !important;
   }
 
   .mapboxgl-ctrl-bottom-right .mapboxgl-ctrl {
@@ -1842,14 +1889,14 @@
   .map-legend__line-swatch--dashed {
     background: repeating-linear-gradient(
       to right,
-      #111827 0px, #111827 4px,
+      #3E748F 0px, #3E748F 4px,
       transparent 4px, transparent 8px
     );
   }
 
   .map-legend__line-swatch--study-area {
     height: 2.5px;
-    background: #233141;
+    background: #7CB6DA;
   }
 
 

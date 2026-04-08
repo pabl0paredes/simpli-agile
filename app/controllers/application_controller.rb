@@ -38,4 +38,10 @@ class ApplicationController < ActionController::Base
   def user_not_authorized
     render json: { error: "No autorizado." }, status: :forbidden
   end
+
+  def system_user
+    Rails.cache.fetch("system_user", expires_in: 1.day) do
+      User.find_by(email: "system@simpli.cl")
+    end
+  end
 end
