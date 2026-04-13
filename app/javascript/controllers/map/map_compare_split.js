@@ -32,7 +32,7 @@ export class MapCompareSplit {
     c.splitContainerTarget.hidden = false
 
     const baseOpts = {
-      style: `mapbox://styles/mapbox/${c.styleManager?._currentStyle || "streets-v11"}`,
+      style: `mapbox://styles/mapbox/${c.styleManager?._currentStyle || "streets-v12"}`,
       center: c.map.getCenter(),
       zoom: c.map.getZoom(),
       bearing: c.map.getBearing(),
@@ -71,7 +71,12 @@ export class MapCompareSplit {
 
       await this.syncData()
 
-      this.bindCellsHoverSync()   // 👈 agregar esto
+      if (c._streetsOnTop) {
+        c.adminLayers.applyStreetsOnTopToMap(this.mapTop, true)
+        c.adminLayers.applyStreetsOnTopToMap(this.mapBottom, true)
+      }
+
+      this.bindCellsHoverSync()
     }
 
     this.mapTop.once("load", onLoaded)

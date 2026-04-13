@@ -1,14 +1,14 @@
 export class MapStyle {
   constructor(controller) {
     this.c = controller
-    this._currentStyle = "streets-v11"
+    this._currentStyle = "streets-v12"
     this._pickerOpen = false
   }
 
   static styles = [
-    { id: "streets-v11",          label: "Clásico",    icon: "fa-map" },
+    { id: "streets-v12",           label: "Clásico",    icon: "fa-map" },
     { id: "satellite-streets-v12", label: "Satelital",  icon: "fa-satellite" },
-    { id: "light-v11",             label: "Claro",      icon: "fa-sun" },
+    { id: "navigation-day-v1",     label: "Navegación", icon: "fa-route" },
   ]
 
   togglePicker() {
@@ -105,6 +105,10 @@ export class MapStyle {
       c.cellsLayer.ensure(map)
       map.getSource("cells")?.setData({ type: "FeatureCollection", features: c._cellsFeatures })
       c.setCellsVisible(true)
+    }
+
+    if (c._streetsOnTop) {
+      c.adminLayers.applyStreetsOnTop(true)
     }
   }
 }

@@ -631,11 +631,58 @@
   }
 
   .palette-picker__swatch--blue {
-    background: linear-gradient(to right, #dbeafe, #93c5fd, #3b82f6, #1d4ed8, #0b3aa4);
+    background: linear-gradient(to right, #A8DBFC, #7CB6DA, #5A93B3, #3E748F, #233141);
   }
 
-  .palette-picker__swatch--orange {
-    background: linear-gradient(to right, #ffedd5, #fdba74, #f97316, #c2410c, #7c2d12);
+  .palette-picker__swatch--verde {
+    background: linear-gradient(to right, #B2EDD4, #7DCAAA, #4EA880, #2E7D5E, #1A5040);
+  }
+
+  .config-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 7px 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    color: #52525b;
+    font-weight: 500;
+    gap: 10px;
+  }
+
+  .config-toggle-row:hover { color: #18181b; }
+
+  .config-toggle-track {
+    position: relative;
+    flex-shrink: 0;
+    width: 34px;
+    height: 18px;
+    background: #d4d4d8;
+    border-radius: 9px;
+    transition: background 0.2s;
+  }
+
+  .config-toggle-thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 14px;
+    height: 14px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.20);
+    transition: left 0.2s;
+  }
+
+  .config-toggle-row.is-active .config-toggle-track {
+    background: #233141;
+  }
+
+  .config-toggle-row.is-active .config-toggle-thumb {
+    left: 18px;
   }
 
   .sidebar__no-access {
@@ -947,7 +994,7 @@
     gap: 8px;
     margin: 0 4px 4px;
     padding: 9px 12px;
-    background: #18181b;
+    background: #233141;
     color: white;
     border-radius: 8px;
     font-size: 13px;
@@ -957,23 +1004,23 @@
   }
 
   .user-menu__login-btn:hover {
-    background: #27272a;
-    box-shadow: 0 4px 12px rgb(9 9 11 / 0.15);
+    background: #1a2535;
+    box-shadow: 0 4px 12px rgb(35 49 65 / 0.20);
     color: white;
   }
 
   .user-menu__register-link {
     display: block;
-    text-align: center;
+    text-align: left;
     padding: 8px 12px 10px;
     font-size: 12px;
-    color: #a1a1aa;
+    color: #71717a;
     text-decoration: none;
     transition: color 120ms ease;
   }
 
-  .user-menu__register-link strong { color: #3b82f6; font-weight: 600; }
-  .user-menu__register-link:hover { color: #52525b; }
+  .user-menu__register-link strong { color: #233141; font-weight: 600; }
+  .user-menu__register-link:hover { color: #233141; }
 
   /* ========== HELP MODAL ========== */
 
@@ -1255,6 +1302,26 @@
     box-shadow: 0 20px 60px rgb(9 9 11 / 0.2);
   }
 
+  .modal__close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    border: none;
+    background: none;
+    color: #a1a1aa;
+    font-size: 14px;
+    cursor: pointer;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 120ms ease, color 120ms ease;
+  }
+
+  .modal__close:hover { background: rgb(9 9 11 / 0.06); color: #3f3f46; }
+
   .modal__title {
     font-weight: 700;
     font-size: 15px;
@@ -1294,6 +1361,15 @@
   .modal__actions .sidebar__primary-btn {
     width: auto;
     padding: 8px 16px;
+  }
+
+  .modal__actions .sidebar__primary-btn {
+    background: #233141;
+  }
+
+  .modal__actions .sidebar__primary-btn:hover:not(:disabled) {
+    background: #1a2535;
+    box-shadow: 0 4px 14px rgb(35 49 65 / 0.20);
   }
 
 
@@ -1512,6 +1588,11 @@
     z-index: 100;
   }
 
+  /* In comparator mode: add top spacing so content doesn't crowd the logo */
+  .sidebar__top:has([data-sidebar-target="comparatorSection"]:not([hidden])) {
+    padding-top: 32px;
+  }
+
   /* In comparator mode: reorder sections so opportunity appears before compare mode */
   .sidebar__top:has([data-sidebar-target="comparatorSection"]:not([hidden])) > [data-sidebar-target="comparatorSection"] {
     order: 1;
@@ -1540,9 +1621,9 @@
   /* Nav controls centered vertically on the right */
   .mapboxgl-ctrl-bottom-right {
     right: 14px !important;
-    bottom: auto !important;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
+    bottom: 116px !important;
+    top: auto !important;
+    transform: none !important;
   }
 
   .mapboxgl-ctrl-bottom-right .mapboxgl-ctrl {
@@ -1621,7 +1702,7 @@
     height: 100% !important;
 }
 
-  .map-split { position: relative; width: 100%; height: 100%; display: grid; grid-template-rows: 1fr 1fr; gap: 1px; }
+  .map-split { position: relative; width: 100%; height: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 1px; }
 
   .map-split[hidden] { display: none; }
 
@@ -1780,7 +1861,7 @@
   .map-legend[hidden] { display: none; }
 
   .map-legend {
-    width: 196px;
+    width: 210px;
     background: rgba(255,255,255,0.97);
     border: 1px solid rgb(9 9 11 / 0.08);
     border-radius: 12px;
@@ -1842,14 +1923,14 @@
   .map-legend__line-swatch--dashed {
     background: repeating-linear-gradient(
       to right,
-      #111827 0px, #111827 4px,
+      #3E748F 0px, #3E748F 4px,
       transparent 4px, transparent 8px
     );
   }
 
   .map-legend__line-swatch--study-area {
     height: 2.5px;
-    background: #233141;
+    background: #7CB6DA;
   }
 
 
@@ -2026,13 +2107,13 @@
   }
 
   .auth-remember { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; }
-  .auth-remember input[type="checkbox"] { width: 15px; height: 15px; cursor: pointer; accent-color: #18181b; }
+  .auth-remember input[type="checkbox"] { width: 15px; height: 15px; cursor: pointer; accent-color: #233141; }
   .auth-remember label { font-size: 13px; color: #71717a; cursor: pointer; }
 
   .auth-submit-btn {
     width: 100%;
     padding: 11px;
-    background: #18181b;
+    background: #233141;
     color: white;
     border: none;
     border-radius: 8px;
@@ -2044,14 +2125,14 @@
   }
 
   .auth-submit-btn:hover {
-    background: #27272a;
-    box-shadow: 0 4px 12px rgb(9 9 11 / 0.15);
+    background: #1a2535;
+    box-shadow: 0 4px 12px rgb(35 49 65 / 0.20);
   }
 
   .auth-submit-btn:active { transform: translateY(1px); }
 
   .auth-links { text-align: center; margin-top: 14px; }
-  .auth-links a { font-size: 13px; color: #3b82f6; text-decoration: none; }
+  .auth-links a { font-size: 13px; color: #233141; text-decoration: none; }
   .auth-links a:hover { text-decoration: underline; }
 
   .auth-divider { display: flex; align-items: center; gap: 12px; margin: 18px 0; }
@@ -2062,7 +2143,7 @@
   .auth-register-row button {
     background: none;
     border: none;
-    color: #3b82f6;
+    color: #233141;
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
@@ -2132,13 +2213,13 @@
   .auth-modal-text { font-size: 13px; color: #71717a; line-height: 1.6; margin: 0 0 20px; }
 
   .auth-modal-email-box {
-    background: #eff6ff;
-    border: 1px solid rgb(59 130 246 / 0.2);
+    background: #eef1f5;
+    border: 1px solid rgb(35 49 65 / 0.15);
     border-radius: 8px;
     padding: 10px 14px;
     font-size: 13px;
     font-weight: 600;
-    color: #3b82f6;
+    color: #233141;
     margin-bottom: 18px;
     word-break: break-all;
   }
@@ -2150,7 +2231,7 @@
     gap: 8px;
     width: 100%;
     padding: 11px;
-    background: #18181b;
+    background: #233141;
     color: white;
     border-radius: 8px;
     font-size: 14px;
@@ -2159,7 +2240,7 @@
     transition: background 120ms ease, box-shadow 120ms ease;
   }
 
-  .auth-modal-btn:hover { background: #27272a; box-shadow: 0 4px 12px rgb(9 9 11 / 0.15); }
+  .auth-modal-btn:hover { background: #1a2535; box-shadow: 0 4px 12px rgb(35 49 65 / 0.20); }
 
   body.modal-open { overflow: hidden; }
 

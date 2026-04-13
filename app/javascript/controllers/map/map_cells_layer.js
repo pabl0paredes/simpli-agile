@@ -116,9 +116,11 @@ export class MapCellsLayer {
       })
     }
 
-    // Boundary lines must always sit above cells — re-stack them on top.
-    // Order: selected-municipality-outline, study-area-glow, study-area-line (topmost).
-    ;["selected-municipality-outline", "study-area-glow", "study-area-line"].forEach(id => {
+    // selected-municipality-outline sits below all cells; study-area layers sit above.
+    if (map.getLayer("selected-municipality-outline") && map.getLayer("cells-fill")) {
+      map.moveLayer("selected-municipality-outline", "cells-fill")
+    }
+    ;["study-area-glow", "study-area-line"].forEach(id => {
       if (map.getLayer(id)) map.moveLayer(id)
     })
 

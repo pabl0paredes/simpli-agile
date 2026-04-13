@@ -30,7 +30,7 @@ export class MapCompareSlider {
 
   const mapboxgl = window.mapboxgl
   const baseOpts = {
-    style: `mapbox://styles/mapbox/${c.styleManager?._currentStyle || "streets-v11"}`,
+    style: `mapbox://styles/mapbox/${c.styleManager?._currentStyle || "streets-v12"}`,
     center: c.map.getCenter(),
     zoom: c.map.getZoom(),
     bearing: c.map.getBearing(),
@@ -113,6 +113,11 @@ export class MapCompareSlider {
     await c.adminLayers.loadSelectedMunicipalityOutlineOn(this.mapRight)
 
     await this.syncData()
+
+    if (c._streetsOnTop) {
+      c.adminLayers.applyStreetsOnTopToMap(this.mapLeft, true)
+      c.adminLayers.applyStreetsOnTopToMap(this.mapRight, true)
+    }
 
     this.bindCellsHoverTooltip(this.mapLeft)
     this.bindCellsHoverTooltip(this.mapRight)

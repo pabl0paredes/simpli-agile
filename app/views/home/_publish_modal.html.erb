@@ -2,11 +2,15 @@
   <div class="modal__backdrop" data-action="click->sidebar#closePublishModal"></div>
 
   <div class="modal__panel" role="dialog" aria-modal="true">
-    <div class="modal__title">Nuevo escenario</div>
+    <button type="button" class="modal__close" data-action="click->sidebar#closePublishModal">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+
+    <div class="modal__title">Nuevo Escenario</div>
 
     <div class="modal__body">
       <div class="modal__parent-scenario">
-        <span class="modal__parent-label">Escenario padre:</span>
+        <span class="modal__parent-label">ESCENARIO PADRE:</span>
         <span class="modal__parent-name" data-sidebar-target="scenarioParentDisplay">—</span>
       </div>
 
@@ -14,11 +18,11 @@
       <input
         class="sidebar__input"
         type="text"
-        placeholder="Ej: Comercio + salud 2026"
+        placeholder="Ej: Proyectos Plan Centro 2027"
         data-sidebar-target="publishNameInput"
       />
       <div class="sidebar__hint sidebar__hint--muted">
-        Este nombre se mostrará en tu lista de escenarios.
+        Este nombre se mostrará en tu lista de Escenarios.
       </div>
     </div>
 
@@ -28,7 +32,7 @@
       </button>
 
       <button type="button" class="sidebar__primary-btn" data-action="click->sidebar#confirmCreateScenario">
-        Crear escenario
+        Crear Escenario
       </button>
     </div>
   </div>
