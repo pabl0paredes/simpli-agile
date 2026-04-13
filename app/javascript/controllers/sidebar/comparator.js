@@ -62,6 +62,15 @@ export function createComparator(controller) {
       if (controller.hasMunicipalityBackBtnTarget) controller.municipalityBackBtnTarget.hidden = true
       if (controller.hasLocateSectionTarget) controller.locateSectionTarget.hidden = true
       if (controller.hasLocatorPanelTarget) controller.locatorPanelTarget.hidden = true
+      if (controller.hasSimulatorPanelTarget) {
+        controller.simulatorPanelTarget.hidden = true
+        controller.element.querySelectorAll(".sidebar__layer-btn").forEach(b => {
+          b.disabled = false
+          b.classList.remove("is-disabled")
+          b.style.opacity = ""
+          b.style.cursor = ""
+        })
+      }
 
       if (controller.hasDeleteScenarioBtnTarget) controller.deleteScenarioBtnTarget.hidden = true
       // ✅ exigir A y B antes de opportunity

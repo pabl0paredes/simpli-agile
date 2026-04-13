@@ -513,6 +513,7 @@
   /* Nav-style button (localizar infraestructura) */
   .sidebar__nav-btn {
     width: 100%;
+    margin-bottom: 8px;
     padding: 10px 14px;
     border: 0;
     background: #233141;

@@ -46,8 +46,24 @@ export function createSimulator(controller) {
       controller.simulatorPanelTarget.hidden = !opening
 
       if (opening) {
+        // Cierra el localizador si estaba abierto
+        if (controller.hasLocatorPanelTarget && !controller.locatorPanelTarget.hidden) {
+          controller.closeLocator()
+        }
+
         controller.simulatorPanelTarget.style.left = controller.collapsed ? "0px" : "304px"
         controller.loadAgentTypesIntoPanel()
+
+        if (controller.hasOpportunitySelectTarget) controller.opportunitySelectTarget.disabled = true
+        if (controller.hasScenarioSelectTarget) controller.scenarioSelectTarget.disabled = true
+        controller.element.querySelectorAll(".sidebar__layer-btn").forEach(b => {
+          b.disabled = true
+          b.classList.add("is-disabled")
+          b.style.opacity = "0.4"
+          b.style.cursor = "not-allowed"
+        })
+      } else {
+        _restoreAfterSimulatorClose(controller)
       }
     },
 
@@ -128,9 +144,22 @@ function _pollSimulationRequests(requestIds, btn, controller) {
     if (anyFailed) {
       alert("Una o más simulaciones fallaron. Revisa e intenta de nuevo.")
     } else {
+      controller.simulatorPanelTarget.hidden = true
+      _restoreAfterSimulatorClose(controller)
       controller.simulationResultModalTarget.hidden = false
     }
   }
 
   setTimeout(checkAll, INTERVAL_MS)
+}
+
+function _restoreAfterSimulatorClose(controller) {
+  if (controller.hasOpportunitySelectTarget) controller.opportunitySelectTarget.disabled = false
+  if (controller.hasScenarioSelectTarget) controller.scenarioSelectTarget.disabled = false
+  controller.element.querySelectorAll(".sidebar__layer-btn").forEach(b => {
+    b.disabled = false
+    b.classList.remove("is-disabled")
+    b.style.opacity = ""
+    b.style.cursor = ""
+  })
 }

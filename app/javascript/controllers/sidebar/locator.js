@@ -37,6 +37,17 @@ export function createLocator(controller) {
       }
 
       if (opening) {
+        // Cierra el simulador si estaba abierto
+        if (controller.hasSimulatorPanelTarget && !controller.simulatorPanelTarget.hidden) {
+          controller.simulatorPanelTarget.hidden = true
+          controller.element.querySelectorAll(".sidebar__layer-btn").forEach(b => {
+            b.disabled = false
+            b.classList.remove("is-disabled")
+            b.style.opacity = ""
+            b.style.cursor = ""
+          })
+        }
+
         controller._api?.trackEvent("locator_opened", {
           municipality_code: controller._selectedMunicipalityCode,
           scenario_id: controller._selectedScenarioId
