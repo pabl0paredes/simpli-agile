@@ -186,6 +186,25 @@ export class MapAdminLayers {
         }
       })
     }
+
+    if (!map.getSource("municipality-mask")) {
+      map.addSource("municipality-mask", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] }
+      })
+    }
+
+    if (!map.getLayer("municipality-mask-fill")) {
+      map.addLayer({
+        id: "municipality-mask-fill",
+        type: "fill",
+        source: "municipality-mask",
+        paint: {
+          "fill-color": "#000000",
+          "fill-opacity": 0.35
+        }
+      }, map.getLayer("selected-municipality-outline") ? "selected-municipality-outline" : undefined)
+    }
   }
 
   loadRegionsIntoMap() {
@@ -347,6 +366,7 @@ export class MapAdminLayers {
 
     this.c.map.getSource("selected-municipality").setData(focus.geometry)
 
+    this._loadMask(this.c.map, focus.geometry)
     this._loadStudyArea(this.c.map, focus.study_area)
 
     // If municipality was selected directly (no region chosen first), resolve the region
@@ -387,12 +407,14 @@ export class MapAdminLayers {
     if (!src) return
     src.setData({ type: "FeatureCollection", features: [] })
     this._clearStudyArea(this.c.map)
+    this._clearMask(this.c.map)
   }
 
   onMunicipalityBack = async () => {
     const src = this.c.map.getSource("selected-municipality")
     if (src) src.setData({ type: "FeatureCollection", features: [] })
     this._clearStudyArea(this.c.map)
+    this._clearMask(this.c.map)
     this.setMunicipalitiesVisible(true)
 
     const regionCode = this.c._selectedRegionCode
@@ -428,7 +450,46 @@ export class MapAdminLayers {
     const src = map.getSource("selected-municipality")
     if (src) src.setData(focus.geometry)
 
+    this._loadMask(map, focus.geometry)
     this._loadStudyArea(map, focus.study_area)
+  }
+
+  _loadMask(map, featureCollection) {
+    const src = map.getSource("municipality-mask")
+    if (!src) return
+
+    const features = featureCollection?.features || []
+    if (!features.length) {
+      src.setData({ type: "FeatureCollection", features: [] })
+      return
+    }
+
+    const worldRing = [[-180, -90], [-180, 90], [180, 90], [180, -90], [-180, -90]]
+    const holeRings = []
+
+    features.forEach(f => {
+      const geom = f.geometry
+      if (!geom) return
+      if (geom.type === "Polygon") {
+        holeRings.push(geom.coordinates[0])
+      } else if (geom.type === "MultiPolygon") {
+        geom.coordinates.forEach(poly => holeRings.push(poly[0]))
+      }
+    })
+
+    src.setData({
+      type: "FeatureCollection",
+      features: [{
+        type: "Feature",
+        geometry: { type: "Polygon", coordinates: [worldRing, ...holeRings] },
+        properties: {}
+      }]
+    })
+  }
+
+  _clearMask(map) {
+    const src = map?.getSource("municipality-mask")
+    if (src) src.setData({ type: "FeatureCollection", features: [] })
   }
 
   _loadStudyArea(map, feature) {
@@ -457,11 +518,51 @@ export class MapAdminLayers {
     this.c._hasStudyArea = false
   }
 
+  applyStreetsOnTopToMap(map, enabled) {
+    const layers = [
+      "municipalities-fill", "municipalities-outline", "municipalities-hover",
+      "municipality-mask-fill",
+      "selected-municipality-outline",
+      "cells-fill", "cells-outline", "cells-hover", "cells-project-outline",
+      "study-area-glow", "study-area-line",
+      "cells-parent-fill", "cells-draft-hatch"
+    ]
+    if (!enabled) return
+    const ourLayerSet = new Set(layers)
+    const allStyleLayers = map.getStyle().layers
+    layers.forEach(id => { if (map.getLayer(id)) map.moveLayer(id) })
+    allStyleLayers
+      .filter(l =>
+        !ourLayerSet.has(l.id) && l.type === "line" &&
+        (l.id.startsWith("road-") || l.id.startsWith("bridge-") || l.id.startsWith("tunnel-") || l.id.startsWith("traffic-")) &&
+        !l.id.includes("path") && !l.id.includes("pedestrian") && !l.id.includes("sidewalk")
+      )
+      .forEach(l => { if (map.getLayer(l.id)) map.moveLayer(l.id) })
+    allStyleLayers
+      .filter(l =>
+        !ourLayerSet.has(l.id) && l.type === "symbol" &&
+        !l.id.includes("poi") && !l.id.includes("airport") && !l.id.includes("transit")
+      )
+      .forEach(l => { if (map.getLayer(l.id)) map.moveLayer(l.id) })
+    allStyleLayers
+      .filter(l =>
+        !ourLayerSet.has(l.id) && l.type === "line" &&
+        (l.id.startsWith("road-") || l.id.startsWith("bridge-") || l.id.startsWith("tunnel-") || l.id.startsWith("traffic-")) &&
+        !l.id.includes("path") && !l.id.includes("pedestrian") && !l.id.includes("sidewalk")
+      )
+      .forEach(l => {
+        if (!map.getLayer(l.id)) return
+        const current = map.getPaintProperty(l.id, "line-opacity")
+        if (typeof current !== "object") map.setPaintProperty(l.id, "line-opacity", 1.0)
+      })
+  }
+
   applyStreetsOnTop(enabled) {
     const map = this.c.map
     // Order from bottom to top: municipalities → municipality-outline → cells → study-area → locator
     const layers = [
       "municipalities-fill", "municipalities-outline", "municipalities-hover",
+      "municipality-mask-fill",
       "selected-municipality-outline",
       "cells-fill", "cells-outline", "cells-hover", "cells-project-outline",
       "study-area-glow", "study-area-line",

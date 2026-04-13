@@ -42,7 +42,7 @@ export class MapLegend {
         rows.push({ klass: i, label: this.accessibilityLabelForClass(i) })
       }
     } else {
-      rows.push({ klass: 0, label: isDelta ? "Sin cambio / 0" : "Sin datos / 0" })
+      rows.push({ klass: 0, label: isDelta ? "Sin cambio / 0" : "= 0" })
 
       for (let i = 1; i <= k; i++) {
         const lo = breaks[i - 1]
@@ -58,12 +58,12 @@ export class MapLegend {
       <div class="map-legend__divider"></div>
       <div class="map-legend__row map-legend__row--static">
         <span class="map-legend__line-swatch map-legend__line-swatch--dashed"></span>
-        <span class="map-legend__label">Límite comunal</span>
+        <span class="map-legend__label">Límite Comunal</span>
       </div>
       ${this.c._hasStudyArea ? `
       <div class="map-legend__row map-legend__row--static">
         <span class="map-legend__line-swatch map-legend__line-swatch--study-area"></span>
-        <span class="map-legend__label">Área de estudio</span>
+        <span class="map-legend__label">Área de Estudio</span>
       </div>` : ""}
     `
 

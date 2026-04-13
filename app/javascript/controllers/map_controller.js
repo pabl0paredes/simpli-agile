@@ -155,6 +155,11 @@ export default class extends Controller {
   onStreetsOnTopToggled = (e) => {
     this._streetsOnTop = e.detail.enabled
     this.adminLayers?.applyStreetsOnTop(e.detail.enabled)
+    const compareMaps = [
+      this.compareSplit?.mapTop, this.compareSplit?.mapBottom,
+      this.compareSlider?.mapLeft, this.compareSlider?.mapRight
+    ].filter(Boolean)
+    compareMaps.forEach(m => this.adminLayers?.applyStreetsOnTopToMap(m, e.detail.enabled))
   }
 
   onPaletteSelected = (e) => {

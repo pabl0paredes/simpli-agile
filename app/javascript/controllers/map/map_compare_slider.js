@@ -114,6 +114,11 @@ export class MapCompareSlider {
 
     await this.syncData()
 
+    if (c._streetsOnTop) {
+      c.adminLayers.applyStreetsOnTopToMap(this.mapLeft, true)
+      c.adminLayers.applyStreetsOnTopToMap(this.mapRight, true)
+    }
+
     this.bindCellsHoverTooltip(this.mapLeft)
     this.bindCellsHoverTooltip(this.mapRight)
   }

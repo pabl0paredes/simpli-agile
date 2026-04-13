@@ -71,7 +71,12 @@ export class MapCompareSplit {
 
       await this.syncData()
 
-      this.bindCellsHoverSync()   // 👈 agregar esto
+      if (c._streetsOnTop) {
+        c.adminLayers.applyStreetsOnTopToMap(this.mapTop, true)
+        c.adminLayers.applyStreetsOnTopToMap(this.mapBottom, true)
+      }
+
+      this.bindCellsHoverSync()
     }
 
     this.mapTop.once("load", onLoaded)

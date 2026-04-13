@@ -738,7 +738,7 @@
 //   this._draftScenarioId = null
 
 
-//   alert("Escenario eliminado ✅")
+//   alert("Escenario eliminado")
 // }
 
 

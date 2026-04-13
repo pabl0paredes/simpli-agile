@@ -48,7 +48,7 @@ export function createPublishDelete(controller) {
           municipality_code: controller._selectedMunicipalityCode
         })
 
-        alert("Accesibilidades recalculadas ✅")
+        alert("El Escenario ha sido actualizado y guardado exitosamente.")
       } finally {
         if (controller.hasAddBtnTarget) controller.addBtnTarget.disabled = false
         if (controller.hasSaveScenarioBtnTarget) controller.saveScenarioBtnTarget.disabled = false
@@ -61,13 +61,13 @@ export function createPublishDelete(controller) {
 
       const opt = controller.scenarioSelectTarget?.selectedOptions?.[0]
       const isBase = (opt?.dataset?.isBase === "1")
-      if (isBase) return alert("No puedes eliminar el escenario base.")
+      if (isBase) return alert("No puedes eliminar el Escenario Base.")
 
       if (controller._selectedScenarioStatus === "draft" && controller._hasDraftProjects) {
-        return alert("Recalcula las accesibilidades antes de eliminar este escenario, o elimínalo directamente desde el selector.")
+        return alert("Recalcula las accesibilidades antes de eliminar este Escenario, o elimínalo directamente desde el selector.")
       }
 
-      const ok = confirm("¿Eliminar este escenario y todos sus descendientes? Esta acción no se puede deshacer.")
+      const ok = confirm("¿Eliminar este Escenario y todos sus descendientes? Esta acción no se puede deshacer.")
       if (!ok) return
 
       const csrf = document.querySelector('meta[name="csrf-token"]').content
@@ -81,7 +81,7 @@ export function createPublishDelete(controller) {
 
       if (!resp.ok) {
         console.error(json)
-        return alert(json.error || "Error eliminando escenario.")
+        return alert(json.error || "Error eliminando Escenario.")
       }
 
       controller.resetVisualizationStateAfterScenarioChange()
@@ -93,7 +93,7 @@ export function createPublishDelete(controller) {
       controller._draftScenarioId = null
       controller.syncScenarioActionsUI()
 
-      alert("Escenario eliminado ✅")
+      alert("El Escenario ha sido eliminado exitosamente.")
     }
   }
 }
