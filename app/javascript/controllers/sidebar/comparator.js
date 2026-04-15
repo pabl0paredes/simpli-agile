@@ -61,6 +61,7 @@ export function createComparator(controller) {
       // ❌ comparador no construye ni navega de vuelta
       if (controller.hasMunicipalityBackBtnTarget) controller.municipalityBackBtnTarget.hidden = true
       if (controller.hasLocateSectionTarget) controller.locateSectionTarget.hidden = true
+      if (controller.hasNormativeSectionTarget) controller.normativeSectionTarget.hidden = true
       if (controller.hasLocatorPanelTarget) controller.locatorPanelTarget.hidden = true
       if (controller.hasSimulatorPanelTarget) {
         controller.simulatorPanelTarget.hidden = true

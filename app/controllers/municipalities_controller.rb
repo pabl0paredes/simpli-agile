@@ -34,7 +34,7 @@ class MunicipalitiesController < ApplicationController
       scope = params[:region_code] ?
         Municipality.where(region_code: params[:region_code]) :
         Municipality.all
-      scope.select(:name, :municipality_code).order(:name).to_a
+      scope.select(:name, :municipality_code, :has_normative).order(:name).to_a
     end
     render json: municipalities
   end

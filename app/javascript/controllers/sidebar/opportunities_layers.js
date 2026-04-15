@@ -114,6 +114,7 @@ export function createOpportunitiesLayers(controller) {
     selectLayer(e) {
       const btn = e.currentTarget
       const metric = btn.dataset.metric
+      const normMetric = btn.dataset.normMetric
 
       const isComparator = (controller._uiMode === "comparador") // o como lo guardes tú
       const isDelta = (controller._compareMode === "delta")
@@ -145,6 +146,27 @@ export function createOpportunitiesLayers(controller) {
         }))
 
         return // 👈 importante: no sigas con flujo normal "layer:selected"
+      }
+
+      // Botones de normativa (data-norm-metric)
+      if (normMetric) {
+        if (isActive) {
+          if (!controller._selectedMunicipalityCode || !controller._selectedScenarioId) return
+          window.dispatchEvent(new CustomEvent("normative:selected", {
+            detail: {
+              normMetric,
+              municipality_code: controller._selectedMunicipalityCode,
+              scenario_id: controller._selectedScenarioId
+            }
+          }))
+        } else {
+          window.dispatchEvent(new CustomEvent("layer:cleared"))
+        }
+        controller.accessibilityChoicesTarget.hidden = true
+        controller.accessibilityChoicesTarget
+          .querySelectorAll(".sidebar__subchoice-btn")
+          .forEach(b => b.classList.remove("is-active"))
+        return
       }
 
       // Solo disparamos evento si quedó activo

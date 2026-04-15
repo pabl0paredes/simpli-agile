@@ -66,6 +66,7 @@ export default class extends Controller {
     "configBtn",
     "mapStyleBtn",
     "paletteBtn",
+    "normativeSection",
     "simulatorPanel",
     "simulatorBtn",
     "simulateBtn",
@@ -416,6 +417,10 @@ export default class extends Controller {
 
     if (this.hasLocateSectionTarget) {
       this.locateSectionTarget.hidden = !hasValidScenario || inComparator
+    }
+
+    if (this.hasNormativeSectionTarget) {
+      this.normativeSectionTarget.hidden = !hasValidScenario || inComparator || !this._municipalityHasNormative
     }
   }
 

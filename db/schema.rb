@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_04_13_000001) do
+ActiveRecord::Schema[7.1].define(version: 2026_04_13_000003) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "postgis"
@@ -117,6 +117,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_13_000001) do
     t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.geometry "study_area", limit: {:srid=>4326, :type=>"geometry"}
+    t.boolean "has_normative", default: false, null: false
     t.index ["centroid"], name: "index_municipalities_on_centroid", using: :gist
     t.index ["geometry"], name: "index_municipalities_on_geometry", using: :gist
     t.index ["region_code"], name: "index_municipalities_on_region_code"
@@ -262,7 +263,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_13_000001) do
   create_table "visual_modes", force: :cascade do |t|
     t.string "mode_code", null: false
     t.string "name", null: false
-    t.string "opportunity_code", null: false
+    t.string "opportunity_code"
     t.integer "municipality_code", null: false
     t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
@@ -302,5 +303,4 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_13_000001) do
   add_foreign_key "travel_times", "travel_modes"
   add_foreign_key "users", "municipalities", column: "municipality_code", primary_key: "municipality_code"
   add_foreign_key "visual_modes", "municipalities", column: "municipality_code", primary_key: "municipality_code"
-  add_foreign_key "visual_modes", "opportunities", column: "opportunity_code", primary_key: "opportunity_code"
 end

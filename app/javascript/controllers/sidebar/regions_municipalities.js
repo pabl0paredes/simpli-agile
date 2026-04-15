@@ -87,6 +87,7 @@ export function createRegionsMunicipalities(controller) {
             const option = document.createElement("option")
             option.value = municipality.municipality_code
             option.textContent = municipality.name
+            option.dataset.hasNormative = municipality.has_normative ? "true" : "false"
             selector.appendChild(option)
           })
 
@@ -245,6 +246,8 @@ export function createRegionsMunicipalities(controller) {
       controller.resetAfterMunicipalityChange()
 
       controller._selectedMunicipalityCode = munCode
+      const selectedOption = controller.municipalitySelectTarget.selectedOptions?.[0]
+      controller._municipalityHasNormative = selectedOption?.dataset?.hasNormative === "true"
 
       const trackedMunName = controller.municipalitySelectTarget.selectedOptions?.[0]?.textContent?.trim()
       controller._api?.trackEvent("municipality_opened", { municipality_code: munCode, municipality_name: trackedMunName })

@@ -98,6 +98,7 @@ export default class extends Controller {
       window.addEventListener("municipality:cleared", this.onMunicipalityCleared)
       window.addEventListener("municipality:back", this.onMunicipalityBack)
       window.addEventListener("layer:selected", this.onLayerSelected)
+      window.addEventListener("normative:selected", this.onNormativeSelected)
       window.addEventListener("opportunity:selected", this.onOpportunitySelected)
       window.addEventListener("accessibility:mode_selected", this.onAccessibilityModeSelected)
       window.addEventListener("layer:cleared", this.onLayerCleared)
@@ -132,6 +133,7 @@ export default class extends Controller {
     window.removeEventListener("municipality:cleared", this.onMunicipalityCleared)
     window.removeEventListener("municipality:back", this.onMunicipalityBack)
     window.removeEventListener("layer:selected", this.onLayerSelected)
+    window.removeEventListener("normative:selected", this.onNormativeSelected)
     window.removeEventListener("opportunity:selected", this.onOpportunitySelected)
     window.removeEventListener("accessibility:mode_selected", this.onAccessibilityModeSelected)
     window.removeEventListener("layer:cleared", this.onLayerCleared)
@@ -241,6 +243,8 @@ export default class extends Controller {
     // 2) Si estoy en comparador, refresca el renderer correcto
     this.syncCompareIfNeeded()
   }
+
+  onNormativeSelected = (e) => this.thematicLayer.onNormativeSelected(e)
 
   onProjectHover = (e) => {
     const { h3, total_agents, surface_per_agent, opportunity_name } = e.detail

@@ -1,5 +1,5 @@
 class CellsController < ApplicationController
-  before_action :verify_data_request!, only: [:thematic, :accessibility, :delta, :accessibility_delta]
+  before_action :verify_data_request!, only: [:thematic, :accessibility, :delta, :accessibility_delta, :normative]
   before_action :authenticate_user!, only: [:locator_status]
   before_action :check_locator_access!, only: [:locator_status]
 
@@ -395,6 +395,84 @@ class CellsController < ApplicationController
           scenario_b_id: scenario_b,
           has_projects: names.any?,
           project_names: names
+        }
+      }
+    end
+
+    render json: { type: "FeatureCollection", features: features, breaks: breaks }
+  end
+
+  # GET /cells/normative?municipality_code=9115&scenario_id=1&norm_metric=norm_const
+  def normative
+    mun_code    = params.require(:municipality_code).to_i
+    scenario_id = params.require(:scenario_id).to_i
+    norm_metric = params.require(:norm_metric).to_s
+
+    unless %w[norm_const norm_footprint].include?(norm_metric)
+      return render json: { error: "norm_metric inválido" }, status: :unprocessable_entity
+    end
+
+    metric_col = norm_metric == "norm_const" ? "remanente_efectivo_m2" : "remanente_huella_m2"
+
+    visual_mode = VisualMode.find_by(municipality_code: mun_code, opportunity_code: nil, mode_code: norm_metric)
+
+    edges = if visual_mode&.bin
+      [
+        visual_mode.bin.bin_0, visual_mode.bin.bin_1, visual_mode.bin.bin_2,
+        visual_mode.bin.bin_3, visual_mode.bin.bin_4, visual_mode.bin.bin_5
+      ].compact.map(&:to_f)
+    else
+      [0, 0, 0, 0, 0, 0]
+    end
+
+    edges = [0, 0, 0, 0, 0, 0] if edges.length < 2
+
+    conn = ActiveRecord::Base.connection.raw_connection
+
+    sql = <<~SQL
+      SELECT
+        cells.h3,
+        cells.show_id,
+        ST_AsGeoJSON(cells.geometry) AS geom_json,
+        COALESCE(cn.#{metric_col}, 0) AS value
+      FROM cells
+      LEFT JOIN cell_norms cn
+        ON cn.h3 = cells.h3
+        AND cn.norm_scenario_id = $1
+      WHERE cells.municipality_code = $2
+    SQL
+
+    result = conn.exec_params(sql, [scenario_id, mun_code])
+
+    rows = result.map { |r| r }
+
+    breaks = edges.dup
+    if rows.any?
+      actual_max = rows.map { |r| r["value"].to_f }.max
+      breaks[-1] = actual_max if actual_max > breaks.last
+    end
+
+    features = rows.map do |r|
+      v = r["value"].to_f
+      klass =
+        if v <= 0
+          0
+        elsif breaks.uniq.length <= 1
+          1
+        else
+          bin_class(v, breaks)
+        end
+
+      {
+        type: "Feature",
+        geometry: JSON.parse(r["geom_json"]),
+        properties: {
+          h3: r["h3"],
+          show_id: r["show_id"],
+          value: v.round(2),
+          class: klass,
+          municipality_code: mun_code,
+          norm_metric: norm_metric
         }
       }
     end

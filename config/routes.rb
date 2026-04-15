@@ -33,6 +33,7 @@ Rails.application.routes.draw do
       get :delta
       get :accessibility_delta
       get :locator_status
+      get :normative
     end
   end
 

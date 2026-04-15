@@ -151,6 +151,28 @@
         </div>
       </div>
 
+      <div class="sidebar__section" data-sidebar-target="normativeSection" hidden>
+        <div class="sidebar__label">NORMATIVA</div>
+        <div class="sidebar__layers">
+          <button
+            type="button"
+            class="sidebar__layer-btn"
+            data-norm-metric="norm_const"
+            data-action="click->sidebar#selectLayer"
+          >
+            <i class="fa-solid fa-building-columns"></i> Constructibilidad remanente
+          </button>
+          <button
+            type="button"
+            class="sidebar__layer-btn"
+            data-norm-metric="norm_footprint"
+            data-action="click->sidebar#selectLayer"
+          >
+            <i class="fa-solid fa-expand"></i> Suelo remanente
+          </button>
+        </div>
+      </div>
+
       <div class="sidebar__section" data-sidebar-target="opportunitySection" hidden>
         <div class="sidebar__label">OPORTUNIDAD</div>
         <select class="sidebar__select" data-sidebar-target="opportunitySelect" data-action="change->sidebar#opportunityChanged" disabled>
