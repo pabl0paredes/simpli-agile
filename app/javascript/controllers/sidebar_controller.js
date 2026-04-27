@@ -74,6 +74,8 @@ export default class extends Controller {
     "agentInputsContainer",
     "agentInput",
     "streetsOnTopBtn",
+    "attractivitySection",
+    "attractivityChoices",
   ]
 
   connect() {
@@ -196,6 +198,7 @@ export default class extends Controller {
   opportunityChanged(e) { return this.opportunitiesLayers.opportunityChanged(e) }
   selectLayer(e) { return this.opportunitiesLayers.selectLayer(e) }
   selectAccessibilityMode(e) { return this.opportunitiesLayers.selectAccessibilityMode(e) }
+  selectAttractivityMode(e)  { return this.opportunitiesLayers.selectAttractivityMode(e) }
 
   loadLocatorOpportunitiesIntoSelect() { return this.locator.loadLocatorOpportunitiesIntoSelect() }
   locatorOpportunityChanged(e) { return this.locator.locatorOpportunityChanged(e) }
@@ -446,6 +449,7 @@ export default class extends Controller {
     // ✅ Si no está listo, ocultar capas y resetear opportunity
     if (!ready) {
       this.layerSectionTarget.hidden = true
+      if (this.hasAttractivitySectionTarget) this.attractivitySectionTarget.hidden = true
       this.opportunitySelectTarget.value = "Seleccionar oportunidad..." // o el placeholder real del <option>
       this.clearLayerButtonsUI()
       window.dispatchEvent(new CustomEvent("layer:cleared"))
@@ -489,6 +493,15 @@ export default class extends Controller {
     if (this.hasAccessibilityChoicesTarget) {
       this.accessibilityChoicesTarget.hidden = true
       this.accessibilityChoicesTarget
+        .querySelectorAll(".sidebar__subchoice-btn")
+        .forEach(b => b.classList.remove("is-active"))
+    }
+
+    // atractividad
+    if (this.hasAttractivitySectionTarget) this.attractivitySectionTarget.hidden = true
+    if (this.hasAttractivityChoicesTarget) {
+      this.attractivityChoicesTarget.hidden = true
+      this.attractivityChoicesTarget
         .querySelectorAll(".sidebar__subchoice-btn")
         .forEach(b => b.classList.remove("is-active"))
     }

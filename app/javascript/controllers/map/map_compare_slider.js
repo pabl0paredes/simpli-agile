@@ -182,11 +182,12 @@ export class MapCompareSlider {
     const accType = c._selectedAccessibilityType || "surface"
 
     const isAccessibility = (layerType === "accessibility")
+    const isAttractivity  = (layerType === "attractivity")
     const hasMetric = !!metric && metric !== "null"
     const hasAccMode = !!accMode && accMode !== "null"
 
-    if (isAccessibility && !hasAccMode) return
-    if (!isAccessibility && !hasMetric) return
+    if ((isAccessibility || isAttractivity) && !hasAccMode) return
+    if (!isAccessibility && !isAttractivity && !hasMetric) return
 
     const urlFor = (scenarioId) => {
       if (isAccessibility) {
@@ -195,6 +196,13 @@ export class MapCompareSlider {
           `&opportunity_code=${encodeURIComponent(opp)}` +
           `&scenario_id=${encodeURIComponent(scenarioId)}` +
           `&accessibility_type=${encodeURIComponent(accType)}`
+      }
+
+      if (isAttractivity) {
+        return `/cells/attractivity?municipality_code=${encodeURIComponent(mun)}` +
+          `&mode=${encodeURIComponent(accMode)}` +
+          `&opportunity_code=${encodeURIComponent(opp)}` +
+          `&scenario_id=${encodeURIComponent(scenarioId)}`
       }
 
       return `/cells/thematic?municipality_code=${encodeURIComponent(mun)}` +
@@ -258,7 +266,7 @@ export class MapCompareSlider {
     const rawValue = feature?.properties?.value ?? 0
 
     let formatted
-    if (layerType === "accessibility") {
+    if (layerType === "accessibility" || layerType === "attractivity") {
       formatted = this.c.legend?.accessibilityLabelForClass
         ? this.c.legend.accessibilityLabelForClass(klass)
         : (klass ? String(klass) : "-")
@@ -370,6 +378,11 @@ export class MapCompareSlider {
     if (this.c._selectedLayerType === "accessibility") {
       const mode = this.c._selectedAccessibilityMode || ""
       return mode === "walk" ? "Accesibilidad (caminata)" : "Accesibilidad (auto)"
+    }
+
+    if (this.c._selectedLayerType === "attractivity") {
+      const mode = this.c._selectedAccessibilityMode || ""
+      return mode === "walk" ? "Atractividad (caminata)" : "Atractividad (auto)"
     }
 
     if (this.c._selectedMetric === "surface") return "Superficie"

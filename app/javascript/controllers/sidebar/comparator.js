@@ -2,14 +2,30 @@
 
 export function createComparator(controller) {
   function syncAccessibilityBtnVisibility() {
-    const accBtn = controller.element.querySelector('.sidebar__layer-btn[data-layer="accessibility"]')
-    if (!accBtn) return
     const isDelta = controller._compareMode === "delta" && controller._uiMode === "comparador"
-    accBtn.hidden = isDelta
-    if (isDelta && accBtn.classList.contains("is-active")) {
-      accBtn.classList.remove("is-active")
-      if (controller.hasAccessibilityChoicesTarget) controller.accessibilityChoicesTarget.hidden = true
-      window.dispatchEvent(new CustomEvent("layer:cleared"))
+
+    const accBtn = controller.element.querySelector('.sidebar__layer-btn[data-layer="accessibility"]')
+    if (accBtn) {
+      accBtn.hidden = isDelta
+      if (isDelta && accBtn.classList.contains("is-active")) {
+        accBtn.classList.remove("is-active")
+        if (controller.hasAccessibilityChoicesTarget) controller.accessibilityChoicesTarget.hidden = true
+        window.dispatchEvent(new CustomEvent("layer:cleared"))
+      }
+    }
+
+    const attrBtn = controller.element.querySelector('.sidebar__layer-btn[data-layer="attractivity"]')
+    if (attrBtn) {
+      attrBtn.hidden = isDelta
+      if (isDelta && attrBtn.classList.contains("is-active")) {
+        attrBtn.classList.remove("is-active")
+        if (controller.hasAttractivityChoicesTarget) controller.attractivityChoicesTarget.hidden = true
+        window.dispatchEvent(new CustomEvent("layer:cleared"))
+      }
+    }
+
+    if (controller.hasAttractivitySectionTarget) {
+      controller.attractivitySectionTarget.hidden = isDelta
     }
   }
 
@@ -124,6 +140,7 @@ export function createComparator(controller) {
       }
 
       if (controller.hasLayerSectionTarget) controller.layerSectionTarget.hidden = true
+      if (controller.hasAttractivitySectionTarget) controller.attractivitySectionTarget.hidden = true
 
       controller.clearLayerButtonsUI()
       window.dispatchEvent(new CustomEvent("layer:cleared"))

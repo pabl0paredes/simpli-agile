@@ -39,11 +39,12 @@ export class MapDashboard {
     const colors = PALETTES[this.c._palette || "blue"]
 
     const isAccessibility = this.c._selectedLayerType === "accessibility"
+    const isAttractivity  = this.c._selectedLayerType === "attractivity"
     const isDelta = this.c._compareMode === "delta"
     const breaks = (this.c._cellsBreaks || []).map(Number)
 
     const label = (k) => {
-      if (isAccessibility) {
+      if (isAccessibility || isAttractivity) {
         return { 1: "Muy baja", 2: "Baja", 3: "Media", 4: "Alta", 5: "Muy alta" }[k] || "-"
       }
       if (k === 0) return isDelta ? "Sin cambio" : "Sin datos"
@@ -51,7 +52,7 @@ export class MapDashboard {
       return `${Math.round(breaks[k - 1]).toLocaleString("es-CL")} – ${Math.round(breaks[k]).toLocaleString("es-CL")}`
     }
 
-    const classes = isAccessibility ? [1, 2, 3, 4, 5] : [0, 1, 2, 3, 4, 5]
+    const classes = (isAccessibility || isAttractivity) ? [1, 2, 3, 4, 5] : [0, 1, 2, 3, 4, 5]
 
     const rows = classes.map(k => {
       const count = counts[k] || 0

@@ -101,6 +101,7 @@ export default class extends Controller {
       window.addEventListener("normative:selected", this.onNormativeSelected)
       window.addEventListener("opportunity:selected", this.onOpportunitySelected)
       window.addEventListener("accessibility:mode_selected", this.onAccessibilityModeSelected)
+      window.addEventListener("attractivity:mode_selected", this.onAttractivityModeSelected)
       window.addEventListener("layer:cleared", this.onLayerCleared)
       window.addEventListener("scenario:selected", this.onScenarioSelected)
       window.addEventListener("cell:pick_start", this.selection.onPickCellStart)
@@ -136,6 +137,7 @@ export default class extends Controller {
     window.removeEventListener("normative:selected", this.onNormativeSelected)
     window.removeEventListener("opportunity:selected", this.onOpportunitySelected)
     window.removeEventListener("accessibility:mode_selected", this.onAccessibilityModeSelected)
+    window.removeEventListener("attractivity:mode_selected", this.onAttractivityModeSelected)
     window.removeEventListener("layer:cleared", this.onLayerCleared)
     window.removeEventListener("scenario:selected", this.onScenarioSelected)
     window.removeEventListener("cell:pick_start", this.selection?.onPickCellStart)
@@ -201,6 +203,7 @@ export default class extends Controller {
   onOpportunitySelected = (e) => this.stateEvents.onOpportunitySelected(e)
 
   onAccessibilityModeSelected = (e) => this.thematicRunner.onAccessibilityModeSelected(e)
+  onAttractivityModeSelected  = (e) => this.thematicRunner.onAttractivityModeSelected(e)
   onComparisonDeltaSelected = (e) => this.thematicRunner.onComparisonDeltaSelected(e)
 
   onCellSelectionClear = () => this.selection?.clearCellSelected()

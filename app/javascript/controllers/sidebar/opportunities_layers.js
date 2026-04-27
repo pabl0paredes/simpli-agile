@@ -39,6 +39,12 @@ export function createOpportunitiesLayers(controller) {
         ?.querySelector(".sidebar__subchoice-btn.is-active")
       const prevAccMode = prevAccBtn?.dataset?.mode || null
 
+      // recordar submodo atractividad si estaba activo
+      const prevAttrBtn = controller.hasAttractivityChoicesTarget
+        ? controller.attractivityChoicesTarget?.querySelector(".sidebar__subchoice-btn.is-active")
+        : null
+      const prevAttrMode = prevAttrBtn?.dataset?.mode || null
+
       // category viene desde el <option selected>
       const selectedOption = e.target.selectedOptions?.[0]
       const category = selectedOption?.dataset?.category
@@ -51,6 +57,7 @@ export function createOpportunitiesLayers(controller) {
 
       if (controller.hasNoDataSectionTarget) controller.noDataSectionTarget.hidden = true
       controller.layerSectionTarget.hidden = false
+      if (controller.hasAttractivitySectionTarget) controller.attractivitySectionTarget.hidden = false
 
       const inComparator = controller.hasComparatorSectionTarget && !controller.comparatorSectionTarget.hidden
       if (inComparator) {
@@ -91,6 +98,11 @@ export function createOpportunitiesLayers(controller) {
           if (isUsable(candidate)) btnToSelect = candidate
         }
 
+        if (!btnToSelect && prevLayer === "attractivity") {
+          const candidate = controller.element.querySelector(`.sidebar__layer-btn[data-layer="attractivity"]`)
+          if (isUsable(candidate)) btnToSelect = candidate
+        }
+
         if (!btnToSelect) {
           const unitsBtn = controller.element.querySelector(`.sidebar__layer-btn[data-metric="units"]`)
           if (isUsable(unitsBtn)) btnToSelect = unitsBtn
@@ -105,8 +117,14 @@ export function createOpportunitiesLayers(controller) {
         if (btnToSelect.dataset.layer === "accessibility" && prevAccMode) {
           const subBtn = controller.accessibilityChoicesTarget
             ?.querySelector(`.sidebar__subchoice-btn[data-mode="${prevAccMode}"]`)
+          if (subBtn) subBtn.click()
+        }
 
-          if (subBtn) subBtn.click() // reutiliza selectAccessibilityMode y dispara accessibility:mode_selected
+        if (btnToSelect.dataset.layer === "attractivity" && prevAttrMode) {
+          const subBtn = controller.hasAttractivityChoicesTarget
+            ? controller.attractivityChoicesTarget?.querySelector(`.sidebar__subchoice-btn[data-mode="${prevAttrMode}"]`)
+            : null
+          if (subBtn) subBtn.click()
         }
       })
     },
@@ -183,41 +201,76 @@ export function createOpportunitiesLayers(controller) {
         window.dispatchEvent(new CustomEvent("layer:cleared"))
       }
 
-      // 👇 Mostrar/ocultar sub-botones solo si es Accesibilidad
       const isAccessibility = btn.dataset.layer === "accessibility"
+      const isAttractivity  = btn.dataset.layer === "attractivity"
+
+      const hideAccChoices = () => {
+        controller.accessibilityChoicesTarget.hidden = true
+        controller.accessibilityChoicesTarget.querySelectorAll(".sidebar__subchoice-btn").forEach(b => b.classList.remove("is-active"))
+      }
+      const hideAttrChoices = () => {
+        if (!controller.hasAttractivityChoicesTarget) return
+        controller.attractivityChoicesTarget.hidden = true
+        controller.attractivityChoicesTarget.querySelectorAll(".sidebar__subchoice-btn").forEach(b => b.classList.remove("is-active"))
+      }
 
       if (isAccessibility) {
         controller.accessibilityChoicesTarget.hidden = !isActive
+        hideAttrChoices()
 
         if (isActive) {
           const walkBtn = controller.accessibilityChoicesTarget
             ?.querySelector('.sidebar__subchoice-btn[data-mode="walk"]')
-
           if (walkBtn) walkBtn.click()
         } else {
           controller.accessibilityChoicesTarget
             .querySelectorAll(".sidebar__subchoice-btn")
             .forEach(b => b.classList.remove("is-active"))
         }
-      } else {
-        controller.accessibilityChoicesTarget.hidden = true
+      } else if (isAttractivity) {
+        hideAccChoices()
+        if (!controller.hasAttractivityChoicesTarget) return
 
-        controller.accessibilityChoicesTarget
-          .querySelectorAll(".sidebar__subchoice-btn")
-          .forEach(b => b.classList.remove("is-active"))
+        controller.attractivityChoicesTarget.hidden = !isActive
+
+        if (isActive) {
+          const walkBtn = controller.attractivityChoicesTarget
+            ?.querySelector('.sidebar__subchoice-btn[data-mode="walk"]')
+          if (walkBtn) walkBtn.click()
+        } else {
+          controller.attractivityChoicesTarget
+            .querySelectorAll(".sidebar__subchoice-btn")
+            .forEach(b => b.classList.remove("is-active"))
+        }
+      } else {
+        hideAccChoices()
+        hideAttrChoices()
       }
     },
 
     selectAccessibilityMode(e) {
       const mode = e.currentTarget.dataset.mode // "walk" o "car"
 
-      // UI: toggle exclusivo
       controller.accessibilityChoicesTarget
         .querySelectorAll(".sidebar__subchoice-btn")
         .forEach(b => b.classList.remove("is-active"))
       e.currentTarget.classList.add("is-active")
 
       window.dispatchEvent(new CustomEvent("accessibility:mode_selected", {
+        detail: { mode }
+      }))
+    },
+
+    selectAttractivityMode(e) {
+      const mode = e.currentTarget.dataset.mode // "walk" o "car"
+
+      if (!controller.hasAttractivityChoicesTarget) return
+      controller.attractivityChoicesTarget
+        .querySelectorAll(".sidebar__subchoice-btn")
+        .forEach(b => b.classList.remove("is-active"))
+      e.currentTarget.classList.add("is-active")
+
+      window.dispatchEvent(new CustomEvent("attractivity:mode_selected", {
         detail: { mode }
       }))
     }

@@ -240,6 +240,43 @@
         </div>
       </div>
 
+      <div class="sidebar__section" data-sidebar-target="attractivitySection" hidden>
+        <div class="sidebar__label">CAPAS DE ANÁLISIS</div>
+        <div class="sidebar__layers">
+          <button
+            type="button"
+            class="sidebar__layer-btn"
+            data-layer="attractivity"
+            data-action="click->sidebar#selectLayer"
+          >
+            <i class="fa-solid fa-chart-simple"></i> Atractividad
+          </button>
+        </div>
+      </div>
+
+      <div class="sidebar__section" data-sidebar-target="attractivityChoices" hidden>
+        <div class="sidebar__label">MODO DE TRANSPORTE</div>
+        <div class="sidebar__subchoices">
+          <button
+            type="button"
+            class="sidebar__subchoice-btn"
+            data-mode="walk"
+            data-action="click->sidebar#selectAttractivityMode"
+          >
+            Caminata
+          </button>
+
+          <button
+            type="button"
+            class="sidebar__subchoice-btn"
+            data-mode="car"
+            data-action="click->sidebar#selectAttractivityMode"
+          >
+            Automóvil
+          </button>
+        </div>
+      </div>
+
       <% if user_signed_in? %>
       <div
         class="sidebar__section"
