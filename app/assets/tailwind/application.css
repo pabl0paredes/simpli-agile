@@ -1856,6 +1856,26 @@
     margin: 0;
   }
 
+  .map-dashboard__pie-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 12px;
+  }
+
+  .map-dashboard__pie {
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    position: relative;
+  }
+
+  .map-dashboard__pie-hole {
+    position: absolute;
+    inset: 28%;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.97);
+  }
+
   .map-dashboard__co2[hidden]         { display: none; }
   .map-dashboard__co2-compare[hidden] { display: none; }
 

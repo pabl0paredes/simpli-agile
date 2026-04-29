@@ -1,5 +1,7 @@
 import { PALETTES } from "controllers/map/palettes"
 
+const ACC_LABELS = { 1: "Muy baja", 2: "Baja", 3: "Media", 4: "Alta", 5: "Muy alta" }
+
 export class MapDashboard {
   constructor(controller) {
     this.c = controller
@@ -18,11 +20,13 @@ export class MapDashboard {
     if (this.c.hasDashboardPanelTarget) this.c.dashboardPanelTarget.hidden = true
   }
 
+  // ── CO2 ────────────────────────────────────────────────────────────────────
+
   fetchCo2() {
     const munCode = this.c._selectedMunicipalityCode
     if (!munCode) return
 
-    const csrf = document.querySelector('meta[name="csrf-token"]')?.content
+    const csrf   = document.querySelector('meta[name="csrf-token"]')?.content
     const co2Url = (scenarioId) =>
       `/municipalities/co2?municipality_code=${munCode}&scenario_id=${scenarioId}`
 
@@ -50,7 +54,7 @@ export class MapDashboard {
     if (!this.c.hasDashboardCo2Target) return
     if (co2Tons == null) { this.c.dashboardCo2Target.hidden = true; return }
     this.c.dashboardCo2Target.hidden = false
-    if (this.c.hasDashboardCo2SingleTarget) this.c.dashboardCo2SingleTarget.hidden = false
+    if (this.c.hasDashboardCo2SingleTarget)  this.c.dashboardCo2SingleTarget.hidden  = false
     if (this.c.hasDashboardCo2CompareTarget) this.c.dashboardCo2CompareTarget.hidden = true
     if (this.c.hasDashboardCo2ValueTarget) {
       this.c.dashboardCo2ValueTarget.textContent =
@@ -62,7 +66,7 @@ export class MapDashboard {
     if (!this.c.hasDashboardCo2Target) return
     if (co2TonsA == null && co2TonsB == null) { this.c.dashboardCo2Target.hidden = true; return }
     this.c.dashboardCo2Target.hidden = false
-    if (this.c.hasDashboardCo2SingleTarget) this.c.dashboardCo2SingleTarget.hidden = true
+    if (this.c.hasDashboardCo2SingleTarget)  this.c.dashboardCo2SingleTarget.hidden  = true
     if (this.c.hasDashboardCo2CompareTarget) this.c.dashboardCo2CompareTarget.hidden = false
     if (this.c.hasDashboardCo2ValueATarget) {
       this.c.dashboardCo2ValueATarget.textContent =
@@ -74,63 +78,79 @@ export class MapDashboard {
     }
   }
 
+  // ── Chart ──────────────────────────────────────────────────────────────────
+
   render() {
     if (!this.c.hasDashboardChartTarget) return
 
-    const features = this.c._cellsFeatures || []
+    const isAccessibility = this.c._selectedLayerType === "accessibility"
 
-    if (!features.length) {
-      this.c.dashboardChartTarget.innerHTML =
-        `<p class="map-dashboard__empty">Sin datos cargados.</p>`
+    if (!isAccessibility) {
+      // No chart for other layer types
+      if (this.c.hasDashboardTitleTarget) this.c.dashboardTitleTarget.hidden = true
+      this.c.dashboardChartTarget.innerHTML = ""
       return
     }
 
-    // Contar celdas por clase
-    const counts = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
-    features.forEach(f => {
-      const k = f.properties?.class ?? 0
-      counts[k] = (counts[k] || 0) + 1
-    })
-
-    const total = features.length
-    const maxCount = Math.max(...Object.values(counts))
-
-    const colors = PALETTES[this.c._palette || "blue"]
-
-    const isAccessibility = this.c._selectedLayerType === "accessibility"
-    const isAttractivity  = this.c._selectedLayerType === "attractivity"
-    const isDelta = this.c._compareMode === "delta"
-    const breaks = (this.c._cellsBreaks || []).map(Number)
-
-    const label = (k) => {
-      if (isAccessibility || isAttractivity) {
-        return { 1: "Muy baja", 2: "Baja", 3: "Media", 4: "Alta", 5: "Muy alta" }[k] || "-"
-      }
-      if (k === 0) return isDelta ? "Sin cambio" : "Sin datos"
-      if (breaks.length < k + 1) return `Clase ${k}`
-      return `${Math.round(breaks[k - 1]).toLocaleString("es-CL")} – ${Math.round(breaks[k]).toLocaleString("es-CL")}`
+    const features = this.c._cellsFeatures || []
+    if (!features.length) {
+      if (this.c.hasDashboardTitleTarget) this.c.dashboardTitleTarget.hidden = true
+      this.c.dashboardChartTarget.innerHTML = ""
+      return
     }
 
-    const classes = (isAccessibility || isAttractivity) ? [1, 2, 3, 4, 5] : [0, 1, 2, 3, 4, 5]
+    // Sum h_units per accessibility class (1-5)
+    const unitsByClass = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
+    features.forEach(f => {
+      const k = f.properties?.class ?? 0
+      if (k >= 1 && k <= 5) unitsByClass[k] += f.properties?.h_units ?? 0
+    })
 
-    const rows = classes.map(k => {
-      const count = counts[k] || 0
-      const pct = maxCount > 0 ? Math.max((count / maxCount) * 100, count > 0 ? 2 : 0) : 0
-      const color = colors[k]
+    const total = Object.values(unitsByClass).reduce((a, b) => a + b, 0)
+
+    if (this.c.hasDashboardTitleTarget) {
+      this.c.dashboardTitleTarget.textContent = "Viviendas por accesibilidad"
+      this.c.dashboardTitleTarget.hidden = false
+    }
+
+    if (total === 0) {
+      this.c.dashboardChartTarget.innerHTML =
+        `<p class="map-dashboard__empty">Sin datos residenciales.</p>`
+      return
+    }
+
+    const colors  = PALETTES[this.c._palette || "blue"]
+
+    // Build conic-gradient (class 1 = lowest = innermost color first)
+    let cum = 0
+    const gradientParts = [1, 2, 3, 4, 5].map(k => {
+      const pct   = unitsByClass[k] / total * 100
+      const start = cum
+      cum += pct
+      return `${colors[k]} ${start.toFixed(2)}% ${cum.toFixed(2)}%`
+    }).join(", ")
+
+    // Legend rows, highest class first
+    const legendRows = [5, 4, 3, 2, 1].map(k => {
+      const units = unitsByClass[k]
       return `
         <div class="map-dashboard__row">
           <div class="map-dashboard__row-top">
-            <span class="map-dashboard__dot" style="background:${color}"></span>
-            <span class="map-dashboard__lbl">${label(k)}</span>
-            <span class="map-dashboard__cnt">${count.toLocaleString("es-CL")}</span>
-          </div>
-          <div class="map-dashboard__track">
-            <div class="map-dashboard__bar" style="width:${pct}%;background:${color}"></div>
+            <span class="map-dashboard__dot" style="background:${colors[k]}"></span>
+            <span class="map-dashboard__lbl">${ACC_LABELS[k]}</span>
+            <span class="map-dashboard__cnt">${Math.round(units).toLocaleString("es-CL")}</span>
           </div>
         </div>`
     }).join("")
 
-    this.c.dashboardChartTarget.innerHTML = rows +
-      `<div class="map-dashboard__total">${total.toLocaleString("es-CL")} celdas en total</div>`
+    this.c.dashboardChartTarget.innerHTML = `
+      <div class="map-dashboard__pie-wrap">
+        <div class="map-dashboard__pie" style="background:conic-gradient(${gradientParts})">
+          <div class="map-dashboard__pie-hole"></div>
+        </div>
+      </div>
+      ${legendRows}
+      <div class="map-dashboard__total">${Math.round(total).toLocaleString("es-CL")} viviendas en total</div>
+    `
   }
 }

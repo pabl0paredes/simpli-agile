@@ -21,6 +21,7 @@ export default class extends Controller {
     "legendItems",
     "legendBtn",
     "dashboardPanel",
+    "dashboardTitle",
     "dashboardChart",
     "dashboardBtn",
     "compareContainer",

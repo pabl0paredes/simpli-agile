@@ -706,7 +706,8 @@ class CellsController < ApplicationController
       end
 
     breaks = edges
-    proj_by_h3 = projects_by_h3_for_scenarios(scenario_id, opportunity_code: opp_code)
+    proj_by_h3    = projects_by_h3_for_scenarios(scenario_id, opportunity_code: opp_code)
+    units_by_h3   = h_units_by_h3(mun_code, scenario_id)
 
     features = rows.map do |r|
       v = r.attributes["value"].to_f
@@ -721,6 +722,7 @@ class CellsController < ApplicationController
           show_id: r.show_id,
           value: v,
           class: klass,
+          h_units: units_by_h3[r.h3].to_f,
           municipality_code: mun_code,
           mode: mode,
           opportunity_code: opp_code,
@@ -847,6 +849,35 @@ class CellsController < ApplicationController
 
 
   private
+
+  # Returns hash { h3 => Float } with sum of HC+HD+P units per cell, scenario-aware.
+  def h_units_by_h3(mun_code, scenario_id)
+    sql = <<~SQL
+      WITH RECURSIVE scenario_chain AS (
+        SELECT id, parent_id FROM scenarios WHERE id = $1
+        UNION ALL
+        SELECT s.id, s.parent_id FROM scenarios s JOIN scenario_chain sc ON s.id = sc.parent_id
+      ),
+      overrides AS (
+        SELECT DISTINCT ON (h3, opportunity_code)
+          h3, opportunity_code, units_total
+        FROM scenario_cells
+        WHERE scenario_id IN (SELECT id FROM scenario_chain)
+        ORDER BY h3, opportunity_code, scenario_id DESC
+      )
+      SELECT ic.h3,
+        SUM(COALESCE(o.units_total, ic.units)) AS h_units
+      FROM info_cells ic
+      JOIN cells c ON ic.h3 = c.h3
+      LEFT JOIN overrides o ON o.h3 = ic.h3 AND o.opportunity_code = ic.opportunity_code
+      WHERE c.municipality_code = $2
+        AND ic.opportunity_code IN ('HC', 'HD', 'P')
+      GROUP BY ic.h3
+    SQL
+    conn   = ActiveRecord::Base.connection.raw_connection
+    result = conn.exec_params(sql, [scenario_id, mun_code])
+    result.each_with_object({}) { |r, h| h[r["h3"]] = r["h_units"].to_f }
+  end
 
   # Returns hash { h3 => [project_name, ...] } for the given scenario ids, filtered by opportunity_code
   def projects_by_h3_for_scenarios(*scenario_ids, opportunity_code:)
