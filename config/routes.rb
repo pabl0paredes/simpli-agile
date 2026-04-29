@@ -23,6 +23,7 @@ Rails.application.routes.draw do
       get :focus
       get :base_scenario
       get :access
+      get :co2
     end
   end
 

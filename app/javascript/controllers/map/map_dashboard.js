@@ -8,11 +8,70 @@ export class MapDashboard {
   toggle() {
     if (!this.c.hasDashboardPanelTarget) return
     this.c.dashboardPanelTarget.hidden = !this.c.dashboardPanelTarget.hidden
-    if (!this.c.dashboardPanelTarget.hidden) this.render()
+    if (!this.c.dashboardPanelTarget.hidden) {
+      this.render()
+      this.fetchCo2()
+    }
   }
 
   hide() {
     if (this.c.hasDashboardPanelTarget) this.c.dashboardPanelTarget.hidden = true
+  }
+
+  fetchCo2() {
+    const munCode = this.c._selectedMunicipalityCode
+    if (!munCode) return
+
+    const csrf = document.querySelector('meta[name="csrf-token"]')?.content
+    const co2Url = (scenarioId) =>
+      `/municipalities/co2?municipality_code=${munCode}&scenario_id=${scenarioId}`
+
+    if (this.c._uiMode === "comparador") {
+      const aId = this.c._scenarioAId
+      const bId = this.c._scenarioBId
+      if (!aId || !bId) return
+      Promise.all([
+        fetch(co2Url(aId), { headers: { "X-CSRF-Token": csrf } }).then(r => r.json()),
+        fetch(co2Url(bId), { headers: { "X-CSRF-Token": csrf } }).then(r => r.json())
+      ])
+        .then(([dataA, dataB]) => this._renderCo2Compare(dataA.co2_tons, dataB.co2_tons))
+        .catch(() => {})
+    } else {
+      const scenarioId = this.c._selectedScenarioId
+      if (!scenarioId) return
+      fetch(co2Url(scenarioId), { headers: { "X-CSRF-Token": csrf } })
+        .then(r => r.json())
+        .then(data => this._renderCo2Single(data.co2_tons))
+        .catch(() => {})
+    }
+  }
+
+  _renderCo2Single(co2Tons) {
+    if (!this.c.hasDashboardCo2Target) return
+    if (co2Tons == null) { this.c.dashboardCo2Target.hidden = true; return }
+    this.c.dashboardCo2Target.hidden = false
+    if (this.c.hasDashboardCo2SingleTarget) this.c.dashboardCo2SingleTarget.hidden = false
+    if (this.c.hasDashboardCo2CompareTarget) this.c.dashboardCo2CompareTarget.hidden = true
+    if (this.c.hasDashboardCo2ValueTarget) {
+      this.c.dashboardCo2ValueTarget.textContent =
+        Number(co2Tons).toLocaleString("es-CL", { maximumFractionDigits: 1 })
+    }
+  }
+
+  _renderCo2Compare(co2TonsA, co2TonsB) {
+    if (!this.c.hasDashboardCo2Target) return
+    if (co2TonsA == null && co2TonsB == null) { this.c.dashboardCo2Target.hidden = true; return }
+    this.c.dashboardCo2Target.hidden = false
+    if (this.c.hasDashboardCo2SingleTarget) this.c.dashboardCo2SingleTarget.hidden = true
+    if (this.c.hasDashboardCo2CompareTarget) this.c.dashboardCo2CompareTarget.hidden = false
+    if (this.c.hasDashboardCo2ValueATarget) {
+      this.c.dashboardCo2ValueATarget.textContent =
+        co2TonsA != null ? Number(co2TonsA).toLocaleString("es-CL", { maximumFractionDigits: 1 }) : "—"
+    }
+    if (this.c.hasDashboardCo2ValueBTarget) {
+      this.c.dashboardCo2ValueBTarget.textContent =
+        co2TonsB != null ? Number(co2TonsB).toLocaleString("es-CL", { maximumFractionDigits: 1 }) : "—"
+    }
   }
 
   render() {

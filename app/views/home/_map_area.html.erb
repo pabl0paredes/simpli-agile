@@ -80,6 +80,25 @@
     <div class="map-dashboard" data-map-target="dashboardPanel" hidden>
       <div class="map-dashboard__title">Distribución por categoría</div>
       <div data-map-target="dashboardChart"></div>
+      <div class="map-dashboard__co2" data-map-target="dashboardCo2" hidden>
+        <div class="map-dashboard__co2-title">Emisiones CO₂ (auto)</div>
+        <div class="map-dashboard__co2-row" data-map-target="dashboardCo2Single">
+          <span class="map-dashboard__co2-value" data-map-target="dashboardCo2Value">—</span>
+          <span class="map-dashboard__co2-unit">ton/año</span>
+        </div>
+        <div class="map-dashboard__co2-compare" data-map-target="dashboardCo2Compare" hidden>
+          <div class="map-dashboard__co2-scenario">
+            <span class="map-dashboard__co2-label">Esc. A</span>
+            <span class="map-dashboard__co2-value" data-map-target="dashboardCo2ValueA">—</span>
+            <span class="map-dashboard__co2-unit">ton/año</span>
+          </div>
+          <div class="map-dashboard__co2-scenario">
+            <span class="map-dashboard__co2-label">Esc. B</span>
+            <span class="map-dashboard__co2-value" data-map-target="dashboardCo2ValueB">—</span>
+            <span class="map-dashboard__co2-unit">ton/año</span>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="map-legend" data-map-target="legendPanel" hidden>

@@ -30,7 +30,13 @@ export default class extends Controller {
     "splitTop",
     "splitBottom",
     "stylePickerBtn",
-    "stylePickerPanel"
+    "stylePickerPanel",
+    "dashboardCo2",
+    "dashboardCo2Single",
+    "dashboardCo2Value",
+    "dashboardCo2Compare",
+    "dashboardCo2ValueA",
+    "dashboardCo2ValueB"
   ]
 
   connect() {
@@ -117,6 +123,7 @@ export default class extends Controller {
       window.addEventListener("map:style-selected", this.onStyleSelected)
       window.addEventListener("map:palette-selected", this.onPaletteSelected)
       window.addEventListener("map:streets-on-top", this.onStreetsOnTopToggled)
+      window.addEventListener("co2:refresh", this.onCo2Refresh)
 
       window._mapReady = true
       window.dispatchEvent(new CustomEvent("map:ready"))
@@ -153,6 +160,7 @@ export default class extends Controller {
     window.removeEventListener("map:style-selected", this.onStyleSelected)
     window.removeEventListener("map:palette-selected", this.onPaletteSelected)
     window.removeEventListener("map:streets-on-top", this.onStreetsOnTopToggled)
+    window.removeEventListener("co2:refresh", this.onCo2Refresh)
   }
 
   onStyleSelected = (e) => this.styleManager?.select(e.detail.styleId)
@@ -206,6 +214,7 @@ export default class extends Controller {
   onAttractivityModeSelected  = (e) => this.thematicRunner.onAttractivityModeSelected(e)
   onComparisonDeltaSelected = (e) => this.thematicRunner.onComparisonDeltaSelected(e)
 
+  onCo2Refresh = () => this.dashboard?.fetchCo2()
   onCellSelectionClear = () => this.selection?.clearCellSelected()
 
   fitToCellsBounds(features = this._cellsFeatures, padding = 60) {
