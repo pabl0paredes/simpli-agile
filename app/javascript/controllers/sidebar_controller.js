@@ -69,6 +69,8 @@ export default class extends Controller {
     "mapStyleBtn",
     "paletteBtn",
     "normativeSection",
+    "normativeLayers",
+    "normativeToggleBtn",
     "simulatorPanel",
     "simulatorBtn",
     "simulateBtn",
@@ -235,6 +237,13 @@ export default class extends Controller {
   scenarioBChanged(e) { return this.comparator.scenarioBChanged(e) }
 
   compareModeSelected(e) { return this.comparator.compareModeSelected(e) }
+
+  toggleNormativeLayers() {
+    if (!this.hasNormativeLayersTarget || !this.hasNormativeToggleBtnTarget) return
+    const open = this.normativeLayersTarget.hidden
+    this.normativeLayersTarget.hidden = !open
+    this.normativeToggleBtnTarget.setAttribute("aria-expanded", open ? "true" : "false")
+  }
 
   toggleConfigPanel() {
     if (!this.hasConfigPanelTarget) return

@@ -152,8 +152,17 @@
       </div>
 
       <div class="sidebar__section" data-sidebar-target="normativeSection" hidden>
-        <div class="sidebar__label">CAPAS NORMATIVAS</div>
-        <div class="sidebar__layers">
+        <button
+          type="button"
+          class="sidebar__collapsible-label"
+          data-action="click->sidebar#toggleNormativeLayers"
+          data-sidebar-target="normativeToggleBtn"
+          aria-expanded="false"
+        >
+          <span>CAPAS NORMATIVAS</span>
+          <i class="fa-solid fa-chevron-right sidebar__collapsible-chevron"></i>
+        </button>
+        <div class="sidebar__layers" data-sidebar-target="normativeLayers" hidden>
           <button
             type="button"
             class="sidebar__layer-btn"

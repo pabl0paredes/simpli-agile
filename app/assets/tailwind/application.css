@@ -135,6 +135,34 @@
     margin-bottom: 7px;
   }
 
+  .sidebar__collapsible-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 0;
+    margin-bottom: 7px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    color: #71717a;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    transition: color 0.15s;
+  }
+  .sidebar__collapsible-label:hover {
+    color: #3f3f46;
+  }
+  .sidebar__collapsible-chevron {
+    font-size: 9px;
+    transition: transform 0.2s ease;
+  }
+  .sidebar__collapsible-label[aria-expanded="true"] .sidebar__collapsible-chevron {
+    transform: rotate(90deg);
+  }
+
   .sidebar__select,
   .sidebar__input {
     width: 100%;
