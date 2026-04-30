@@ -16,12 +16,13 @@ class Co2Calculator
   end
 
   def call
-    cache = load_distance_cache(@mun_code)
+    cache   = load_distance_cache(@mun_code)
     return nil unless cache
 
     h3s     = cache[:h3s]
     n       = cache[:n]
     f       = cache[:F]
+    dist    = cache[:dist]
     long_is = cache[:long_is]
     long_js = cache[:long_js]
     long_fs = cache[:long_fs]
@@ -69,15 +70,36 @@ class Co2Calculator
     end
 
     total_trip_metres = 0.0
+    total_trips       = 0.0
     long_is.size.times do |k|
-      i = long_is[k]
-      j = long_js[k]
-      total_trip_metres += a[i] * o[i] * b[j] * d[j] * long_fs[k] * long_ds[k]
+      i    = long_is[k]
+      j    = long_js[k]
+      t_ij = a[i] * o[i] * b[j] * d[j] * long_fs[k]
+      total_trip_metres += t_ij * long_ds[k]
+      total_trips       += t_ij
     end
 
-    kms_year = (total_trip_metres / 1_000.0) * WORKING_DAYS
-    co2_tons = kms_year * CO2_G_PER_KM / 1_000_000.0
-    co2_tons
+    kms_year    = (total_trip_metres / 1_000.0) * WORKING_DAYS
+    co2_tons    = kms_year * CO2_G_PER_KM / 1_000_000.0
+    avg_dist_km = total_trips > 0 ? (total_trip_metres / total_trips) / 1_000.0 : nil
+
+    # Histograma con TODOS los viajes (sin filtro de distancia mínima)
+    hist = Hash.new(0.0)
+    n.times do |i|
+      ao_i = a[i] * o[i]
+      next if ao_i == 0
+      n.times do |j|
+        d_val = dist[i * n + j]
+        next if d_val == 0
+        t_ij = ao_i * b[j] * d[j] * f[i * n + j]
+        hist[(d_val / 1_000.0).floor] += t_ij
+      end
+    end
+
+    max_bin        = hist.select { |_, v| v > 1 }.keys.max || 0
+    trip_histogram = (0..max_bin).map { |b| { bin_km: b, trips: hist[b].round(1) } }
+
+    { co2_tons: co2_tons, avg_distance_km: avg_dist_km, trip_histogram: trip_histogram }
   end
 
   private
@@ -134,7 +156,7 @@ class Co2Calculator
       end
     end
 
-    @@dist_cache[mun_code] = { h3s: h3s, n: n, F: f, long_is: long_is, long_js: long_js, long_fs: long_fs, long_ds: long_ds }
+    @@dist_cache[mun_code] = { h3s: h3s, n: n, F: f, dist: dist, long_is: long_is, long_js: long_js, long_fs: long_fs, long_ds: long_ds }
   end
 
   def fetch_distance_rows(mun_code)

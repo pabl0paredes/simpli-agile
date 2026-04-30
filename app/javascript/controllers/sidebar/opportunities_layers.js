@@ -67,7 +67,7 @@ export function createOpportunitiesLayers(controller) {
       window.dispatchEvent(new CustomEvent("layer:cleared"))
       controller.clearLayerButtonsUI()
 
-      controller.applyOpportunityCategory(category)
+      controller.applyOpportunityCategory(category, opportunityCode)
 
       window.dispatchEvent(new CustomEvent("opportunity:selected", {
         detail: { opportunity_code: opportunityCode, category }
@@ -82,8 +82,12 @@ export function createOpportunitiesLayers(controller) {
         municipality_code: controller._selectedMunicipalityCode
       })
 
-      // ✅ restaurar capa anterior si existe; si no, units
+      // restaurar capa anterior si existe; si no, units
+      // HC/HD/P no tienen accesibilidad — no restaurar nada, dejar el mapa limpio
+      const RESIDENTIAL_CODES = ["HC", "HD", "P"]
       queueMicrotask(() => {
+        if (RESIDENTIAL_CODES.includes(opportunityCode)) return
+
         const isUsable = (btn) => btn && !btn.hidden
 
         let btnToSelect = null
@@ -215,8 +219,8 @@ export function createOpportunitiesLayers(controller) {
       }
 
       if (isAccessibility) {
+        controller._selectedLayerType = isActive ? "accessibility" : null
         controller.accessibilityChoicesTarget.hidden = !isActive
-        hideAttrChoices()
 
         if (isActive) {
           const walkBtn = controller.accessibilityChoicesTarget
@@ -228,51 +232,42 @@ export function createOpportunitiesLayers(controller) {
             .forEach(b => b.classList.remove("is-active"))
         }
       } else if (isAttractivity) {
-        hideAccChoices()
-        if (!controller.hasAttractivityChoicesTarget) return
-
-        controller.attractivityChoicesTarget.hidden = !isActive
+        controller._selectedLayerType = isActive ? "attractivity" : null
+        controller.accessibilityChoicesTarget.hidden = !isActive
 
         if (isActive) {
-          const walkBtn = controller.attractivityChoicesTarget
+          const walkBtn = controller.accessibilityChoicesTarget
             ?.querySelector('.sidebar__subchoice-btn[data-mode="walk"]')
           if (walkBtn) walkBtn.click()
         } else {
-          controller.attractivityChoicesTarget
+          controller.accessibilityChoicesTarget
             .querySelectorAll(".sidebar__subchoice-btn")
             .forEach(b => b.classList.remove("is-active"))
         }
       } else {
+        controller._selectedLayerType = null
         hideAccChoices()
-        hideAttrChoices()
       }
     },
 
     selectAccessibilityMode(e) {
-      const mode = e.currentTarget.dataset.mode // "walk" o "car"
+      const mode = e.currentTarget.dataset.mode
 
       controller.accessibilityChoicesTarget
         .querySelectorAll(".sidebar__subchoice-btn")
         .forEach(b => b.classList.remove("is-active"))
       e.currentTarget.classList.add("is-active")
 
-      window.dispatchEvent(new CustomEvent("accessibility:mode_selected", {
-        detail: { mode }
-      }))
+      const eventName = controller._selectedLayerType === "attractivity"
+        ? "attractivity:mode_selected"
+        : "accessibility:mode_selected"
+
+      window.dispatchEvent(new CustomEvent(eventName, { detail: { mode } }))
     },
 
     selectAttractivityMode(e) {
-      const mode = e.currentTarget.dataset.mode // "walk" o "car"
-
-      if (!controller.hasAttractivityChoicesTarget) return
-      controller.attractivityChoicesTarget
-        .querySelectorAll(".sidebar__subchoice-btn")
-        .forEach(b => b.classList.remove("is-active"))
-      e.currentTarget.classList.add("is-active")
-
-      window.dispatchEvent(new CustomEvent("attractivity:mode_selected", {
-        detail: { mode }
-      }))
+      // Legacy handler kept for safety — delegates to selectAccessibilityMode logic
+      this.selectAccessibilityMode(e)
     }
   }
 }

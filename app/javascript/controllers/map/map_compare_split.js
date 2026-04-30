@@ -121,6 +121,15 @@ export class MapCompareSplit {
     if ((isAccessibility || isAttractivity) && !hasAccMode) return
     if (!isAccessibility && !isAttractivity && !hasMetric) return
 
+    const attractivityUrl = (scenarioId, breaks) => {
+      let url = `/cells/attractivity?municipality_code=${encodeURIComponent(mun)}` +
+        `&mode=${encodeURIComponent(accMode)}` +
+        `&opportunity_code=${encodeURIComponent(opp)}` +
+        `&scenario_id=${encodeURIComponent(scenarioId)}`
+      if (breaks) url += `&breaks=${encodeURIComponent(breaks.join(","))}`
+      return url
+    }
+
     const urlFor = (scenarioId) => {
       if (isAccessibility) {
         return `/cells/accessibility?municipality_code=${encodeURIComponent(mun)}` +
@@ -130,12 +139,7 @@ export class MapCompareSplit {
           `&accessibility_type=${encodeURIComponent(accType)}`
       }
 
-      if (isAttractivity) {
-        return `/cells/attractivity?municipality_code=${encodeURIComponent(mun)}` +
-          `&mode=${encodeURIComponent(accMode)}` +
-          `&opportunity_code=${encodeURIComponent(opp)}` +
-          `&scenario_id=${encodeURIComponent(scenarioId)}`
-      }
+      if (isAttractivity) return attractivityUrl(scenarioId)
 
       return `/cells/thematic?municipality_code=${encodeURIComponent(mun)}` +
         `&opportunity_code=${encodeURIComponent(opp)}` +
@@ -143,22 +147,38 @@ export class MapCompareSplit {
         `&metric=${encodeURIComponent(metric)}`
     }
 
-    const [payloadA, payloadB] = await Promise.all([
-      dataFetch(urlFor(A)).then(r => r.json()),
-      dataFetch(urlFor(B)).then(r => r.json())
-    ])
+    let payloadA, payloadB
+
+    if (isAttractivity) {
+      // Fetch A first to get its breaks, then pass them to B for consistent classification
+      const respA = await dataFetch(attractivityUrl(A))
+      if (!respA.ok) { console.error("[split] error fetching attractivity A", respA.status); return }
+      payloadA = await respA.json()
+
+      const breaksA = payloadA?.breaks
+      const respB = await dataFetch(attractivityUrl(B, breaksA))
+      if (!respB.ok) { console.error("[split] error fetching attractivity B", respB.status); return }
+      payloadB = await respB.json()
+    } else {
+      ;[payloadA, payloadB] = await Promise.all([
+        dataFetch(urlFor(A)).then(r => r.json()),
+        dataFetch(urlFor(B)).then(r => r.json())
+      ])
+    }
 
     const fcA = payloadA?.type === "FeatureCollection" ? payloadA : payloadA?.data || payloadA?.geojson
     const fcB = payloadB?.type === "FeatureCollection" ? payloadB : payloadB?.data || payloadB?.geojson
 
-
     if (fcA) this.mapTop.getSource("cells")?.setData(fcA)
     if (fcB) this.mapBottom.getSource("cells")?.setData(fcB)
 
-    // Use the breaks with the highest last value so the legend covers both scenarios
+    // For attractivity: always use A's breaks (B was already classified with them)
+    // For other layers: use whichever breaks cover the wider range
     const breaksA = payloadA?.breaks
     const breaksB = payloadB?.breaks
-    if (breaksA && breaksB) {
+    if (isAttractivity) {
+      c._cellsBreaks = breaksA || c._cellsBreaks
+    } else if (breaksA && breaksB) {
       c._cellsBreaks = breaksA[breaksA.length - 1] >= breaksB[breaksB.length - 1] ? breaksA : breaksB
     } else {
       c._cellsBreaks = breaksA || breaksB || c._cellsBreaks

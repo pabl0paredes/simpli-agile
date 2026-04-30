@@ -38,14 +38,22 @@ export class MapDashboard {
         fetch(co2Url(aId), { headers: { "X-CSRF-Token": csrf } }).then(r => r.json()),
         fetch(co2Url(bId), { headers: { "X-CSRF-Token": csrf } }).then(r => r.json())
       ])
-        .then(([dataA, dataB]) => this._renderCo2Compare(dataA.co2_tons, dataB.co2_tons))
+        .then(([dataA, dataB]) => {
+          this._renderCo2Compare(dataA.co2_tons, dataB.co2_tons)
+          this._renderAvgDistCompare(dataA.avg_distance_km, dataB.avg_distance_km)
+          this._renderHistogram(null)
+        })
         .catch(() => {})
     } else {
       const scenarioId = this.c._selectedScenarioId
       if (!scenarioId) return
       fetch(co2Url(scenarioId), { headers: { "X-CSRF-Token": csrf } })
         .then(r => r.json())
-        .then(data => this._renderCo2Single(data.co2_tons))
+        .then(data => {
+          this._renderCo2Single(data.co2_tons)
+          this._renderAvgDistSingle(data.avg_distance_km)
+          this._renderHistogram(data.trip_histogram)
+        })
         .catch(() => {})
     }
   }
@@ -75,6 +83,30 @@ export class MapDashboard {
     if (this.c.hasDashboardCo2ValueBTarget) {
       this.c.dashboardCo2ValueBTarget.textContent =
         co2TonsB != null ? Number(co2TonsB).toLocaleString("es-CL", { maximumFractionDigits: 1 }) : "—"
+    }
+  }
+
+  _renderAvgDistSingle(avgDistKm) {
+    if (!this.c.hasDashboardAvgDistSingleTarget) return
+    if (this.c.hasDashboardAvgDistCompareTarget) this.c.dashboardAvgDistCompareTarget.hidden = true
+    this.c.dashboardAvgDistSingleTarget.hidden = false
+    if (this.c.hasDashboardAvgDistValueTarget) {
+      this.c.dashboardAvgDistValueTarget.textContent =
+        avgDistKm != null ? Number(avgDistKm).toLocaleString("es-CL", { maximumFractionDigits: 1 }) : "—"
+    }
+  }
+
+  _renderAvgDistCompare(avgDistKmA, avgDistKmB) {
+    if (!this.c.hasDashboardAvgDistCompareTarget) return
+    if (this.c.hasDashboardAvgDistSingleTarget) this.c.dashboardAvgDistSingleTarget.hidden = true
+    this.c.dashboardAvgDistCompareTarget.hidden = false
+    if (this.c.hasDashboardAvgDistValueATarget) {
+      this.c.dashboardAvgDistValueATarget.textContent =
+        avgDistKmA != null ? Number(avgDistKmA).toLocaleString("es-CL", { maximumFractionDigits: 1 }) : "—"
+    }
+    if (this.c.hasDashboardAvgDistValueBTarget) {
+      this.c.dashboardAvgDistValueBTarget.textContent =
+        avgDistKmB != null ? Number(avgDistKmB).toLocaleString("es-CL", { maximumFractionDigits: 1 }) : "—"
     }
   }
 
@@ -152,5 +184,44 @@ export class MapDashboard {
       ${legendRows}
       <div class="map-dashboard__total">${Math.round(total).toLocaleString("es-CL")} viviendas en total</div>
     `
+  }
+
+  _renderHistogram(histData) {
+    if (!this.c.hasDashboardHistogramTarget) return
+    const el = this.c.dashboardHistogramTarget
+
+    if (!histData || !histData.length) { el.innerHTML = ""; return }
+
+    const maxTrips = Math.max(...histData.map(d => d.trips))
+    if (maxTrips === 0) { el.innerHTML = ""; return }
+
+    const nBins  = histData.length
+    const W      = 220
+    const H      = 90
+    const padL   = 6
+    const padR   = 4
+    const padT   = 4
+    const padB   = 18
+    const innerW = W - padL - padR
+    const innerH = H - padT - padB
+    const slotW  = innerW / nBins
+    const barW   = Math.max(1, slotW - 1)
+
+    const bars = histData.map((d, i) => {
+      const bh = (d.trips / maxTrips) * innerH
+      const x  = padL + i * slotW
+      const y  = padT + innerH - bh
+      return `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${bh.toFixed(1)}" fill="#3b82f6" opacity="0.75" rx="1"/>`
+    }).join("")
+
+    const step   = Math.max(1, Math.ceil(nBins / 7))
+    const labels = histData
+      .map((d, i) => {
+        if (i % step !== 0 && i !== nBins - 1) return ""
+        const x = padL + i * slotW + slotW / 2
+        return `<text x="${x.toFixed(1)}" y="${H - 3}" font-size="7.5" fill="#9ca3af" text-anchor="middle">${d.bin_km}k</text>`
+      }).join("")
+
+    el.innerHTML = `<svg width="${W}" height="${H}" style="display:block;overflow:visible">${bars}${labels}</svg>`
   }
 }

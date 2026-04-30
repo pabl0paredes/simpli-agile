@@ -311,6 +311,51 @@
 
   .sidebar__layer-btn.is-active:hover { background: #1de584; }
 
+  .sidebar__layer-btn-wrap {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .sidebar__layer-btn-wrap .sidebar__layer-btn { flex: 1; }
+
+  .sidebar__info-wrap {
+    position: relative;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+  }
+
+  .sidebar__info-icon {
+    font-size: 13px;
+    color: #94a3b8;
+    cursor: default;
+    padding: 2px;
+  }
+
+  .sidebar__info-icon:hover { color: #64748b; }
+
+  .sidebar__info-tooltip {
+    display: none;
+    position: absolute;
+    right: calc(100% + 8px);
+    top: 50%;
+    transform: translateY(-50%);
+    background: #1e293b;
+    color: #f1f5f9;
+    font-size: 11px;
+    line-height: 1.4;
+    padding: 6px 9px;
+    border-radius: 6px;
+    white-space: normal;
+    width: 180px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    pointer-events: none;
+    z-index: 50;
+  }
+
+  .sidebar__info-wrap:hover .sidebar__info-tooltip { display: block; }
+
   /* Sub-choices */
   .sidebar__subchoices {
     display: flex;

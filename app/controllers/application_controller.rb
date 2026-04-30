@@ -19,11 +19,13 @@ class ApplicationController < ActionController::Base
     root_path
   end
 
-  # Raises 403 if the current user doesn't have an availability record
-  # for the given municipality_code. Also requires authentication.
-  def require_municipality_access!(municipality_code)
+  # Raises 403 if the current user doesn't have an availability record for the municipality.
+  # Pass feature: 'locator'|'simulator'|'normative' to require a specific feature.
+  def require_municipality_access!(municipality_code, feature: nil)
     raise Pundit::NotAuthorizedError unless user_signed_in?
-    raise Pundit::NotAuthorizedError unless current_user.availabilities.exists?(municipality_code: municipality_code.to_i)
+    scope = current_user.availabilities.where(municipality_code: municipality_code.to_i)
+    scope = scope.where(feature: feature) if feature
+    raise Pundit::NotAuthorizedError unless scope.exists?
   end
 
   # Exige que el request venga de la plataforma (lleva CSRF token válido).

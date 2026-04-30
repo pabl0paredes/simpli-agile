@@ -306,15 +306,17 @@ export function createRegionsMunicipalities(controller) {
         .then(data => {
           if (data.has_access) {
             controller._hasAccess = true
+            controller._features = data.features || []
             if (controller.hasModeToggleTarget) controller.modeToggleTarget.hidden = false
             controller.scenarioSectionTarget.hidden = false
             controller.loadScenariosIntoSelect(munCode)
           } else {
             // Sin acceso: comportarse igual que un usuario sin sesión
+            controller._features = []
             controller._loadGuestMunicipalityView(munCode)
           }
         })
-        .catch(() => { controller._loadGuestMunicipalityView(munCode) })
+        .catch(() => { controller._features = []; controller._loadGuestMunicipalityView(munCode) })
     }
   }
 }

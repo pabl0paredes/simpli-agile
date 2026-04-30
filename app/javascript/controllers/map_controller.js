@@ -37,7 +37,13 @@ export default class extends Controller {
     "dashboardCo2Value",
     "dashboardCo2Compare",
     "dashboardCo2ValueA",
-    "dashboardCo2ValueB"
+    "dashboardCo2ValueB",
+    "dashboardAvgDistSingle",
+    "dashboardAvgDistValue",
+    "dashboardAvgDistCompare",
+    "dashboardAvgDistValueA",
+    "dashboardAvgDistValueB",
+    "dashboardHistogram"
   ]
 
   connect() {

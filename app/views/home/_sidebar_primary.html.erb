@@ -152,7 +152,7 @@
       </div>
 
       <div class="sidebar__section" data-sidebar-target="normativeSection" hidden>
-        <div class="sidebar__label">NORMATIVA</div>
+        <div class="sidebar__label">CAPAS NORMATIVAS</div>
         <div class="sidebar__layers">
           <button
             type="button"
@@ -212,8 +212,23 @@
             data-layer="accessibility"
             data-action="click->sidebar#selectLayer"
           >
-            <i class="fa-solid fa-person-walking"></i> Accesibilidad
+            <i class="fa-solid fa-person-walking"></i> Accesibilidad absoluta
           </button>
+
+          <div class="sidebar__layer-btn-wrap">
+            <button
+              type="button"
+              class="sidebar__layer-btn"
+              data-layer="attractivity"
+              data-action="click->sidebar#selectLayer"
+            >
+              <i class="fa-solid fa-chart-simple"></i> Accesibilidad relativa
+            </button>
+            <span class="sidebar__info-wrap">
+              <i class="fa-solid fa-circle-info sidebar__info-icon"></i>
+              <span class="sidebar__info-tooltip">Accesibilidad absoluta en relación a la demanda (viviendas)</span>
+            </span>
+          </div>
         </div>
       </div>
 
@@ -240,42 +255,6 @@
         </div>
       </div>
 
-      <div class="sidebar__section" data-sidebar-target="attractivitySection" hidden>
-        <div class="sidebar__label">CAPAS DE ANÁLISIS</div>
-        <div class="sidebar__layers">
-          <button
-            type="button"
-            class="sidebar__layer-btn"
-            data-layer="attractivity"
-            data-action="click->sidebar#selectLayer"
-          >
-            <i class="fa-solid fa-chart-simple"></i> Atractividad
-          </button>
-        </div>
-      </div>
-
-      <div class="sidebar__section" data-sidebar-target="attractivityChoices" hidden>
-        <div class="sidebar__label">MODO DE TRANSPORTE</div>
-        <div class="sidebar__subchoices">
-          <button
-            type="button"
-            class="sidebar__subchoice-btn"
-            data-mode="walk"
-            data-action="click->sidebar#selectAttractivityMode"
-          >
-            Caminata
-          </button>
-
-          <button
-            type="button"
-            class="sidebar__subchoice-btn"
-            data-mode="car"
-            data-action="click->sidebar#selectAttractivityMode"
-          >
-            Automóvil
-          </button>
-        </div>
-      </div>
 
       <% if user_signed_in? %>
       <div
@@ -297,7 +276,7 @@
             Debes crear un Escenario para localizar un proyecto de infraestructura
           </span>
         </div>
-        <div class="sidebar__tooltip-wrap">
+        <div class="sidebar__tooltip-wrap" data-sidebar-target="simulatorBtnWrap">
           <button
             type="button"
             class="sidebar__nav-btn"

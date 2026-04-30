@@ -8,7 +8,7 @@ class ProjectsController < ApplicationController
       return render json: { error: "No autorizado" }, status: :forbidden
     end
 
-    require_municipality_access!(scenario.municipality_code)
+    require_municipality_access!(scenario.municipality_code, feature: "locator")
 
     # 🔒 Evitar escribir en escenario base
     if scenario.status == "base"
@@ -60,7 +60,7 @@ class ProjectsController < ApplicationController
       return render json: { error: "No autorizado" }, status: :forbidden
     end
 
-    require_municipality_access!(scenario.municipality_code)
+    require_municipality_access!(scenario.municipality_code, feature: "locator")
 
     if scenario.status == "base"
       return render json: { error: "No se puede modificar el escenario base" }, status: :unprocessable_entity

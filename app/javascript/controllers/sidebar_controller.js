@@ -52,6 +52,8 @@ export default class extends Controller {
     "saveScenarioBtn",
     "scenarioParentDisplay",
     "locatorBtn",
+    "locatorBtnWrap",
+    "simulatorBtnWrap",
     "regionSelectWrap",
     "regionBackBtn",
     "municipalitySelectWrap",
@@ -74,8 +76,6 @@ export default class extends Controller {
     "agentInputsContainer",
     "agentInput",
     "streetsOnTopBtn",
-    "attractivitySection",
-    "attractivityChoices",
   ]
 
   connect() {
@@ -156,7 +156,7 @@ export default class extends Controller {
 
   resetAfterMunicipalityChange() { return this.ui.resetAfterMunicipalityChange() }
   clearLayerButtonsUI() { return this.ui.clearLayerButtonsUI() }
-  applyOpportunityCategory(category) { return this.ui.applyOpportunityCategory(category) }
+  applyOpportunityCategory(category, opportunityCode) { return this.ui.applyOpportunityCategory(category, opportunityCode) }
 
   // Muestra oportunidad y carga escenario base (igual que usuario sin sesión)
   _loadGuestMunicipalityView(munCode) {
@@ -418,12 +418,24 @@ export default class extends Controller {
       this.opportunitySelectTarget.disabled = false
     }
 
+    const features = this._features || []
+    const hasLocator   = features.includes("locator")
+    const hasSimulator = features.includes("simulator")
+    const hasNormative = features.includes("normative")
+
+    if (this.hasLocatorBtnWrapTarget) {
+      this.locatorBtnWrapTarget.hidden = !hasLocator
+    }
+    if (this.hasSimulatorBtnWrapTarget) {
+      this.simulatorBtnWrapTarget.hidden = !hasSimulator
+    }
+
     if (this.hasLocateSectionTarget) {
-      this.locateSectionTarget.hidden = !hasValidScenario || inComparator
+      this.locateSectionTarget.hidden = !hasValidScenario || inComparator || (!hasLocator && !hasSimulator)
     }
 
     if (this.hasNormativeSectionTarget) {
-      this.normativeSectionTarget.hidden = !hasValidScenario || inComparator || !this._municipalityHasNormative
+      this.normativeSectionTarget.hidden = !hasValidScenario || inComparator || !this._municipalityHasNormative || !hasNormative
     }
   }
 
@@ -497,14 +509,7 @@ export default class extends Controller {
         .forEach(b => b.classList.remove("is-active"))
     }
 
-    // atractividad
     if (this.hasAttractivitySectionTarget) this.attractivitySectionTarget.hidden = true
-    if (this.hasAttractivityChoicesTarget) {
-      this.attractivityChoicesTarget.hidden = true
-      this.attractivityChoicesTarget
-        .querySelectorAll(".sidebar__subchoice-btn")
-        .forEach(b => b.classList.remove("is-active"))
-    }
 
     // comparador
     this._scenarioAId = null

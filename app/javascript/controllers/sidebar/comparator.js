@@ -5,27 +5,26 @@ export function createComparator(controller) {
     const isDelta = controller._compareMode === "delta" && controller._uiMode === "comparador"
 
     const accBtn = controller.element.querySelector('.sidebar__layer-btn[data-layer="accessibility"]')
-    if (accBtn) {
-      accBtn.hidden = isDelta
-      if (isDelta && accBtn.classList.contains("is-active")) {
-        accBtn.classList.remove("is-active")
-        if (controller.hasAccessibilityChoicesTarget) controller.accessibilityChoicesTarget.hidden = true
-        window.dispatchEvent(new CustomEvent("layer:cleared"))
-      }
-    }
+    if (accBtn) accBtn.hidden = isDelta
 
-    const attrBtn = controller.element.querySelector('.sidebar__layer-btn[data-layer="attractivity"]')
-    if (attrBtn) {
-      attrBtn.hidden = isDelta
-      if (isDelta && attrBtn.classList.contains("is-active")) {
-        attrBtn.classList.remove("is-active")
-        if (controller.hasAttractivityChoicesTarget) controller.attractivityChoicesTarget.hidden = true
-        window.dispatchEvent(new CustomEvent("layer:cleared"))
-      }
-    }
+    // ocultar el wrapper completo (botón + ícono de info) para atractividad
+    const attrWrap = controller.element.querySelector('.sidebar__layer-btn-wrap')
+    if (attrWrap) attrWrap.hidden = isDelta
 
-    if (controller.hasAttractivitySectionTarget) {
-      controller.attractivitySectionTarget.hidden = isDelta
+    if (isDelta) {
+      // limpiar estado de accesibilidad/atractividad activa
+      if (accBtn?.classList.contains("is-active")) accBtn.classList.remove("is-active")
+      const attrBtn = attrWrap?.querySelector('.sidebar__layer-btn[data-layer="attractivity"]')
+      if (attrBtn?.classList.contains("is-active")) attrBtn.classList.remove("is-active")
+
+      if (controller.hasAccessibilityChoicesTarget) {
+        controller.accessibilityChoicesTarget.hidden = true
+        controller.accessibilityChoicesTarget
+          .querySelectorAll(".sidebar__subchoice-btn")
+          .forEach(b => b.classList.remove("is-active"))
+      }
+      controller._selectedLayerType = null
+      window.dispatchEvent(new CustomEvent("layer:cleared"))
     }
   }
 

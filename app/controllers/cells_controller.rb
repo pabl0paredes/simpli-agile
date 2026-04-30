@@ -795,7 +795,7 @@ class CellsController < ApplicationController
       opp_h[h3].to_f / denom
     }
 
-    # current scenario data — numerator: surface, denominator: units
+    # current scenario data — numerator: surface, denominator: HC/HD/P units (housing demand)
     cur_opp = fetch_acc.(resolve_eff.(scenario_id, opp_code, "surface"), opp_code, "surface")
     cur_hc  = fetch_acc.(resolve_eff.(scenario_id, "HC", "units"), "HC", "units")
     cur_hd  = fetch_acc.(resolve_eff.(scenario_id, "HD", "units"), "HD", "units")
@@ -807,11 +807,19 @@ class CellsController < ApplicationController
     base_hd  = fetch_acc.(resolve_eff.(base_scenario.id, "HD", "units"), "HD", "units")
     base_p   = fetch_acc.(resolve_eff.(base_scenario.id, "P",  "units"), "P",  "units")
 
-    base_h3s     = (base_opp.keys | base_hc.keys | base_hd.keys | base_p.keys)
-    base_vals    = base_h3s.map { |h3| attractivity_val.(base_opp, base_hc, base_hd, base_p, h3) }
-    nonzero_base = base_vals.select { |v| v > 0 }
+    # If the caller supplies pre-computed breaks (e.g. comparator passes Scenario A's breaks
+    # so that Scenario B is classified on the same scale), use them directly and skip the
+    # base-scenario computation.
+    external_breaks = params[:breaks]&.split(",")&.map(&:to_f)
 
-    breaks = nonzero_base.length >= 5 ? jenks_breaks(nonzero_base, 5) : [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    breaks = if external_breaks&.length == 6
+      external_breaks
+    else
+      base_h3s     = (base_opp.keys | base_hc.keys | base_hd.keys | base_p.keys)
+      base_vals    = base_h3s.map { |h3| attractivity_val.(base_opp, base_hc, base_hd, base_p, h3) }
+      nonzero_base = base_vals.select { |v| v > 0 }
+      nonzero_base.length >= 5 ? jenks_breaks(nonzero_base, 5) : [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    end
 
     rows = Cell
       .where(municipality_code: mun_code)
@@ -973,7 +981,7 @@ class CellsController < ApplicationController
 
   def check_locator_access!
     municipality_code = params[:municipality_code].to_i
-    require_municipality_access!(municipality_code)
+    require_municipality_access!(municipality_code, feature: "locator")
   end
 
   # Devuelve 1..5 según breaks [min,b1,b2,b3,b4,max]

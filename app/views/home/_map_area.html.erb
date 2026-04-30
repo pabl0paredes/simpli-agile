@@ -98,6 +98,27 @@
             <span class="map-dashboard__co2-unit">ton/año</span>
           </div>
         </div>
+
+        <div class="map-dashboard__co2-title" style="margin-top:10px">Distancia promedio (auto)</div>
+        <div class="map-dashboard__co2-row" data-map-target="dashboardAvgDistSingle">
+          <span class="map-dashboard__co2-value" data-map-target="dashboardAvgDistValue">—</span>
+          <span class="map-dashboard__co2-unit">km/viaje</span>
+        </div>
+        <div class="map-dashboard__co2-compare" data-map-target="dashboardAvgDistCompare" hidden>
+          <div class="map-dashboard__co2-scenario">
+            <span class="map-dashboard__co2-label">Esc. A</span>
+            <span class="map-dashboard__co2-value" data-map-target="dashboardAvgDistValueA">—</span>
+            <span class="map-dashboard__co2-unit">km/viaje</span>
+          </div>
+          <div class="map-dashboard__co2-scenario">
+            <span class="map-dashboard__co2-label">Esc. B</span>
+            <span class="map-dashboard__co2-value" data-map-target="dashboardAvgDistValueB">—</span>
+            <span class="map-dashboard__co2-unit">km/viaje</span>
+          </div>
+        </div>
+
+        <div class="map-dashboard__co2-title" style="margin-top:10px">Distribución de viajes por distancia</div>
+        <div data-map-target="dashboardHistogram"></div>
       </div>
     </div>
 
