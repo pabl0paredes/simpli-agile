@@ -9,19 +9,44 @@ export function createLocator(controller) {
     loadLocatorOpportunitiesIntoSelect() {
       if (!controller.hasLocatorOpportunitySelectTarget) return
 
+      const HOUSING_CODES = ["HD", "HC", "P"]
+
+      const addSeparator = (selector, label) => {
+        const sep = document.createElement("option")
+        sep.disabled = true
+        sep.textContent = label
+        selector.appendChild(sep)
+      }
+
+      const addOption = (selector, op) => {
+        const option = document.createElement("option")
+        option.value = op.opportunity_code
+        option.textContent = op.name
+        option.dataset.category = op.category || ""
+        selector.appendChild(option)
+      }
+
       fetch("/opportunities")
         .then(r => r.json())
         .then(data => {
           const selector = controller.locatorOpportunitySelectTarget
           selector.innerHTML = "<option>Seleccionar oportunidad...</option>"
 
-          data.forEach(op => {
-            const option = document.createElement("option")
-            option.value = op.opportunity_code
-            option.textContent = op.name
-            option.dataset.category = op.category || ""
-            selector.appendChild(option)
-          })
+          const housing = data.filter(op => HOUSING_CODES.includes(op.opportunity_code))
+          const poi = data.filter(op => op.category === "POI" && !HOUSING_CODES.includes(op.opportunity_code))
+          const main = data.filter(op => !HOUSING_CODES.includes(op.opportunity_code) && op.category !== "POI")
+
+          main.forEach(op => addOption(selector, op))
+
+          if (poi.length > 0) {
+            addSeparator(selector, "--- Puntos de interés ---")
+            poi.forEach(op => addOption(selector, op))
+          }
+
+          if (housing.length > 0) {
+            addSeparator(selector, "--- Viviendas ---")
+            housing.forEach(op => addOption(selector, op))
+          }
 
           selector.disabled = false
         })

@@ -7,20 +7,44 @@ export function createOpportunitiesLayers(controller) {
     // -------------------------
 
     loadOpportunitiesIntoSelect() {
+      const HOUSING_CODES = ["HD", "HC", "P"]
+
+      const addSeparator = (selector, label) => {
+        const sep = document.createElement("option")
+        sep.disabled = true
+        sep.textContent = label
+        selector.appendChild(sep)
+      }
+
+      const addOption = (selector, op) => {
+        const option = document.createElement("option")
+        option.value = op.opportunity_code
+        option.textContent = op.name
+        option.dataset.category = op.category
+        selector.appendChild(option)
+      }
+
       fetch("/opportunities")
         .then(response => response.json())
         .then(data => {
           const selector = controller.opportunitySelectTarget
           selector.innerHTML = "<option>Seleccionar oportunidad...</option>"
 
-          data.forEach(opportunity => {
-            const option = document.createElement("option")
-            option.value = opportunity.opportunity_code
-            option.textContent = opportunity.name
-            // ✅ Guardar category en el DOM
-            option.dataset.category = opportunity.category
-            selector.appendChild(option)
-          })
+          const housing = data.filter(op => HOUSING_CODES.includes(op.opportunity_code))
+          const poi = data.filter(op => op.category === "POI" && !HOUSING_CODES.includes(op.opportunity_code))
+          const main = data.filter(op => !HOUSING_CODES.includes(op.opportunity_code) && op.category !== "POI")
+
+          main.forEach(op => addOption(selector, op))
+
+          if (poi.length > 0) {
+            addSeparator(selector, "--- Puntos de interés ---")
+            poi.forEach(op => addOption(selector, op))
+          }
+
+          if (housing.length > 0) {
+            addSeparator(selector, "--- Viviendas ---")
+            housing.forEach(op => addOption(selector, op))
+          }
         })
         .catch(error => console.error("Error al cargar los usos:", error))
     },

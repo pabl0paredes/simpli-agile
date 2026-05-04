@@ -795,14 +795,17 @@ class CellsController < ApplicationController
       opp_h[h3].to_f / denom
     }
 
-    # current scenario data — numerator: surface, denominator: HC/HD/P units (housing demand)
-    cur_opp = fetch_acc.(resolve_eff.(scenario_id, opp_code, "surface"), opp_code, "surface")
+    # POI opportunities have no surface data, so use units accessibility instead
+    opp_acc_type = Opportunity.find_by(opportunity_code: opp_code)&.category == "POI" ? "units" : "surface"
+
+    # current scenario data — numerator: opp_acc_type, denominator: HC/HD/P units (housing demand)
+    cur_opp = fetch_acc.(resolve_eff.(scenario_id, opp_code, opp_acc_type), opp_code, opp_acc_type)
     cur_hc  = fetch_acc.(resolve_eff.(scenario_id, "HC", "units"), "HC", "units")
     cur_hd  = fetch_acc.(resolve_eff.(scenario_id, "HD", "units"), "HD", "units")
     cur_p   = fetch_acc.(resolve_eff.(scenario_id, "P",  "units"), "P",  "units")
 
     # base scenario data — used to compute fixed natural-breaks
-    base_opp = fetch_acc.(resolve_eff.(base_scenario.id, opp_code, "surface"), opp_code, "surface")
+    base_opp = fetch_acc.(resolve_eff.(base_scenario.id, opp_code, opp_acc_type), opp_code, opp_acc_type)
     base_hc  = fetch_acc.(resolve_eff.(base_scenario.id, "HC", "units"), "HC", "units")
     base_hd  = fetch_acc.(resolve_eff.(base_scenario.id, "HD", "units"), "HD", "units")
     base_p   = fetch_acc.(resolve_eff.(base_scenario.id, "P",  "units"), "P",  "units")
