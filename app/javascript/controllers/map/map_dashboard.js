@@ -11,6 +11,7 @@ export class MapDashboard {
     if (!this.c.hasDashboardPanelTarget) return
     this.c.dashboardPanelTarget.hidden = !this.c.dashboardPanelTarget.hidden
     if (!this.c.dashboardPanelTarget.hidden) {
+      this._showCo2Placeholder()
       this.render()
       this.fetchCo2()
     }
@@ -19,8 +20,18 @@ export class MapDashboard {
   open() {
     if (!this.c.hasDashboardPanelTarget) return
     this.c.dashboardPanelTarget.hidden = false
+    this._showCo2Placeholder()
     this.render()
     this.fetchCo2()
+  }
+
+  _showCo2Placeholder() {
+    if (!this.c.hasDashboardCo2Target) return
+    this.c.dashboardCo2Target.hidden = false
+    if (this.c.hasDashboardCo2SingleTarget) this.c.dashboardCo2SingleTarget.hidden = false
+    if (this.c.hasDashboardCo2CompareTarget) this.c.dashboardCo2CompareTarget.hidden = true
+    if (this.c.hasDashboardAvgDistSingleTarget) this.c.dashboardAvgDistSingleTarget.hidden = false
+    if (this.c.hasDashboardAvgDistCompareTarget) this.c.dashboardAvgDistCompareTarget.hidden = true
   }
 
   hide() {
@@ -37,31 +48,34 @@ export class MapDashboard {
     const co2Url = (scenarioId) =>
       `/municipalities/co2?municipality_code=${munCode}&scenario_id=${scenarioId}`
 
+    const fetchJson = (url) =>
+      fetch(url, { headers: { "X-CSRF-Token": csrf } })
+        .then(r => {
+          if (!r.ok) throw new Error(`CO2 fetch failed: ${r.status} ${r.statusText}`)
+          return r.json()
+        })
+
     if (this.c._uiMode === "comparador") {
       const aId = this.c._scenarioAId
       const bId = this.c._scenarioBId
       if (!aId || !bId) return
-      Promise.all([
-        fetch(co2Url(aId), { headers: { "X-CSRF-Token": csrf } }).then(r => r.json()),
-        fetch(co2Url(bId), { headers: { "X-CSRF-Token": csrf } }).then(r => r.json())
-      ])
+      Promise.all([fetchJson(co2Url(aId)), fetchJson(co2Url(bId))])
         .then(([dataA, dataB]) => {
           this._renderCo2Compare(dataA.co2_tons, dataB.co2_tons)
           this._renderAvgDistCompare(dataA.avg_distance_km, dataB.avg_distance_km)
           this._renderHistogram(null)
         })
-        .catch(() => {})
+        .catch(err => console.error("[Dashboard]", err))
     } else {
       const scenarioId = this.c._selectedScenarioId
       if (!scenarioId) return
-      fetch(co2Url(scenarioId), { headers: { "X-CSRF-Token": csrf } })
-        .then(r => r.json())
+      fetchJson(co2Url(scenarioId))
         .then(data => {
           this._renderCo2Single(data.co2_tons)
           this._renderAvgDistSingle(data.avg_distance_km)
           this._renderHistogram(data.trip_histogram)
         })
-        .catch(() => {})
+        .catch(err => console.error("[Dashboard]", err))
     }
   }
 
