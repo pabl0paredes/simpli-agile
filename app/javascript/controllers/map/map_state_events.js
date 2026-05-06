@@ -19,7 +19,10 @@ export class MapStateEvents {
   onUIModeChanged = (e) => {
     this.c._uiMode = e.detail?.mode
 
-    if (this.c._uiMode === "comparador") this.c._compareMode = "delta"
+    if (this.c._uiMode === "comparador") {
+      this.c._compareMode = "delta"
+      this.c.dashboard?.hide()
+    }
     this.c.setCellsVisible(false)
 
     const useSlider = (this.c._uiMode === "comparador" && this.c._compareMode === "slider")
@@ -96,6 +99,5 @@ export class MapStateEvents {
     this.c.legend.hide()
     this.c.legend.showButtonIfNeeded()
     this.c.legend.clearClassFocus()
-    this.c.dashboard?.hide()
   }
 }

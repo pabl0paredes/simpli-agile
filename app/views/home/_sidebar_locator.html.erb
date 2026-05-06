@@ -28,20 +28,14 @@
 
     <div class="sidebar__section">
       <div class="sidebar__label">CELDA</div>
-      <div class="locator-cell">
-        <input
-          class="sidebar__input"
-          type="text"
-          placeholder="Selecciona una Celda..."
-          data-sidebar-target="selectedCellDisplay"
-          readonly
->
-        <button type="button"
-                class="sidebar__select-cell-btn"
-                data-action="click->sidebar#startPickCell">
-          Seleccionar Celda
-        </button>
-      </div>
+      <input
+        class="sidebar__input sidebar__input--clickable"
+        type="text"
+        placeholder="Haz click aquí o en el mapa para seleccionar..."
+        data-sidebar-target="selectedCellDisplay"
+        data-action="click->sidebar#startPickCell"
+        readonly
+      >
     </div>
 
     <input type="hidden" data-sidebar-target="selectedCellH3">

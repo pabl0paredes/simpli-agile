@@ -34,7 +34,10 @@ export function createOpportunitiesLayers(controller) {
           const poi = data.filter(op => op.category === "POI" && !HOUSING_CODES.includes(op.opportunity_code))
           const main = data.filter(op => !HOUSING_CODES.includes(op.opportunity_code) && op.category !== "POI")
 
-          main.forEach(op => addOption(selector, op))
+          if (main.length > 0) {
+            addSeparator(selector, "--- Usos de suelo ---")
+            main.forEach(op => addOption(selector, op))
+          }
 
           if (poi.length > 0) {
             addSeparator(selector, "--- Puntos de interés ---")

@@ -316,6 +316,15 @@
     </div>
 
     <div class="sidebar__config-panel" data-sidebar-target="configPanel" hidden>
+      <div class="sidebar__config-panel__header">
+        <span>CONFIGURACIÓN</span>
+        <button type="button"
+                class="sidebar__config-panel__close"
+                data-action="click->sidebar#toggleConfigPanel"
+                aria-label="Cerrar">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
       <div class="sidebar__config-panel__label">PALETA DE COLORES</div>
       <div class="sidebar__config-panel__palettes">
         <button type="button" class="palette-picker__btn is-active"

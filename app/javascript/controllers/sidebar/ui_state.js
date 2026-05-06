@@ -53,6 +53,7 @@ export function createUIState(controller) {
       // 5) reset municipality access flag + hide no-access notice
       controller._hasAccess = false
       controller._features  = []
+      window.dispatchEvent(new CustomEvent("municipality:features_loaded", { detail: { features: [] } }))
       if (controller.hasNoAccessSectionTarget) controller.noAccessSectionTarget.hidden = true
 
     },

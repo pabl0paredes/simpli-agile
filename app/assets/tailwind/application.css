@@ -206,6 +206,9 @@
 
   .sidebar__input::placeholder { color: #a1a1aa; }
 
+  .sidebar__input--clickable { cursor: pointer; }
+  .sidebar__input--clickable:hover { border-color: var(--color-brand); }
+
   .sidebar__hint {
     margin-top: 8px;
     font-size: 12px;
@@ -643,6 +646,35 @@
     border-top: 1px solid rgb(9 9 11 / 0.07);
   }
 
+  .sidebar__config-panel__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #a1a1aa;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .sidebar__config-panel__close {
+    background: none;
+    border: none;
+    padding: 2px 4px;
+    color: #a1a1aa;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    border-radius: 4px;
+    transition: color 120ms ease, background 120ms ease;
+  }
+
+  .sidebar__config-panel__close:hover {
+    color: #52525b;
+    background: rgb(9 9 11 / 0.05);
+  }
+
   .sidebar__config-panel__label {
     font-size: 10px;
     font-weight: 600;
@@ -818,27 +850,6 @@
   /* Left-align all labels and hint text inside the locator */
   .sidebar--secondary .sidebar__label { text-align: left; }
   .sidebar--secondary .sidebar__hint { text-align: left; }
-
-  /* "Seleccionar celda" button — green brand color */
-  .sidebar__select-cell-btn {
-    width: 100%;
-    padding: 10px 16px;
-    border-radius: 8px;
-    border: 0;
-    background: var(--color-brand);
-    color: var(--color-dark);
-    font-size: 14px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    cursor: pointer;
-    transition: background 120ms ease;
-    font-family: var(--font-sans);
-  }
-
-  .sidebar__select-cell-btn:hover:not(:disabled) { background: #1de584; }
 
   /* "Agregar proyecto" button — dark blue */
   .sidebar--secondary .sidebar__primary-btn {
@@ -1449,6 +1460,14 @@
 
   /* ========== FLOATING BUTTONS ========== */
 
+  /* Botón de indicadores: esquina superior derecha, bajo el ícono de usuario */
+  .map-indicators-wrap {
+    position: absolute;
+    top: 62px;
+    right: 14px;
+    z-index: 10;
+  }
+
   .map-fab {
     position: absolute;
     right: 14px;
@@ -1482,6 +1501,36 @@
   }
 
   .map-fab__btn:active { transform: translateY(1px); }
+
+  .map-fab__btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  .map-fab__tooltip-wrap {
+    position: relative;
+  }
+
+  .map-fab__tooltip-wrap .map-fab__tooltip {
+    display: none;
+    position: absolute;
+    right: calc(100% + 8px);
+    top: 50%;
+    transform: translateY(-50%);
+    background: #233141;
+    color: white;
+    font-size: 12px;
+    white-space: nowrap;
+    padding: 5px 10px;
+    border-radius: 6px;
+    pointer-events: none;
+    z-index: 20;
+  }
+
+  .map-fab__tooltip-wrap:has(.map-fab__btn:disabled):hover .map-fab__tooltip {
+    display: block;
+  }
 
   .map-fab__style-wrap { position: relative; }
 
@@ -1834,7 +1883,7 @@
   .mapboxgl-compare .compare-swiper-vertical::after  { right: 8px !important; transform: rotate(45deg) !important; }
 
 
-  /* ========== PANELS RIGHT (dashboard + legend) ========== */
+  /* ========== PANELS RIGHT (legend) ========== */
 
   .map-panels-right {
     position: absolute;
@@ -1856,13 +1905,50 @@
   .map-dashboard[hidden] { display: none; }
 
   .map-dashboard {
-    width: 210px;
+    position: absolute;
+    top: 62px;
+    right: 62px;
+    width: 420px;
     background: rgba(255,255,255,0.97);
     border: 1px solid rgb(9 9 11 / 0.08);
     border-radius: 12px;
     padding: 12px;
     box-shadow: 0 4px 16px rgb(9 9 11 / 0.08);
     backdrop-filter: blur(6px);
+    z-index: 20;
+    pointer-events: auto;
+  }
+
+  .map-dashboard__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .map-dashboard__header-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: #a1a1aa;
+  }
+
+  .map-dashboard__close {
+    background: none;
+    border: none;
+    padding: 2px 4px;
+    color: #a1a1aa;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    border-radius: 4px;
+    transition: color 120ms ease, background 120ms ease;
+  }
+
+  .map-dashboard__close:hover {
+    color: #52525b;
+    background: rgb(9 9 11 / 0.05);
   }
 
   .map-dashboard__title {
@@ -1878,7 +1964,7 @@
 
   .map-dashboard__row-top {
     display: grid;
-    grid-template-columns: 10px 1fr auto;
+    grid-template-columns: 10px max-content auto;
     align-items: center;
     gap: 6px;
     margin-bottom: 3px;
@@ -1929,10 +2015,20 @@
     margin: 0;
   }
 
+  .map-dashboard__chart-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .map-dashboard__chart-legend {
+    min-width: 0;
+  }
+
   .map-dashboard__pie-wrap {
     display: flex;
     justify-content: center;
-    margin-bottom: 12px;
   }
 
   .map-dashboard__pie {
@@ -1957,6 +2053,16 @@
     padding-top: 10px;
     border-top: 1px solid rgb(9 9 11 / 0.06);
   }
+
+  .map-dashboard__co2-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    align-items: start;
+  }
+
+  .map-dashboard__co2-left { min-width: 0; }
+  .map-dashboard__co2-right { min-width: 0; }
 
   .map-dashboard__co2-title {
     font-size: 10px;
@@ -2181,7 +2287,6 @@
     color: #dc2626;
   }
 
-  .locator-cell { display: flex; flex-direction: column; gap: 6px; }
 
 
   /* ========== AUTH PAGES ========== */

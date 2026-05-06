@@ -131,6 +131,7 @@ export default class extends Controller {
       window.addEventListener("map:palette-selected", this.onPaletteSelected)
       window.addEventListener("map:streets-on-top", this.onStreetsOnTopToggled)
       window.addEventListener("co2:refresh", this.onCo2Refresh)
+      window.addEventListener("municipality:features_loaded", this.onMunicipalityFeaturesLoaded)
 
       window._mapReady = true
       window.dispatchEvent(new CustomEvent("map:ready"))
@@ -168,6 +169,20 @@ export default class extends Controller {
     window.removeEventListener("map:palette-selected", this.onPaletteSelected)
     window.removeEventListener("map:streets-on-top", this.onStreetsOnTopToggled)
     window.removeEventListener("co2:refresh", this.onCo2Refresh)
+    window.removeEventListener("municipality:features_loaded", this.onMunicipalityFeaturesLoaded)
+  }
+
+  onMunicipalityFeaturesLoaded = (e) => {
+    const hasIndicators = (e.detail.features || []).includes("indicators")
+    if (this.hasDashboardBtnTarget) {
+      this.dashboardBtnTarget.disabled = !hasIndicators
+    }
+    if (hasIndicators && this.hasDashboardPanelTarget && this.dashboardPanelTarget.hidden) {
+      this.dashboard?.open()
+    }
+    if (!hasIndicators && this.hasDashboardPanelTarget) {
+      this.dashboard?.hide()
+    }
   }
 
   onStyleSelected = (e) => this.styleManager?.select(e.detail.styleId)

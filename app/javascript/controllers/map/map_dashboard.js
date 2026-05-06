@@ -16,6 +16,13 @@ export class MapDashboard {
     }
   }
 
+  open() {
+    if (!this.c.hasDashboardPanelTarget) return
+    this.c.dashboardPanelTarget.hidden = false
+    this.render()
+    this.fetchCo2()
+  }
+
   hide() {
     if (this.c.hasDashboardPanelTarget) this.c.dashboardPanelTarget.hidden = true
   }
@@ -176,13 +183,17 @@ export class MapDashboard {
     }).join("")
 
     this.c.dashboardChartTarget.innerHTML = `
-      <div class="map-dashboard__pie-wrap">
-        <div class="map-dashboard__pie" style="background:conic-gradient(${gradientParts})">
-          <div class="map-dashboard__pie-hole"></div>
+      <div class="map-dashboard__chart-layout">
+        <div class="map-dashboard__pie-wrap">
+          <div class="map-dashboard__pie" style="background:conic-gradient(${gradientParts})">
+            <div class="map-dashboard__pie-hole"></div>
+          </div>
+        </div>
+        <div class="map-dashboard__chart-legend">
+          ${legendRows}
+          <div class="map-dashboard__total">${Math.round(total).toLocaleString("es-CL")} viviendas en total</div>
         </div>
       </div>
-      ${legendRows}
-      <div class="map-dashboard__total">${Math.round(total).toLocaleString("es-CL")} viviendas en total</div>
     `
   }
 

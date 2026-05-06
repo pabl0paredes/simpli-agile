@@ -304,19 +304,28 @@ export function createRegionsMunicipalities(controller) {
       fetch(`/municipalities/access?municipality_code=${encodeURIComponent(munCode)}`)
         .then(r => r.json())
         .then(data => {
+          const dispatchFeatures = (f) => window.dispatchEvent(
+            new CustomEvent("municipality:features_loaded", { detail: { features: f } })
+          )
           if (data.has_access) {
             controller._hasAccess = true
             controller._features = data.features || []
+            dispatchFeatures(controller._features)
             if (controller.hasModeToggleTarget) controller.modeToggleTarget.hidden = false
             controller.scenarioSectionTarget.hidden = false
             controller.loadScenariosIntoSelect(munCode)
           } else {
             // Sin acceso: comportarse igual que un usuario sin sesión
             controller._features = []
+            dispatchFeatures([])
             controller._loadGuestMunicipalityView(munCode)
           }
         })
-        .catch(() => { controller._features = []; controller._loadGuestMunicipalityView(munCode) })
+        .catch(() => {
+          controller._features = []
+          window.dispatchEvent(new CustomEvent("municipality:features_loaded", { detail: { features: [] } }))
+          controller._loadGuestMunicipalityView(munCode)
+        })
     }
   }
 }
