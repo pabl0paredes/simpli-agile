@@ -182,11 +182,21 @@ export class MapCompareSlider {
     const accType = c._selectedAccessibilityType || "surface"
 
     const isAccessibility = (layerType === "accessibility")
+    const isAttractivity  = (layerType === "attractivity")
     const hasMetric = !!metric && metric !== "null"
     const hasAccMode = !!accMode && accMode !== "null"
 
-    if (isAccessibility && !hasAccMode) return
-    if (!isAccessibility && !hasMetric) return
+    if ((isAccessibility || isAttractivity) && !hasAccMode) return
+    if (!isAccessibility && !isAttractivity && !hasMetric) return
+
+    const attractivityUrl = (scenarioId, breaks) => {
+      let url = `/cells/attractivity?municipality_code=${encodeURIComponent(mun)}` +
+        `&mode=${encodeURIComponent(accMode)}` +
+        `&opportunity_code=${encodeURIComponent(opp)}` +
+        `&scenario_id=${encodeURIComponent(scenarioId)}`
+      if (breaks) url += `&breaks=${encodeURIComponent(breaks.join(","))}`
+      return url
+    }
 
     const urlFor = (scenarioId) => {
       if (isAccessibility) {
@@ -197,29 +207,38 @@ export class MapCompareSlider {
           `&accessibility_type=${encodeURIComponent(accType)}`
       }
 
+      if (isAttractivity) return attractivityUrl(scenarioId)
+
       return `/cells/thematic?municipality_code=${encodeURIComponent(mun)}` +
         `&metric=${encodeURIComponent(metric)}` +
         `&opportunity_code=${encodeURIComponent(opp)}` +
         `&scenario_id=${encodeURIComponent(scenarioId)}`
     }
 
-    const urlA = urlFor(A)
-    const urlB = urlFor(B)
-    if (!urlA || !urlB) return
+    let payloadA, payloadB
 
-    const [respA, respB] = await Promise.all([dataFetch(urlA), dataFetch(urlB)])
+    if (isAttractivity) {
+      // Fetch A first to get its breaks, then pass them to B for consistent classification
+      const respA = await dataFetch(attractivityUrl(A))
+      if (!respA.ok) { console.error("[slider] error fetching attractivity A", respA.status); return }
+      payloadA = await respA.json()
 
-    if (!respA.ok || !respB.ok) {
-      console.error("[slider] error fetching compare data", {
-        statusA: respA.status,
-        statusB: respB.status,
-        urlA,
-        urlB
-      })
-      return
+      const breaksA = payloadA?.breaks
+      const respB = await dataFetch(attractivityUrl(B, breaksA))
+      if (!respB.ok) { console.error("[slider] error fetching attractivity B", respB.status); return }
+      payloadB = await respB.json()
+    } else {
+      const urlA = urlFor(A)
+      const urlB = urlFor(B)
+      if (!urlA || !urlB) return
+
+      const [respA, respB] = await Promise.all([dataFetch(urlA), dataFetch(urlB)])
+      if (!respA.ok || !respB.ok) {
+        console.error("[slider] error fetching compare data", { statusA: respA.status, statusB: respB.status })
+        return
+      }
+      ;[payloadA, payloadB] = await Promise.all([respA.json(), respB.json()])
     }
-
-    const [payloadA, payloadB] = await Promise.all([respA.json(), respB.json()])
 
     const fcA =
       payloadA?.type === "FeatureCollection" ? payloadA :
@@ -237,10 +256,13 @@ export class MapCompareSlider {
     this.mapLeft.getSource("cells")?.setData(fcB)   // izquierda = B
     this.mapRight.getSource("cells")?.setData(fcA)  // derecha = A
 
-    // Use the breaks with the highest last value so the legend covers both scenarios
+    // For attractivity: always use A's breaks (B was already classified with them)
+    // For other layers: use whichever breaks cover the wider range
     const breaksA = payloadA?.breaks
     const breaksB = payloadB?.breaks
-    if (breaksA && breaksB) {
+    if (isAttractivity) {
+      c._cellsBreaks = breaksA || c._cellsBreaks
+    } else if (breaksA && breaksB) {
       c._cellsBreaks = breaksA[breaksA.length - 1] >= breaksB[breaksB.length - 1] ? breaksA : breaksB
     } else {
       c._cellsBreaks = breaksA || breaksB || c._cellsBreaks
@@ -258,7 +280,7 @@ export class MapCompareSlider {
     const rawValue = feature?.properties?.value ?? 0
 
     let formatted
-    if (layerType === "accessibility") {
+    if (layerType === "accessibility" || layerType === "attractivity") {
       formatted = this.c.legend?.accessibilityLabelForClass
         ? this.c.legend.accessibilityLabelForClass(klass)
         : (klass ? String(klass) : "-")
@@ -370,6 +392,11 @@ export class MapCompareSlider {
     if (this.c._selectedLayerType === "accessibility") {
       const mode = this.c._selectedAccessibilityMode || ""
       return mode === "walk" ? "Accesibilidad (caminata)" : "Accesibilidad (auto)"
+    }
+
+    if (this.c._selectedLayerType === "attractivity") {
+      const mode = this.c._selectedAccessibilityMode || ""
+      return mode === "walk" ? "Atractividad (caminata)" : "Atractividad (auto)"
     }
 
     if (this.c._selectedMetric === "surface") return "Superficie"

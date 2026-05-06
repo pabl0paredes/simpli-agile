@@ -87,6 +87,61 @@ export class MapThematicRunners {
     if (this.c.dashboard && !this.c.dashboardPanelTarget?.hidden) this.c.dashboard.render()
   }
 
+  onAttractivityModeSelected = async (event) => {
+    const mode = event.detail.mode
+    if (!this.c._selectedMunicipalityCode) return
+    if (!this.c._selectedOpportunityCode) return
+
+    const inComparator = (this.c._uiMode === "comparador")
+    const isSlider = (this.c._compareMode === "slider")
+    const isSplit  = (this.c._compareMode === "split")
+
+    this.c._selectedLayerType = "attractivity"
+    this.c._selectedAccessibilityMode = mode
+    this.c._selectedMetric = null
+
+    this.c.ensureCellsLayer()
+
+    if (inComparator && isSlider) {
+      this.c.compareSlider?.syncData()
+      return
+    }
+
+    if (inComparator && isSplit) {
+      this.c.compareSplit?.syncData()
+      return
+    }
+
+    const scenarioId = this.c._selectedScenarioId
+
+    const url =
+      `/cells/attractivity?municipality_code=${encodeURIComponent(this.c._selectedMunicipalityCode)}` +
+      `&mode=${encodeURIComponent(mode)}` +
+      `&opportunity_code=${encodeURIComponent(this.c._selectedOpportunityCode)}` +
+      `&scenario_id=${encodeURIComponent(scenarioId)}`
+
+    const fc = await dataFetch(url).then(r => r.json())
+
+    this.c.map.getSource("cells").setData({
+      type: "FeatureCollection",
+      features: fc.features
+    })
+
+    this.c._cellsBreaks = fc.breaks
+    this.c._cellsFeatures = fc.features
+    this.c.setCellsVisible(true)
+
+    if (!this.c._hasFitCells) {
+      this.c.fitToCellsBounds(fc.features)
+      this.c._hasFitCells = true
+    }
+
+    this.c.legend.render()
+    this.c.legend.showButtonIfNeeded()
+    this.c.legend.show()
+    if (this.c.dashboard && !this.c.dashboardPanelTarget?.hidden) this.c.dashboard.render()
+  }
+
   onComparisonDeltaSelected = async (event) => {
     const { scenario_a_id, scenario_b_id, opportunity_code, metric } = event.detail
 

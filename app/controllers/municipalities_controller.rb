@@ -1,5 +1,5 @@
 class MunicipalitiesController < ApplicationController
-  before_action :verify_data_request!, only: [:focus]
+  before_action :verify_data_request!, only: [:focus, :co2]
 
   def index
     region_code = params[:region_code].to_i
@@ -80,8 +80,28 @@ class MunicipalitiesController < ApplicationController
 
   def access
     municipality_code = params.require(:municipality_code).to_i
-    has_access = user_signed_in? && current_user.availabilities.exists?(municipality_code: municipality_code)
-    render json: { has_access: has_access }
+    features = if user_signed_in?
+      current_user.availabilities.where(municipality_code: municipality_code).pluck(:feature)
+    else
+      []
+    end
+    render json: { has_access: features.any?, features: features }
+  end
+
+  def co2
+    municipality_code = params.require(:municipality_code).to_i
+    scenario_id       = params.require(:scenario_id).to_i
+
+    result = Co2Calculator.new(
+      municipality_code: municipality_code,
+      scenario_id:       scenario_id
+    ).call
+
+    render json: {
+      co2_tons:        result&.dig(:co2_tons)&.round(2),
+      avg_distance_km: result&.dig(:avg_distance_km)&.round(2),
+      trip_histogram:  result&.dig(:trip_histogram) || []
+    }
   end
 
 end

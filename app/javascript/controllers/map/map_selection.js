@@ -28,15 +28,13 @@ export class MapSelection {
       const h3 = f.properties?.h3
       const showId = f.properties?.show_id
 
-      this.setCellSelected(h3)
-
       if (!h3) return
+
+      this.setCellSelected(h3)
 
       window.dispatchEvent(new CustomEvent("cell:picked", {
         detail: { h3: h3, show_id: showId }
       }))
-
-      this.controller._pickCellMode = false
     })
   }
 

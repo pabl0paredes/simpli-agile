@@ -1,5 +1,5 @@
 class CellsController < ApplicationController
-  before_action :verify_data_request!, only: [:thematic, :accessibility, :delta, :accessibility_delta, :normative]
+  before_action :verify_data_request!, only: [:thematic, :accessibility, :attractivity, :delta, :accessibility_delta, :normative]
   before_action :authenticate_user!, only: [:locator_status]
   before_action :check_locator_access!, only: [:locator_status]
 
@@ -706,7 +706,8 @@ class CellsController < ApplicationController
       end
 
     breaks = edges
-    proj_by_h3 = projects_by_h3_for_scenarios(scenario_id, opportunity_code: opp_code)
+    proj_by_h3    = projects_by_h3_for_scenarios(scenario_id, opportunity_code: opp_code)
+    units_by_h3   = h_units_by_h3(mun_code, scenario_id)
 
     features = rows.map do |r|
       v = r.attributes["value"].to_f
@@ -721,6 +722,7 @@ class CellsController < ApplicationController
           show_id: r.show_id,
           value: v,
           class: klass,
+          h_units: units_by_h3[r.h3].to_f,
           municipality_code: mun_code,
           mode: mode,
           opportunity_code: opp_code,
@@ -739,7 +741,154 @@ class CellsController < ApplicationController
 
 
 
+  def attractivity
+    mun_code    = params.require(:municipality_code).to_i
+    mode        = params.require(:mode).to_s
+    opp_code    = params.require(:opportunity_code).to_s
+    scenario_id = params.require(:scenario_id).to_i
+
+    unless %w[walk car].include?(mode)
+      return render json: { error: "mode debe ser 'walk' o 'car'" }, status: :unprocessable_entity
+    end
+
+    travel_mode = TravelMode.find_by(municipality_code: mun_code, mode: mode)
+    return render json: { error: "No hay travel mode" }, status: :unprocessable_entity unless travel_mode
+
+    base_scenario = Scenario.find_by(user_id: system_user&.id, municipality_code: mun_code)
+    return render json: { error: "No hay escenario base" }, status: :unprocessable_entity unless base_scenario
+
+    conn = ActiveRecord::Base.connection.raw_connection
+
+    pick_eff_sql = <<~SQL
+      WITH RECURSIVE chain AS (
+        SELECT s.id, s.parent_id, 0 AS depth FROM scenarios s WHERE s.id = $1
+        UNION ALL
+        SELECT p.id, p.parent_id, c.depth + 1 FROM scenarios p
+        JOIN chain c ON p.id = c.parent_id WHERE c.depth < 20
+      )
+      SELECT c.id FROM chain c
+      WHERE EXISTS (
+        SELECT 1 FROM accessibilities a
+        WHERE a.scenario_id = c.id AND a.travel_mode_id = $2
+          AND a.opportunity_code = $3 AND a.accessibility_type = $4
+      )
+      ORDER BY c.depth ASC LIMIT 1
+    SQL
+
+    resolve_eff = ->(scen_id, opp, acc_type) {
+      r = conn.exec_params(pick_eff_sql, [scen_id, travel_mode.id, opp, acc_type]).first
+      r ? r["id"].to_i : nil
+    }
+
+    fetch_acc = ->(eff_scen_id, opp, acc_type) {
+      return {} unless eff_scen_id
+      Accessibility
+        .where(scenario_id: eff_scen_id, travel_mode_id: travel_mode.id,
+               opportunity_code: opp, accessibility_type: acc_type)
+        .pluck(:h3, :value)
+        .to_h
+    }
+
+    attractivity_val = ->(opp_h, hc_h, hd_h, p_h, h3) {
+      denom = hc_h[h3].to_f + hd_h[h3].to_f + p_h[h3].to_f
+      return 0.0 if denom <= 0
+      opp_h[h3].to_f / denom
+    }
+
+    # POI opportunities have no surface data, so use units accessibility instead
+    opp_acc_type = Opportunity.find_by(opportunity_code: opp_code)&.category == "POI" ? "units" : "surface"
+
+    # current scenario data — numerator: opp_acc_type, denominator: HC/HD/P units (housing demand)
+    cur_opp = fetch_acc.(resolve_eff.(scenario_id, opp_code, opp_acc_type), opp_code, opp_acc_type)
+    cur_hc  = fetch_acc.(resolve_eff.(scenario_id, "HC", "units"), "HC", "units")
+    cur_hd  = fetch_acc.(resolve_eff.(scenario_id, "HD", "units"), "HD", "units")
+    cur_p   = fetch_acc.(resolve_eff.(scenario_id, "P",  "units"), "P",  "units")
+
+    # base scenario data — used to compute fixed natural-breaks
+    base_opp = fetch_acc.(resolve_eff.(base_scenario.id, opp_code, opp_acc_type), opp_code, opp_acc_type)
+    base_hc  = fetch_acc.(resolve_eff.(base_scenario.id, "HC", "units"), "HC", "units")
+    base_hd  = fetch_acc.(resolve_eff.(base_scenario.id, "HD", "units"), "HD", "units")
+    base_p   = fetch_acc.(resolve_eff.(base_scenario.id, "P",  "units"), "P",  "units")
+
+    # If the caller supplies pre-computed breaks (e.g. comparator passes Scenario A's breaks
+    # so that Scenario B is classified on the same scale), use them directly and skip the
+    # base-scenario computation.
+    external_breaks = params[:breaks]&.split(",")&.map(&:to_f)
+
+    breaks = if external_breaks&.length == 6
+      external_breaks
+    else
+      base_h3s     = (base_opp.keys | base_hc.keys | base_hd.keys | base_p.keys)
+      base_vals    = base_h3s.map { |h3| attractivity_val.(base_opp, base_hc, base_hd, base_p, h3) }
+      nonzero_base = base_vals.select { |v| v > 0 }
+      nonzero_base.length >= 5 ? jenks_breaks(nonzero_base, 5) : [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    end
+
+    rows = Cell
+      .where(municipality_code: mun_code)
+      .select("h3, show_id, ST_AsGeoJSON(geometry) AS geom_json")
+
+    proj_by_h3 = projects_by_h3_for_scenarios(scenario_id, opportunity_code: opp_code)
+
+    features = rows.map do |r|
+      h3    = r.h3
+      v     = attractivity_val.(cur_opp, cur_hc, cur_hd, cur_p, h3)
+      klass = bin_class(v, breaks)
+      names = proj_by_h3[h3] || []
+
+      {
+        type: "Feature",
+        geometry: JSON.parse(r.attributes["geom_json"]),
+        properties: {
+          h3: h3,
+          show_id: r.show_id,
+          value: v.round(6),
+          class: klass,
+          municipality_code: mun_code,
+          mode: mode,
+          opportunity_code: opp_code,
+          scenario_id: scenario_id,
+          has_projects: names.any?,
+          project_names: names
+        }
+      }
+    end
+
+    render json: { type: "FeatureCollection", features: features, breaks: breaks }
+  end
+
+
+
   private
+
+  # Returns hash { h3 => Float } with sum of HC+HD+P units per cell, scenario-aware.
+  def h_units_by_h3(mun_code, scenario_id)
+    sql = <<~SQL
+      WITH RECURSIVE scenario_chain AS (
+        SELECT id, parent_id FROM scenarios WHERE id = $1
+        UNION ALL
+        SELECT s.id, s.parent_id FROM scenarios s JOIN scenario_chain sc ON s.id = sc.parent_id
+      ),
+      overrides AS (
+        SELECT DISTINCT ON (h3, opportunity_code)
+          h3, opportunity_code, units_total
+        FROM scenario_cells
+        WHERE scenario_id IN (SELECT id FROM scenario_chain)
+        ORDER BY h3, opportunity_code, scenario_id DESC
+      )
+      SELECT ic.h3,
+        SUM(COALESCE(o.units_total, ic.units)) AS h_units
+      FROM info_cells ic
+      JOIN cells c ON ic.h3 = c.h3
+      LEFT JOIN overrides o ON o.h3 = ic.h3 AND o.opportunity_code = ic.opportunity_code
+      WHERE c.municipality_code = $2
+        AND ic.opportunity_code IN ('HC', 'HD', 'P')
+      GROUP BY ic.h3
+    SQL
+    conn   = ActiveRecord::Base.connection.raw_connection
+    result = conn.exec_params(sql, [scenario_id, mun_code])
+    result.each_with_object({}) { |r, h| h[r["h3"]] = r["h_units"].to_f }
+  end
 
   # Returns hash { h3 => [project_name, ...] } for the given scenario ids, filtered by opportunity_code
   def projects_by_h3_for_scenarios(*scenario_ids, opportunity_code:)
@@ -835,7 +984,7 @@ class CellsController < ApplicationController
 
   def check_locator_access!
     municipality_code = params[:municipality_code].to_i
-    require_municipality_access!(municipality_code)
+    require_municipality_access!(municipality_code, feature: "locator")
   end
 
   # Devuelve 1..5 según breaks [min,b1,b2,b3,b4,max]

@@ -9,19 +9,47 @@ export function createLocator(controller) {
     loadLocatorOpportunitiesIntoSelect() {
       if (!controller.hasLocatorOpportunitySelectTarget) return
 
+      const HOUSING_CODES = ["HD", "HC", "P"]
+
+      const addSeparator = (selector, label) => {
+        const sep = document.createElement("option")
+        sep.disabled = true
+        sep.textContent = label
+        selector.appendChild(sep)
+      }
+
+      const addOption = (selector, op) => {
+        const option = document.createElement("option")
+        option.value = op.opportunity_code
+        option.textContent = op.name
+        option.dataset.category = op.category || ""
+        selector.appendChild(option)
+      }
+
       fetch("/opportunities")
         .then(r => r.json())
         .then(data => {
           const selector = controller.locatorOpportunitySelectTarget
           selector.innerHTML = "<option>Seleccionar oportunidad...</option>"
 
-          data.forEach(op => {
-            const option = document.createElement("option")
-            option.value = op.opportunity_code
-            option.textContent = op.name
-            option.dataset.category = op.category || ""
-            selector.appendChild(option)
-          })
+          const housing = data.filter(op => HOUSING_CODES.includes(op.opportunity_code))
+          const poi = data.filter(op => op.category === "POI" && !HOUSING_CODES.includes(op.opportunity_code))
+          const main = data.filter(op => !HOUSING_CODES.includes(op.opportunity_code) && op.category !== "POI")
+
+          if (main.length > 0) {
+            addSeparator(selector, "--- Usos de suelo ---")
+            main.forEach(op => addOption(selector, op))
+          }
+
+          if (poi.length > 0) {
+            addSeparator(selector, "--- Puntos de interés ---")
+            poi.forEach(op => addOption(selector, op))
+          }
+
+          if (housing.length > 0) {
+            addSeparator(selector, "--- Viviendas ---")
+            housing.forEach(op => addOption(selector, op))
+          }
 
           selector.disabled = false
         })
@@ -73,7 +101,13 @@ export function createLocator(controller) {
             scenario_id: controller._selectedScenarioId
           }
         }))
+
+        // Entrar inmediatamente al modo de selección de celda
+        this.startPickCell()
       } else {
+        // Cancelar pick mode si estaba activo
+        this.cancelPickCell()
+
         // ✅ RESTORE exacto
         controller.restoreSidebarAfterClose()
         // ✅ re-enable
@@ -93,21 +127,11 @@ export function createLocator(controller) {
     startPickCell() {
       controller.pickCellModalTarget.hidden = false
       window.dispatchEvent(new CustomEvent("cell:pick_start"))
-
-      controller._onEscPickCell = (ev) => {
-        if (ev.key === "Escape") controller.cancelPickCell()
-      }
-      window.addEventListener("keydown", controller._onEscPickCell)
     },
 
     cancelPickCell() {
       controller.pickCellModalTarget.hidden = true
       window.dispatchEvent(new CustomEvent("cell:pick_cancel"))
-
-      if (controller._onEscPickCell) {
-        window.removeEventListener("keydown", controller._onEscPickCell)
-        controller._onEscPickCell = null
-      }
     },
 
     locatorOpportunityChanged(e) {
@@ -139,13 +163,6 @@ export function createLocator(controller) {
 
       if (controller.hasLocatorOpportunitySelectTarget) {
         controller.locatorOpportunitySelectTarget.disabled = false
-      }
-
-      window.dispatchEvent(new CustomEvent("cell:pick_cancel"))
-
-      if (controller._onEscPickCell) {
-        window.removeEventListener("keydown", controller._onEscPickCell)
-        controller._onEscPickCell = null
       }
     },
 
@@ -209,10 +226,13 @@ export function createLocator(controller) {
       if (controller.hasUnitsSectionTarget) controller.unitsSectionTarget.hidden = true
       if (controller.hasAreaPerUnitSectionTarget) controller.areaPerUnitSectionTarget.hidden = true
 
-      window.dispatchEvent(new CustomEvent("cell:pick_cancel"))
       window.dispatchEvent(new CustomEvent("cell:selection_clear"))
 
       await controller.refreshProjectsLists()
+
+      // Volver a pick mode y mostrar instrucción para el siguiente proyecto
+      controller.pickCellModalTarget.hidden = false
+      window.dispatchEvent(new CustomEvent("cell:pick_start"))
 
       window.dispatchEvent(new CustomEvent("locator:opened", {
         detail: {

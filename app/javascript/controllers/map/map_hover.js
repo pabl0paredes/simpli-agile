@@ -247,7 +247,7 @@ export class MapHover {
 
       let formatted
 
-      if (layerType === "accessibility") {
+      if (layerType === "accessibility" || layerType === "attractivity") {
         formatted = this.controller.legend?.accessibilityLabelForClass
           ? this.controller.legend.accessibilityLabelForClass(klass)
           : (klass ? String(klass) : "-")
@@ -355,10 +355,13 @@ export class MapHover {
   }
 
   currentCellsHoverLabel() {
-    // Decide etiqueta según lo activo
     if (this.controller._selectedLayerType === "accessibility") {
       const mode = this.controller._selectedAccessibilityMode || ""
       return mode === "walk" ? "Accesibilidad (caminata)" : "Accesibilidad (auto)"
+    }
+    if (this.controller._selectedLayerType === "attractivity") {
+      const mode = this.controller._selectedAccessibilityMode || ""
+      return mode === "walk" ? "Atractividad (caminata)" : "Atractividad (auto)"
     }
     if (this.controller._selectedMetric === "surface") return "Superficie"
     if (this.controller._selectedMetric === "units") return "Unidades"

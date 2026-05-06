@@ -7,17 +7,22 @@ export class MapStateEvents {
     this.c._selectedScenarioId = event.detail.scenario_id
     this.c._selectedScenarioStatus = event.detail.status
 
+    window.dispatchEvent(new CustomEvent("co2:refresh"))
+
     // 🔒 Si el locator está abierto NO limpiar las celdas
     if (this.c._inLocator) return
 
-    // ✅ Cambió el escenario: limpia lo pintado para evitar “data pegada”
+    // ✅ Cambió el escenario: limpia lo pintado para evitar "data pegada"
     this.onLayerCleared()
   }
 
   onUIModeChanged = (e) => {
     this.c._uiMode = e.detail?.mode
 
-    if (this.c._uiMode === "comparador") this.c._compareMode = "delta"
+    if (this.c._uiMode === "comparador") {
+      this.c._compareMode = "delta"
+      this.c.dashboard?.hide()
+    }
     this.c.setCellsVisible(false)
 
     const useSlider = (this.c._uiMode === "comparador" && this.c._compareMode === "slider")
@@ -33,6 +38,7 @@ export class MapStateEvents {
     this.c._scenarioAId = e.detail?.scenario_a_id
     this.c._scenarioBId = e.detail?.scenario_b_id
     this.c._compareMode = e.detail?.compare_mode
+    window.dispatchEvent(new CustomEvent("co2:refresh"))
 
     const useSlider = (this.c._uiMode === "comparador" && this.c._compareMode === "slider")
     const useSplit = (this.c._uiMode === "comparador" && this.c._compareMode === "split")
@@ -78,7 +84,7 @@ export class MapStateEvents {
     // apaga visibilidad
     this.c.setCellsVisible(false)
 
-    // limpia data para que no quede “pegado”
+    // limpia data para que no quede "pegado"
     const src = this.c.map.getSource("cells")
     if (src) src.setData({ type: "FeatureCollection", features: [] })
 
@@ -93,6 +99,5 @@ export class MapStateEvents {
     this.c.legend.hide()
     this.c.legend.showButtonIfNeeded()
     this.c.legend.clearClassFocus()
-    this.c.dashboard?.hide()
   }
 }

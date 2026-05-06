@@ -52,6 +52,8 @@ export function createUIState(controller) {
 
       // 5) reset municipality access flag + hide no-access notice
       controller._hasAccess = false
+      controller._features  = []
+      window.dispatchEvent(new CustomEvent("municipality:features_loaded", { detail: { features: [] } }))
       if (controller.hasNoAccessSectionTarget) controller.noAccessSectionTarget.hidden = true
 
     },
@@ -70,16 +72,34 @@ export function createUIState(controller) {
       }
     },
 
-    applyOpportunityCategory(category) {
-      const surfaceBtn = controller.element.querySelector('.sidebar__layer-btn[data-metric="surface"]')
-      if (!surfaceBtn) return
+    applyOpportunityCategory(category, opportunityCode) {
+      const surfaceBtn  = controller.element.querySelector('.sidebar__layer-btn[data-metric="surface"]')
+      const accBtn      = controller.element.querySelector('.sidebar__layer-btn[data-layer="accessibility"]')
+      const attrWrap    = controller.element.querySelector('.sidebar__layer-btn-wrap')
 
-      const isPOI = (category === "POI")
-      surfaceBtn.hidden = isPOI // POI => ocultar superficie
+      const isPOI       = (category === "POI")
+      const isResidential = ["HC", "HD", "P"].includes(opportunityCode)
 
-      // si ocultamos superficie, asegurar que no quede activa
-      if (isPOI && surfaceBtn.classList.contains("is-active")) {
-        surfaceBtn.classList.remove("is-active")
+      if (surfaceBtn) {
+        surfaceBtn.hidden = isPOI
+        if (isPOI && surfaceBtn.classList.contains("is-active")) {
+          surfaceBtn.classList.remove("is-active")
+          window.dispatchEvent(new CustomEvent("layer:cleared"))
+        }
+      }
+
+      const isDelta = controller._compareMode === "delta" && controller._uiMode === "comparador"
+      if (accBtn) accBtn.hidden = isResidential || isDelta
+      if (attrWrap) attrWrap.hidden = isResidential || isDelta
+
+      if (isResidential) {
+        controller._selectedLayerType = null
+        controller.accessibilityChoicesTarget.hidden = true
+        controller.accessibilityChoicesTarget
+          .querySelectorAll(".sidebar__subchoice-btn")
+          .forEach(b => b.classList.remove("is-active"))
+        // layer:cleared ya fue despachado en opportunityChanged, pero lo reforzamos
+        // para asegurarnos que el mapa limpie cualquier capa de accesibilidad activa
         window.dispatchEvent(new CustomEvent("layer:cleared"))
       }
     },

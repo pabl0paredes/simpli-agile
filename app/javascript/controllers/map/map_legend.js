@@ -35,9 +35,10 @@ export class MapLegend {
     const colorsByClass = PALETTES[this.c._palette || "blue"]
 
     const isAccessibility = (this.c._selectedLayerType === "accessibility")
+    const isAttractivity  = (this.c._selectedLayerType === "attractivity")
     const isDelta = (this.c._compareMode === "delta")
 
-    if (isAccessibility) {
+    if (isAccessibility || isAttractivity) {
       for (let i = 1; i <= 5; i++) {
         rows.push({ klass: i, label: this.accessibilityLabelForClass(i) })
       }

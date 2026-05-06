@@ -21,6 +21,7 @@ export default class extends Controller {
     "legendItems",
     "legendBtn",
     "dashboardPanel",
+    "dashboardTitle",
     "dashboardChart",
     "dashboardBtn",
     "compareContainer",
@@ -30,7 +31,19 @@ export default class extends Controller {
     "splitTop",
     "splitBottom",
     "stylePickerBtn",
-    "stylePickerPanel"
+    "stylePickerPanel",
+    "dashboardCo2",
+    "dashboardCo2Single",
+    "dashboardCo2Value",
+    "dashboardCo2Compare",
+    "dashboardCo2ValueA",
+    "dashboardCo2ValueB",
+    "dashboardAvgDistSingle",
+    "dashboardAvgDistValue",
+    "dashboardAvgDistCompare",
+    "dashboardAvgDistValueA",
+    "dashboardAvgDistValueB",
+    "dashboardHistogram"
   ]
 
   connect() {
@@ -101,6 +114,7 @@ export default class extends Controller {
       window.addEventListener("normative:selected", this.onNormativeSelected)
       window.addEventListener("opportunity:selected", this.onOpportunitySelected)
       window.addEventListener("accessibility:mode_selected", this.onAccessibilityModeSelected)
+      window.addEventListener("attractivity:mode_selected", this.onAttractivityModeSelected)
       window.addEventListener("layer:cleared", this.onLayerCleared)
       window.addEventListener("scenario:selected", this.onScenarioSelected)
       window.addEventListener("cell:pick_start", this.selection.onPickCellStart)
@@ -116,6 +130,8 @@ export default class extends Controller {
       window.addEventListener("map:style-selected", this.onStyleSelected)
       window.addEventListener("map:palette-selected", this.onPaletteSelected)
       window.addEventListener("map:streets-on-top", this.onStreetsOnTopToggled)
+      window.addEventListener("co2:refresh", this.onCo2Refresh)
+      window.addEventListener("municipality:features_loaded", this.onMunicipalityFeaturesLoaded)
 
       window._mapReady = true
       window.dispatchEvent(new CustomEvent("map:ready"))
@@ -136,6 +152,7 @@ export default class extends Controller {
     window.removeEventListener("normative:selected", this.onNormativeSelected)
     window.removeEventListener("opportunity:selected", this.onOpportunitySelected)
     window.removeEventListener("accessibility:mode_selected", this.onAccessibilityModeSelected)
+    window.removeEventListener("attractivity:mode_selected", this.onAttractivityModeSelected)
     window.removeEventListener("layer:cleared", this.onLayerCleared)
     window.removeEventListener("scenario:selected", this.onScenarioSelected)
     window.removeEventListener("cell:pick_start", this.selection?.onPickCellStart)
@@ -151,6 +168,21 @@ export default class extends Controller {
     window.removeEventListener("map:style-selected", this.onStyleSelected)
     window.removeEventListener("map:palette-selected", this.onPaletteSelected)
     window.removeEventListener("map:streets-on-top", this.onStreetsOnTopToggled)
+    window.removeEventListener("co2:refresh", this.onCo2Refresh)
+    window.removeEventListener("municipality:features_loaded", this.onMunicipalityFeaturesLoaded)
+  }
+
+  onMunicipalityFeaturesLoaded = (e) => {
+    const hasIndicators = (e.detail.features || []).includes("indicators")
+    if (this.hasDashboardBtnTarget) {
+      this.dashboardBtnTarget.disabled = !hasIndicators
+    }
+    if (hasIndicators && this.hasDashboardPanelTarget && this.dashboardPanelTarget.hidden) {
+      this.dashboard?.open()
+    }
+    if (!hasIndicators && this.hasDashboardPanelTarget) {
+      this.dashboard?.hide()
+    }
   }
 
   onStyleSelected = (e) => this.styleManager?.select(e.detail.styleId)
@@ -201,8 +233,10 @@ export default class extends Controller {
   onOpportunitySelected = (e) => this.stateEvents.onOpportunitySelected(e)
 
   onAccessibilityModeSelected = (e) => this.thematicRunner.onAccessibilityModeSelected(e)
+  onAttractivityModeSelected  = (e) => this.thematicRunner.onAttractivityModeSelected(e)
   onComparisonDeltaSelected = (e) => this.thematicRunner.onComparisonDeltaSelected(e)
 
+  onCo2Refresh = () => this.dashboard?.fetchCo2()
   onCellSelectionClear = () => this.selection?.clearCellSelected()
 
   fitToCellsBounds(features = this._cellsFeatures, padding = 60) {

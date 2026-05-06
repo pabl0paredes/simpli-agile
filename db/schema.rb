@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_04_13_000003) do
+ActiveRecord::Schema[7.1].define(version: 2026_04_30_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
   enable_extension "postgis"
@@ -49,7 +49,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_13_000003) do
     t.integer "municipality_code", null: false
     t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.string "feature", null: false
     t.index ["municipality_code"], name: "index_availabilities_on_municipality_code"
+    t.index ["user_id", "municipality_code", "feature"], name: "index_availabilities_on_user_municipality_feature", unique: true
     t.index ["user_id"], name: "index_availabilities_on_user_id"
   end
 
@@ -236,6 +238,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_13_000003) do
     t.bigint "travel_mode_id", null: false
     t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.float "distance"
     t.index ["h3_destiny"], name: "index_travel_times_on_h3_destiny"
     t.index ["h3_origin"], name: "index_travel_times_on_h3_origin"
     t.index ["travel_mode_id", "h3_origin"], name: "idx_travel_times_mode_origin"

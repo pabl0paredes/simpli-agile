@@ -52,6 +52,8 @@ export default class extends Controller {
     "saveScenarioBtn",
     "scenarioParentDisplay",
     "locatorBtn",
+    "locatorBtnWrap",
+    "simulatorBtnWrap",
     "regionSelectWrap",
     "regionBackBtn",
     "municipalitySelectWrap",
@@ -67,6 +69,9 @@ export default class extends Controller {
     "mapStyleBtn",
     "paletteBtn",
     "normativeSection",
+    "normativeLayers",
+    "normativeToggleBtn",
+    "normativeBtnWrap",
     "simulatorPanel",
     "simulatorBtn",
     "simulateBtn",
@@ -154,13 +159,16 @@ export default class extends Controller {
 
   resetAfterMunicipalityChange() { return this.ui.resetAfterMunicipalityChange() }
   clearLayerButtonsUI() { return this.ui.clearLayerButtonsUI() }
-  applyOpportunityCategory(category) { return this.ui.applyOpportunityCategory(category) }
+  applyOpportunityCategory(category, opportunityCode) { return this.ui.applyOpportunityCategory(category, opportunityCode) }
 
   // Muestra oportunidad y carga escenario base (igual que usuario sin sesión)
   _loadGuestMunicipalityView(munCode) {
+    // Mostrar secciones de herramientas con botones deshabilitados (sin acceso)
+    this.syncScenarioActionsUI()
+
+    // Override: show opportunity section regardless of scenario (guest view)
     if (this.hasOpportunitySelectTarget) this.opportunitySelectTarget.disabled = false
     if (this.hasOpportunitySectionTarget) this.opportunitySectionTarget.hidden = false
-    if (this.hasNoAccessSectionTarget) this.noAccessSectionTarget.hidden = false
 
     fetch(`/municipalities/base_scenario?municipality_code=${encodeURIComponent(munCode)}`)
       .then(r => r.json())
@@ -196,6 +204,7 @@ export default class extends Controller {
   opportunityChanged(e) { return this.opportunitiesLayers.opportunityChanged(e) }
   selectLayer(e) { return this.opportunitiesLayers.selectLayer(e) }
   selectAccessibilityMode(e) { return this.opportunitiesLayers.selectAccessibilityMode(e) }
+  selectAttractivityMode(e)  { return this.opportunitiesLayers.selectAttractivityMode(e) }
 
   loadLocatorOpportunitiesIntoSelect() { return this.locator.loadLocatorOpportunitiesIntoSelect() }
   locatorOpportunityChanged(e) { return this.locator.locatorOpportunityChanged(e) }
@@ -232,6 +241,13 @@ export default class extends Controller {
   scenarioBChanged(e) { return this.comparator.scenarioBChanged(e) }
 
   compareModeSelected(e) { return this.comparator.compareModeSelected(e) }
+
+  toggleNormativeLayers() {
+    if (!this.hasNormativeLayersTarget || !this.hasNormativeToggleBtnTarget) return
+    const open = this.normativeLayersTarget.hidden
+    this.normativeLayersTarget.hidden = !open
+    this.normativeToggleBtnTarget.setAttribute("aria-expanded", open ? "true" : "false")
+  }
 
   toggleConfigPanel() {
     if (!this.hasConfigPanelTarget) return
@@ -398,13 +414,6 @@ export default class extends Controller {
       if (showSave) this.saveScenarioBtnTarget.disabled = true // se habilita en refreshProjectsLists
     }
 
-    if (this.hasLocatorBtnTarget) {
-      this.locatorBtnTarget.disabled = isBase
-    }
-    if (this.hasSimulatorBtnTarget) {
-      this.simulatorBtnTarget.disabled = isBase
-    }
-
     // Oportunidad: visible cuando hay escenario válido O cuando estamos en comparador
     // (en comparador, syncComparatorGatingUI maneja el disabled del select)
     if (this.hasOpportunitySectionTarget) {
@@ -415,12 +424,47 @@ export default class extends Controller {
       this.opportunitySelectTarget.disabled = false
     }
 
+    const features       = this._features || []
+    const hasLocator     = features.includes("locator")
+    const hasSimulator   = features.includes("simulator")
+    const hasNormative   = features.includes("normative")
+    const hasMunicipality = !!this._selectedMunicipalityCode
+    const NO_ACCESS      = "No tienes acceso a este feature"
+    const NO_SCENARIO    = "Selecciona un escenario para usar esta herramienta"
+
+    const setNavBtn = (wrapTarget, hasFeature, needsScenario) => {
+      const cap = wrapTarget.charAt(0).toUpperCase() + wrapTarget.slice(1)
+      if (!this[`has${cap}Target`]) return
+      const wrap = this[`${wrapTarget}Target`]
+      const btn  = wrap.querySelector("button")
+      const tip  = wrap.querySelector(".sidebar__tooltip")
+      if (!btn) return
+      if (!hasFeature) {
+        btn.disabled = true
+        if (tip) tip.textContent = NO_ACCESS
+      } else if (needsScenario && (!hasValidScenario || isBase)) {
+        btn.disabled = true
+        if (tip) tip.textContent = NO_SCENARIO
+      } else {
+        btn.disabled = false
+      }
+    }
+
+    setNavBtn("locatorBtnWrap",   hasLocator,   true)
+    setNavBtn("simulatorBtnWrap", hasSimulator, true)
+
     if (this.hasLocateSectionTarget) {
-      this.locateSectionTarget.hidden = !hasValidScenario || inComparator
+      this.locateSectionTarget.hidden = !hasMunicipality || inComparator
     }
 
     if (this.hasNormativeSectionTarget) {
-      this.normativeSectionTarget.hidden = !hasValidScenario || inComparator || !this._municipalityHasNormative
+      this.normativeSectionTarget.hidden = !hasMunicipality || inComparator || !this._municipalityHasNormative
+    }
+    if (this.hasNormativeBtnWrapTarget) {
+      const btn = this.normativeBtnWrapTarget.querySelector("button")
+      const tip = this.normativeBtnWrapTarget.querySelector(".sidebar__tooltip")
+      if (btn) btn.disabled = !hasNormative
+      if (tip) tip.textContent = !hasNormative ? NO_ACCESS : ""
     }
   }
 
@@ -446,6 +490,7 @@ export default class extends Controller {
     // ✅ Si no está listo, ocultar capas y resetear opportunity
     if (!ready) {
       this.layerSectionTarget.hidden = true
+      if (this.hasAttractivitySectionTarget) this.attractivitySectionTarget.hidden = true
       this.opportunitySelectTarget.value = "Seleccionar oportunidad..." // o el placeholder real del <option>
       this.clearLayerButtonsUI()
       window.dispatchEvent(new CustomEvent("layer:cleared"))
@@ -492,6 +537,8 @@ export default class extends Controller {
         .querySelectorAll(".sidebar__subchoice-btn")
         .forEach(b => b.classList.remove("is-active"))
     }
+
+    if (this.hasAttractivitySectionTarget) this.attractivitySectionTarget.hidden = true
 
     // comparador
     this._scenarioAId = null

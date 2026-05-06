@@ -152,8 +152,20 @@
       </div>
 
       <div class="sidebar__section" data-sidebar-target="normativeSection" hidden>
-        <div class="sidebar__label">NORMATIVA</div>
-        <div class="sidebar__layers">
+        <div class="sidebar__tooltip-wrap" data-sidebar-target="normativeBtnWrap">
+          <button
+            type="button"
+            class="sidebar__collapsible-label"
+            data-action="click->sidebar#toggleNormativeLayers"
+            data-sidebar-target="normativeToggleBtn"
+            aria-expanded="false"
+          >
+            <span>CAPAS NORMATIVAS</span>
+            <i class="fa-solid fa-chevron-right sidebar__collapsible-chevron"></i>
+          </button>
+          <span class="sidebar__tooltip"></span>
+        </div>
+        <div class="sidebar__layers" data-sidebar-target="normativeLayers" hidden>
           <button
             type="button"
             class="sidebar__layer-btn"
@@ -212,8 +224,23 @@
             data-layer="accessibility"
             data-action="click->sidebar#selectLayer"
           >
-            <i class="fa-solid fa-person-walking"></i> Accesibilidad
+            <i class="fa-solid fa-person-walking"></i> Accesibilidad absoluta
           </button>
+
+          <div class="sidebar__layer-btn-wrap">
+            <button
+              type="button"
+              class="sidebar__layer-btn"
+              data-layer="attractivity"
+              data-action="click->sidebar#selectLayer"
+            >
+              <i class="fa-solid fa-chart-simple"></i> Accesibilidad relativa
+            </button>
+            <span class="sidebar__info-wrap">
+              <i class="fa-solid fa-circle-info sidebar__info-icon"></i>
+              <span class="sidebar__info-tooltip">Accesibilidad absoluta en relación a la demanda (viviendas)</span>
+            </span>
+          </div>
         </div>
       </div>
 
@@ -240,6 +267,7 @@
         </div>
       </div>
 
+
       <% if user_signed_in? %>
       <div
         class="sidebar__section"
@@ -260,7 +288,7 @@
             Debes crear un Escenario para localizar un proyecto de infraestructura
           </span>
         </div>
-        <div class="sidebar__tooltip-wrap">
+        <div class="sidebar__tooltip-wrap" data-sidebar-target="simulatorBtnWrap">
           <button
             type="button"
             class="sidebar__nav-btn"
@@ -291,6 +319,15 @@
     </div>
 
     <div class="sidebar__config-panel" data-sidebar-target="configPanel" hidden>
+      <div class="sidebar__config-panel__header">
+        <span>CONFIGURACIÓN</span>
+        <button type="button"
+                class="sidebar__config-panel__close"
+                data-action="click->sidebar#toggleConfigPanel"
+                aria-label="Cerrar">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
       <div class="sidebar__config-panel__label">PALETA DE COLORES</div>
       <div class="sidebar__config-panel__palettes">
         <button type="button" class="palette-picker__btn is-active"

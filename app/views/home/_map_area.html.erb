@@ -30,17 +30,23 @@
     <div class="map-split__bottom w-full h-full" data-map-target="splitBottom"></div>
   </div>
 
-  <%# Botones flotantes (derecha) %>
+  <%# Botón flotante de indicadores (esquina superior derecha, bajo el menú de usuario) %>
+  <div class="map-indicators-wrap">
+    <div class="map-fab__tooltip-wrap">
+      <button type="button"
+              class="map-fab__btn"
+              aria-label="Indicadores"
+              data-action="click->map#toggleDashboard"
+              data-map-target="dashboardBtn"
+              disabled>
+        <i class="fa-solid fa-chart-bar"></i>
+      </button>
+      <span class="map-fab__tooltip">Indicadores no disponibles para esta comuna</span>
+    </div>
+  </div>
+
+  <%# Botones flotantes inferiores (derecha) %>
   <div class="map-fab">
-
-    <button type="button"
-            class="map-fab__btn"
-            aria-label="Gráfico"
-            data-action="click->map#toggleDashboard"
-            data-map-target="dashboardBtn">
-      <i class="fa-solid fa-chart-bar"></i>
-    </button>
-
     <button type="button"
             class="map-fab__btn"
             aria-label="Leyenda"
@@ -76,12 +82,68 @@
   <% end %>
 
 
-  <div class="map-panels-right">
-    <div class="map-dashboard" data-map-target="dashboardPanel" hidden>
-      <div class="map-dashboard__title">Distribución por categoría</div>
-      <div data-map-target="dashboardChart"></div>
+  <%# Panel de indicadores (esquina superior derecha) %>
+  <div class="map-dashboard" data-map-target="dashboardPanel" hidden>
+    <div class="map-dashboard__header">
+      <span class="map-dashboard__header-title">Indicadores</span>
+      <button type="button"
+              class="map-dashboard__close"
+              data-action="click->map#toggleDashboard"
+              aria-label="Cerrar">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
     </div>
+    <div class="map-dashboard__title" data-map-target="dashboardTitle" hidden></div>
+    <div data-map-target="dashboardChart"></div>
+    <div class="map-dashboard__co2" data-map-target="dashboardCo2" hidden>
+      <div class="map-dashboard__co2-columns">
+        <div class="map-dashboard__co2-left">
+          <div class="map-dashboard__co2-title">Emisiones CO₂ (auto)</div>
+          <div class="map-dashboard__co2-row" data-map-target="dashboardCo2Single">
+            <span class="map-dashboard__co2-value" data-map-target="dashboardCo2Value">—</span>
+            <span class="map-dashboard__co2-unit">ton/año</span>
+          </div>
+          <div class="map-dashboard__co2-compare" data-map-target="dashboardCo2Compare" hidden>
+            <div class="map-dashboard__co2-scenario">
+              <span class="map-dashboard__co2-label">Esc. A</span>
+              <span class="map-dashboard__co2-value" data-map-target="dashboardCo2ValueA">—</span>
+              <span class="map-dashboard__co2-unit">ton/año</span>
+            </div>
+            <div class="map-dashboard__co2-scenario">
+              <span class="map-dashboard__co2-label">Esc. B</span>
+              <span class="map-dashboard__co2-value" data-map-target="dashboardCo2ValueB">—</span>
+              <span class="map-dashboard__co2-unit">ton/año</span>
+            </div>
+          </div>
 
+          <div class="map-dashboard__co2-title" style="margin-top:10px">Distancia promedio (auto)</div>
+          <div class="map-dashboard__co2-row" data-map-target="dashboardAvgDistSingle">
+            <span class="map-dashboard__co2-value" data-map-target="dashboardAvgDistValue">—</span>
+            <span class="map-dashboard__co2-unit">km/viaje</span>
+          </div>
+          <div class="map-dashboard__co2-compare" data-map-target="dashboardAvgDistCompare" hidden>
+            <div class="map-dashboard__co2-scenario">
+              <span class="map-dashboard__co2-label">Esc. A</span>
+              <span class="map-dashboard__co2-value" data-map-target="dashboardAvgDistValueA">—</span>
+              <span class="map-dashboard__co2-unit">km/viaje</span>
+            </div>
+            <div class="map-dashboard__co2-scenario">
+              <span class="map-dashboard__co2-label">Esc. B</span>
+              <span class="map-dashboard__co2-value" data-map-target="dashboardAvgDistValueB">—</span>
+              <span class="map-dashboard__co2-unit">km/viaje</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="map-dashboard__co2-right">
+          <div class="map-dashboard__co2-title">Distribución de viajes</div>
+          <div data-map-target="dashboardHistogram"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="map-panels-right">
     <div class="map-legend" data-map-target="legendPanel" hidden>
       <div class="map-legend__title">Leyenda</div>
       <div class="map-legend__items" data-map-target="legendItems"></div>

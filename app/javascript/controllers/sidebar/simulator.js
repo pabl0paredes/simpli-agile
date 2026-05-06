@@ -147,6 +147,7 @@ function _pollSimulationRequests(requestIds, btn, controller) {
       controller.simulatorPanelTarget.hidden = true
       _restoreAfterSimulatorClose(controller)
       controller.simulationResultModalTarget.hidden = false
+      window.dispatchEvent(new CustomEvent("co2:refresh"))
     }
   }
 
