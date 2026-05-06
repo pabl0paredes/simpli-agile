@@ -71,6 +71,7 @@ export default class extends Controller {
     "normativeSection",
     "normativeLayers",
     "normativeToggleBtn",
+    "normativeBtnWrap",
     "simulatorPanel",
     "simulatorBtn",
     "simulateBtn",
@@ -162,9 +163,12 @@ export default class extends Controller {
 
   // Muestra oportunidad y carga escenario base (igual que usuario sin sesión)
   _loadGuestMunicipalityView(munCode) {
+    // Mostrar secciones de herramientas con botones deshabilitados (sin acceso)
+    this.syncScenarioActionsUI()
+
+    // Override: show opportunity section regardless of scenario (guest view)
     if (this.hasOpportunitySelectTarget) this.opportunitySelectTarget.disabled = false
     if (this.hasOpportunitySectionTarget) this.opportunitySectionTarget.hidden = false
-    if (this.hasNoAccessSectionTarget) this.noAccessSectionTarget.hidden = false
 
     fetch(`/municipalities/base_scenario?municipality_code=${encodeURIComponent(munCode)}`)
       .then(r => r.json())
@@ -410,13 +414,6 @@ export default class extends Controller {
       if (showSave) this.saveScenarioBtnTarget.disabled = true // se habilita en refreshProjectsLists
     }
 
-    if (this.hasLocatorBtnTarget) {
-      this.locatorBtnTarget.disabled = isBase
-    }
-    if (this.hasSimulatorBtnTarget) {
-      this.simulatorBtnTarget.disabled = isBase
-    }
-
     // Oportunidad: visible cuando hay escenario válido O cuando estamos en comparador
     // (en comparador, syncComparatorGatingUI maneja el disabled del select)
     if (this.hasOpportunitySectionTarget) {
@@ -427,24 +424,47 @@ export default class extends Controller {
       this.opportunitySelectTarget.disabled = false
     }
 
-    const features = this._features || []
-    const hasLocator   = features.includes("locator")
-    const hasSimulator = features.includes("simulator")
-    const hasNormative = features.includes("normative")
+    const features       = this._features || []
+    const hasLocator     = features.includes("locator")
+    const hasSimulator   = features.includes("simulator")
+    const hasNormative   = features.includes("normative")
+    const hasMunicipality = !!this._selectedMunicipalityCode
+    const NO_ACCESS      = "No tienes acceso a este feature"
+    const NO_SCENARIO    = "Selecciona un escenario para usar esta herramienta"
 
-    if (this.hasLocatorBtnWrapTarget) {
-      this.locatorBtnWrapTarget.hidden = !hasLocator
+    const setNavBtn = (wrapTarget, hasFeature, needsScenario) => {
+      const cap = wrapTarget.charAt(0).toUpperCase() + wrapTarget.slice(1)
+      if (!this[`has${cap}Target`]) return
+      const wrap = this[`${wrapTarget}Target`]
+      const btn  = wrap.querySelector("button")
+      const tip  = wrap.querySelector(".sidebar__tooltip")
+      if (!btn) return
+      if (!hasFeature) {
+        btn.disabled = true
+        if (tip) tip.textContent = NO_ACCESS
+      } else if (needsScenario && (!hasValidScenario || isBase)) {
+        btn.disabled = true
+        if (tip) tip.textContent = NO_SCENARIO
+      } else {
+        btn.disabled = false
+      }
     }
-    if (this.hasSimulatorBtnWrapTarget) {
-      this.simulatorBtnWrapTarget.hidden = !hasSimulator
-    }
+
+    setNavBtn("locatorBtnWrap",   hasLocator,   true)
+    setNavBtn("simulatorBtnWrap", hasSimulator, true)
 
     if (this.hasLocateSectionTarget) {
-      this.locateSectionTarget.hidden = !hasValidScenario || inComparator || (!hasLocator && !hasSimulator)
+      this.locateSectionTarget.hidden = !hasMunicipality || inComparator
     }
 
     if (this.hasNormativeSectionTarget) {
-      this.normativeSectionTarget.hidden = !hasValidScenario || inComparator || !this._municipalityHasNormative || !hasNormative
+      this.normativeSectionTarget.hidden = !hasMunicipality || inComparator || !this._municipalityHasNormative
+    }
+    if (this.hasNormativeBtnWrapTarget) {
+      const btn = this.normativeBtnWrapTarget.querySelector("button")
+      const tip = this.normativeBtnWrapTarget.querySelector(".sidebar__tooltip")
+      if (btn) btn.disabled = !hasNormative
+      if (tip) tip.textContent = !hasNormative ? NO_ACCESS : ""
     }
   }
 

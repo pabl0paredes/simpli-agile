@@ -152,16 +152,19 @@
       </div>
 
       <div class="sidebar__section" data-sidebar-target="normativeSection" hidden>
-        <button
-          type="button"
-          class="sidebar__collapsible-label"
-          data-action="click->sidebar#toggleNormativeLayers"
-          data-sidebar-target="normativeToggleBtn"
-          aria-expanded="false"
-        >
-          <span>CAPAS NORMATIVAS</span>
-          <i class="fa-solid fa-chevron-right sidebar__collapsible-chevron"></i>
-        </button>
+        <div class="sidebar__tooltip-wrap" data-sidebar-target="normativeBtnWrap">
+          <button
+            type="button"
+            class="sidebar__collapsible-label"
+            data-action="click->sidebar#toggleNormativeLayers"
+            data-sidebar-target="normativeToggleBtn"
+            aria-expanded="false"
+          >
+            <span>CAPAS NORMATIVAS</span>
+            <i class="fa-solid fa-chevron-right sidebar__collapsible-chevron"></i>
+          </button>
+          <span class="sidebar__tooltip"></span>
+        </div>
         <div class="sidebar__layers" data-sidebar-target="normativeLayers" hidden>
           <button
             type="button"

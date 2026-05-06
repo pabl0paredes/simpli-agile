@@ -152,8 +152,13 @@
     letter-spacing: 0.07em;
     transition: color 0.15s;
   }
-  .sidebar__collapsible-label:hover {
+  .sidebar__collapsible-label:hover:not(:disabled) {
     color: #3f3f46;
+  }
+
+  .sidebar__collapsible-label:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
   }
   .sidebar__collapsible-chevron {
     font-size: 9px;
