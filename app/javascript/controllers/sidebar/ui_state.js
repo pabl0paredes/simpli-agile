@@ -48,6 +48,7 @@ export function createUIState(controller) {
       // 4) ocultar secciones que dependen de oportunidad/capas
       if (controller.hasLayerSectionTarget) controller.layerSectionTarget.hidden = true
       if (controller.hasLocateSectionTarget) controller.locateSectionTarget.hidden = true
+      if (controller.hasVisualizacionSectionTarget) controller.visualizacionSectionTarget.hidden = true
       if (controller.hasNormativeSectionTarget) controller.normativeSectionTarget.hidden = true
 
       // 5) reset municipality access flag + hide no-access notice
