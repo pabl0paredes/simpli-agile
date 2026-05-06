@@ -102,120 +102,78 @@
         </div>
       </div>
 
-      <div class="sidebar__section" data-sidebar-target="normativeSection" hidden>
-        <div class="sidebar__tooltip-wrap" data-sidebar-target="normativeBtnWrap">
-          <button
-            type="button"
-            class="sidebar__collapsible-label"
-            data-action="click->sidebar#toggleNormativeLayers"
-            data-sidebar-target="normativeToggleBtn"
-            aria-expanded="false"
-          >
-            <span>CAPAS NORMATIVAS</span>
-            <i class="fa-solid fa-chevron-right sidebar__collapsible-chevron"></i>
-          </button>
-          <span class="sidebar__tooltip"></span>
-        </div>
-        <div class="sidebar__layers" data-sidebar-target="normativeLayers" hidden>
-          <button
-            type="button"
-            class="sidebar__layer-btn"
-            data-norm-metric="norm_const"
-            data-action="click->sidebar#selectLayer"
-          >
-            <i class="fa-solid fa-building-columns"></i> Constructibilidad remanente
-          </button>
-          <button
-            type="button"
-            class="sidebar__layer-btn"
-            data-norm-metric="norm_footprint"
-            data-action="click->sidebar#selectLayer"
-          >
-            <i class="fa-solid fa-expand"></i> Suelo remanente
-          </button>
-        </div>
-      </div>
-
-      <div class="sidebar__section" data-sidebar-target="opportunitySection" hidden>
-        <div class="sidebar__label">OPORTUNIDAD</div>
-        <select class="sidebar__select" data-sidebar-target="opportunitySelect" data-action="change->sidebar#opportunityChanged" disabled>
-          <option>Seleccionar oportunidad</option>
-        </select>
-      </div>
-
-      <div class="sidebar__section sidebar__no-data" data-sidebar-target="noDataSection" hidden>
-        <p class="sidebar__no-data-msg">No hay datos cargados para esta comuna.</p>
-      </div>
-
-      <div class="sidebar__section" data-sidebar-target="layerSection" hidden>
+      <div class="sidebar__section" data-sidebar-target="visualizacionSection" hidden>
         <div class="sidebar__label">VISUALIZACIÓN</div>
 
-        <div class="sidebar__layers">
-          <button
-            type="button"
-            class="sidebar__layer-btn"
-            data-metric="surface"
-            data-action="click->sidebar#selectLayer"
-          >
-            <i class="fa-solid fa-square"></i>Superficie
-          </button>
-
-          <button
-            type="button"
-            class="sidebar__layer-btn"
-            data-metric="units"
-            data-action="click->sidebar#selectLayer"
-          >
-            <i class="fa-solid fa-building"></i>Unidades
-          </button>
-
-          <button
-            type="button"
-            class="sidebar__layer-btn"
-            data-layer="accessibility"
-            data-action="click->sidebar#selectLayer"
-          >
-            <i class="fa-solid fa-person-walking"></i> Accesibilidad absoluta
-          </button>
-
-          <div class="sidebar__layer-btn-wrap">
+        <div class="sidebar__subsection" data-sidebar-target="normativeSection">
+          <div class="sidebar__sublabel">Normativa</div>
+          <div class="sidebar__layers">
             <button
               type="button"
               class="sidebar__layer-btn"
-              data-layer="attractivity"
+              data-sidebar-target="normativeLayerBtn"
+              data-norm-metric="norm_const"
               data-action="click->sidebar#selectLayer"
             >
-              <i class="fa-solid fa-chart-simple"></i> Accesibilidad relativa
+              <i class="fa-solid fa-building-columns"></i> Constructibilidad remanente
             </button>
-            <span class="sidebar__info-wrap">
-              <i class="fa-solid fa-circle-info sidebar__info-icon"></i>
-              <span class="sidebar__info-tooltip">Accesibilidad absoluta en relación a la demanda (viviendas)</span>
-            </span>
+            <button
+              type="button"
+              class="sidebar__layer-btn"
+              data-sidebar-target="normativeLayerBtn"
+              data-norm-metric="norm_footprint"
+              data-action="click->sidebar#selectLayer"
+            >
+              <i class="fa-solid fa-expand"></i> Suelo remanente
+            </button>
+          </div>
+        </div>
+
+        <div class="sidebar__subsection" data-sidebar-target="opportunitySection" hidden>
+          <div class="sidebar__sublabel">Usos de suelo y puntos de interés</div>
+          <select class="sidebar__select" data-sidebar-target="opportunitySelect" data-action="change->sidebar#opportunityChanged" disabled>
+            <option>Seleccionar oportunidad</option>
+          </select>
+
+          <div data-sidebar-target="layerSection" hidden>
+            <div class="sidebar__layers">
+              <button type="button" class="sidebar__layer-btn" data-metric="surface" data-action="click->sidebar#selectLayer">
+                <i class="fa-solid fa-square"></i>Superficie
+              </button>
+              <button type="button" class="sidebar__layer-btn" data-metric="units" data-action="click->sidebar#selectLayer">
+                <i class="fa-solid fa-building"></i>Unidades
+              </button>
+              <button type="button" class="sidebar__layer-btn" data-layer="accessibility" data-action="click->sidebar#selectLayer">
+                <i class="fa-solid fa-person-walking"></i> Accesibilidad absoluta
+              </button>
+              <div class="sidebar__layer-btn-wrap">
+                <button type="button" class="sidebar__layer-btn" data-layer="attractivity" data-action="click->sidebar#selectLayer">
+                  <i class="fa-solid fa-chart-simple"></i> Accesibilidad relativa
+                </button>
+                <span class="sidebar__info-wrap">
+                  <i class="fa-solid fa-circle-info sidebar__info-icon"></i>
+                  <span class="sidebar__info-tooltip">Accesibilidad absoluta en relación a la demanda (viviendas)</span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div data-sidebar-target="accessibilityChoices" hidden>
+            <div class="sidebar__label" style="margin-top:10px">MODO DE TRANSPORTE</div>
+            <div class="sidebar__subchoices">
+              <button type="button" class="sidebar__subchoice-btn" data-mode="walk" data-action="click->sidebar#selectAccessibilityMode">
+                Caminata
+              </button>
+              <button type="button" class="sidebar__subchoice-btn" data-mode="car" data-action="click->sidebar#selectAccessibilityMode">
+                Automóvil
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="sidebar__section" data-sidebar-target="accessibilityChoices" hidden>
-        <div class="sidebar__label">MODO DE TRANSPORTE</div>
-        <div class="sidebar__subchoices">
-          <button
-            type="button"
-            class="sidebar__subchoice-btn"
-            data-mode="walk"
-            data-action="click->sidebar#selectAccessibilityMode"
-          >
-            Caminata
-          </button>
-
-          <button
-            type="button"
-            class="sidebar__subchoice-btn"
-            data-mode="car"
-            data-action="click->sidebar#selectAccessibilityMode"
-          >
-            Automóvil
-          </button>
-        </div>
+      <div class="sidebar__section sidebar__no-data" data-sidebar-target="noDataSection" hidden>
+        <p class="sidebar__no-data-msg">No hay datos cargados para esta comuna.</p>
       </div>
 
 

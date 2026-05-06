@@ -72,6 +72,8 @@ export default class extends Controller {
     "normativeLayers",
     "normativeToggleBtn",
     "normativeBtnWrap",
+    "visualizacionSection",
+    "normativeLayerBtn",
     "simulatorPanel",
     "simulatorBtn",
     "simulateBtn",
@@ -457,14 +459,17 @@ export default class extends Controller {
       this.locateSectionTarget.hidden = !hasMunicipality || inComparator
     }
 
-    if (this.hasNormativeSectionTarget) {
-      this.normativeSectionTarget.hidden = !hasMunicipality || inComparator || !this._municipalityHasNormative
+    if (this.hasVisualizacionSectionTarget) {
+      this.visualizacionSectionTarget.hidden = !hasMunicipality
     }
-    if (this.hasNormativeBtnWrapTarget) {
-      const btn = this.normativeBtnWrapTarget.querySelector("button")
-      const tip = this.normativeBtnWrapTarget.querySelector(".sidebar__tooltip")
-      if (btn) btn.disabled = !hasNormative
-      if (tip) tip.textContent = !hasNormative ? NO_ACCESS : ""
+    if (this.hasNormativeSectionTarget) {
+      this.normativeSectionTarget.hidden = inComparator || !this._municipalityHasNormative
+    }
+    if (this.hasNormativeLayerBtnTarget) {
+      this.normativeLayerBtnTargets.forEach(btn => {
+        btn.disabled = !hasNormative
+        btn.title = !hasNormative ? NO_ACCESS : ""
+      })
     }
   }
 

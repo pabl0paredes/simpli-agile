@@ -135,6 +135,29 @@
     margin-bottom: 7px;
   }
 
+  .sidebar__subsection {
+    border-top: 1px solid rgb(9 9 11 / 0.07);
+    border-bottom: 1px solid rgb(9 9 11 / 0.07);
+    margin-top: 12px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  .sidebar__subsection + .sidebar__subsection {
+    border-top: none;
+    margin-top: 0;
+    padding-top: 14px;
+  }
+
+  .sidebar__sublabel {
+    font-size: 10px;
+    font-weight: 600;
+    color: #a1a1aa;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 8px;
+  }
+
   .sidebar__collapsible-label {
     display: flex;
     align-items: center;
@@ -334,9 +357,14 @@
     font-family: var(--font-sans);
   }
 
-  .sidebar__layer-btn:hover {
+  .sidebar__layer-btn:hover:not(:disabled) {
     background: rgb(9 9 11 / 0.04);
     color: #0f172a;
+  }
+
+  .sidebar__layer-btn:disabled {
+    opacity: 0.38;
+    cursor: not-allowed;
   }
 
   .sidebar__layer-btn.is-active {
@@ -1810,20 +1838,14 @@
   .sidebar__top:has([data-sidebar-target="comparatorSection"]:not([hidden])) > [data-sidebar-target="comparatorSection"] {
     order: 1;
   }
-  .sidebar__top:has([data-sidebar-target="comparatorSection"]:not([hidden])) > [data-sidebar-target="opportunitySection"] {
+  .sidebar__top:has([data-sidebar-target="comparatorSection"]:not([hidden])) > [data-sidebar-target="compareModeSection"] {
     order: 2;
   }
-  .sidebar__top:has([data-sidebar-target="comparatorSection"]:not([hidden])) > [data-sidebar-target="noDataSection"] {
+  .sidebar__top:has([data-sidebar-target="comparatorSection"]:not([hidden])) > [data-sidebar-target="visualizacionSection"] {
     order: 3;
   }
-  .sidebar__top:has([data-sidebar-target="comparatorSection"]:not([hidden])) > [data-sidebar-target="compareModeSection"] {
+  .sidebar__top:has([data-sidebar-target="comparatorSection"]:not([hidden])) > [data-sidebar-target="noDataSection"] {
     order: 4;
-  }
-  .sidebar__top:has([data-sidebar-target="comparatorSection"]:not([hidden])) > [data-sidebar-target="layerSection"] {
-    order: 5;
-  }
-  .sidebar__top:has([data-sidebar-target="comparatorSection"]:not([hidden])) > [data-sidebar-target="accessibilityChoices"] {
-    order: 6;
   }
 
 
