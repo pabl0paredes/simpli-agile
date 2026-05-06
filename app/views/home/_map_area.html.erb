@@ -58,6 +58,38 @@
   </div>
 
   <% if user_signed_in? %>
+  <div class="map-scenario-bar" data-sidebar-target="scenarioSection" hidden>
+    <select class="map-scenario-bar__select"
+            data-sidebar-target="scenarioSelect"
+            data-action="change->sidebar#scenarioChanged"
+            disabled>
+      <option>Seleccionar escenario...</option>
+    </select>
+    <button type="button"
+            class="map-scenario-bar__btn map-scenario-bar__btn--add"
+            data-sidebar-target="addScenarioBtn"
+            data-action="click->sidebar#openCreateScenarioModal"
+            title="Nuevo escenario"
+            hidden>
+      <i class="fa-solid fa-plus"></i>
+    </button>
+    <button type="button"
+            class="map-scenario-bar__btn map-scenario-bar__btn--save"
+            data-sidebar-target="saveScenarioBtn"
+            data-action="click->sidebar#recalculateAccessibilities"
+            disabled
+            hidden>
+      <i class="fa-solid fa-floppy-disk"></i>
+    </button>
+    <button type="button"
+            class="map-scenario-bar__btn map-scenario-bar__btn--delete"
+            data-sidebar-target="deleteScenarioBtn"
+            data-action="click->sidebar#deleteScenario"
+            hidden>
+      <i class="fa-solid fa-trash"></i>
+    </button>
+  </div>
+
   <div class="mode-toggle"
       data-controller="mode-toggle"
       data-mode-toggle-mode-value="constructor"

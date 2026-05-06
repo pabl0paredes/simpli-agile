@@ -69,55 +69,6 @@
         </div>
       </div>
 
-      <div class="sidebar__section" data-sidebar-target="scenarioSection" hidden>
-        <div class="sidebar__label">ESCENARIO</div>
-
-        <div class="sidebar__row">
-          <select class="sidebar__select"
-                  data-sidebar-target="scenarioSelect"
-                  data-action="change->sidebar#scenarioChanged"
-                  disabled>
-            <option>Seleccionar escenario...</option>
-          </select>
-
-          <button
-            type="button"
-            class="sidebar__icon-btn"
-            data-sidebar-target="addScenarioBtn"
-            data-action="click->sidebar#openCreateScenarioModal"
-            title="Nuevo Escenario"
-            hidden
-          >+</button>
-        </div>
-
-        <div class="sidebar__hint sidebar__hint--center" data-sidebar-target="scenarioHint" style="display:none">
-          Selecciona una comuna para ver tus escenarios
-        </div>
-
-        <div class="sidebar__scenario-actions">
-          <button
-            type="button"
-            class="sidebar__success-btn"
-            data-sidebar-target="saveScenarioBtn"
-            data-action="click->sidebar#recalculateAccessibilities"
-            disabled
-            hidden
-          >
-            <i class="fa-solid fa-floppy-disk"></i> Guardar cambios
-          </button>
-
-          <button
-            type="button"
-            class="sidebar__danger-btn"
-            data-sidebar-target="deleteScenarioBtn"
-            data-action="click->sidebar#deleteScenario"
-            hidden
-          >
-            <i class="fa-solid fa-trash"></i> Eliminar escenario
-          </button>
-        </div>
-      </div>
-
 
       <% end %>
 
