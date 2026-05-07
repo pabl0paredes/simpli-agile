@@ -2227,6 +2227,127 @@
   }
 
 
+  /* ── Pie compare (accesibilidad comparador) ── */
+  .pie-cmp {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .pie-cmp__pies {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+  }
+
+  .pie-cmp__pie-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .pie-cmp__pie {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .pie-cmp__hole {
+    position: absolute;
+    inset: 28%;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.97);
+  }
+
+  .pie-cmp__pie-lbl {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #a1a1aa;
+  }
+
+  .pie-cmp__legend {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .pie-cmp__legend-hdr {
+    display: grid;
+    grid-template-columns: 10px 1fr 56px 56px 48px;
+    gap: 4px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid rgb(9 9 11 / 0.07);
+    margin-bottom: 2px;
+  }
+
+  .pie-cmp__col-hdr {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #a1a1aa;
+    text-align: right;
+  }
+
+  .pie-cmp__row {
+    display: grid;
+    grid-template-columns: 10px 1fr 56px 56px 48px;
+    gap: 4px;
+    align-items: center;
+  }
+
+  .pie-cmp__row--total {
+    margin-top: 4px;
+    padding-top: 4px;
+    border-top: 1px solid rgb(9 9 11 / 0.07);
+  }
+
+  .pie-cmp__row--total .pie-cmp__lbl {
+    font-weight: 700;
+    color: #3f3f46;
+  }
+
+  .pie-cmp__row--total .pie-cmp__val {
+    font-weight: 700;
+    color: #0f172a;
+  }
+
+  .pie-cmp__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .pie-cmp__lbl {
+    font-size: 11px;
+    color: #52525b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .pie-cmp__val {
+    font-size: 11px;
+    font-weight: 500;
+    color: #0f172a;
+    text-align: right;
+  }
+
+  .pie-cmp__delta {
+    font-size: 10px;
+    font-weight: 700;
+    text-align: right;
+  }
+
+  .pie-cmp__delta--pos { color: #2563eb; }
+  .pie-cmp__delta--neg { color: #dc2626; }
+
   /* ── Histogram compare buttons ── */
   .hist-compare-btns {
     display: flex;
