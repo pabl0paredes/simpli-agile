@@ -95,6 +95,9 @@ export function createProjectLists(controller) {
         if (controller.hasSaveScenarioBtnTarget && !controller.saveScenarioBtnTarget.hidden) {
           controller.saveScenarioBtnTarget.disabled = !hasDraftProjects
         }
+        if (controller.hasDraftWarningTarget) {
+          controller.draftWarningTarget.hidden = !hasDraftProjects
+        }
       } catch (err) {
         console.error(err)
         controller.previousProjectsListTarget.innerHTML =

@@ -31,6 +31,8 @@ export function createPublishDelete(controller) {
 
         controller.closeLocator()
 
+        if (controller.hasDraftWarningTarget) controller.draftWarningTarget.hidden = true
+
         controller.resetVisualizationStateAfterScenarioChange()
 
         if (controller.hasScenarioSelectTarget) controller.scenarioSelectTarget.disabled = false
