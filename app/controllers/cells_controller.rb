@@ -875,15 +875,32 @@ class CellsController < ApplicationController
         FROM scenario_cells
         WHERE scenario_id IN (SELECT id FROM scenario_chain)
         ORDER BY h3, opportunity_code, scenario_id DESC
+      ),
+      combined AS (
+        -- Celdas existentes en info_cells con posible override del escenario
+        SELECT ic.h3, COALESCE(o.units_total, ic.units) AS units
+        FROM info_cells ic
+        JOIN cells c ON ic.h3 = c.h3
+        LEFT JOIN overrides o ON o.h3 = ic.h3 AND o.opportunity_code = ic.opportunity_code
+        WHERE c.municipality_code = $2
+          AND ic.opportunity_code IN ('HC', 'HD', 'P')
+
+        UNION ALL
+
+        -- Celdas nuevas del escenario sin contrapartida en info_cells
+        SELECT o.h3, o.units_total AS units
+        FROM overrides o
+        JOIN cells c ON c.h3 = o.h3
+        WHERE c.municipality_code = $2
+          AND o.opportunity_code IN ('HC', 'HD', 'P')
+          AND NOT EXISTS (
+            SELECT 1 FROM info_cells ic2
+            WHERE ic2.h3 = o.h3 AND ic2.opportunity_code = o.opportunity_code
+          )
       )
-      SELECT ic.h3,
-        SUM(COALESCE(o.units_total, ic.units)) AS h_units
-      FROM info_cells ic
-      JOIN cells c ON ic.h3 = c.h3
-      LEFT JOIN overrides o ON o.h3 = ic.h3 AND o.opportunity_code = ic.opportunity_code
-      WHERE c.municipality_code = $2
-        AND ic.opportunity_code IN ('HC', 'HD', 'P')
-      GROUP BY ic.h3
+      SELECT h3, SUM(units) AS h_units
+      FROM combined
+      GROUP BY h3
     SQL
     conn   = ActiveRecord::Base.connection.raw_connection
     result = conn.exec_params(sql, [scenario_id, mun_code])
