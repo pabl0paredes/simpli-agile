@@ -466,9 +466,14 @@ export default class extends Controller {
       this.normativeSectionTarget.hidden = inComparator || !this._municipalityHasNormative
     }
     if (this.hasNormativeLayerBtnTarget) {
+      const normOnlyBase = hasNormative && hasValidScenario && !isBase
+      const normDisabled = !hasNormative || normOnlyBase
+      const normTitle    = !hasNormative   ? NO_ACCESS
+                         : normOnlyBase    ? "Capa disponible solo para Escenario Base"
+                                           : ""
       this.normativeLayerBtnTargets.forEach(btn => {
-        btn.disabled = !hasNormative
-        btn.title = !hasNormative ? NO_ACCESS : ""
+        btn.disabled = normDisabled
+        btn.title    = normTitle
       })
     }
   }
@@ -504,7 +509,13 @@ export default class extends Controller {
 
   closeLocator() {
     if (!this.hasLocatorPanelTarget) return
-    if (this.locatorPanelTarget.hidden) return // ya está cerrado
+
+    // siempre limpia el estado del mapa (_inLocator) y cancela pick-cell mode,
+    // incluso si el panel ya estaba oculto (el pickCellModal es un elemento separado)
+    this.cancelPickCell()
+    window.dispatchEvent(new CustomEvent("locator:closed"))
+
+    if (this.locatorPanelTarget.hidden) return // ya está cerrado visualmente
 
     // fuerza estado visual a "cerrado"
     this.locatorPanelTarget.hidden = true
@@ -517,9 +528,6 @@ export default class extends Controller {
       b.disabled = false
       b.classList.remove("is-disabled")
     })
-
-    // avisa al mapa que cierre locator (restauración del snapshot del mapa)
-    window.dispatchEvent(new CustomEvent("locator:closed"))
   }
 
   resetVisualizationStateAfterScenarioChange() {

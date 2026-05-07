@@ -187,6 +187,7 @@ class Co2Calculator
         ORDER BY h3, opportunity_code, scenario_id DESC
       ),
       cell_data AS (
+        -- Filas existentes en info_cells, con override del escenario si corresponde
         SELECT
           ic.h3,
           ic.opportunity_code,
@@ -197,6 +198,23 @@ class Co2Calculator
         LEFT JOIN scenario_overrides so
           ON so.h3 = ic.h3 AND so.opportunity_code = ic.opportunity_code
         WHERE c.municipality_code = $2
+
+        UNION ALL
+
+        -- Filas nuevas del escenario sin contrapartida en info_cells
+        -- (p.ej. CESFAM agregado a una celda que no tenía CESFAM)
+        SELECT
+          so.h3,
+          so.opportunity_code,
+          so.units_total   AS units,
+          so.surface_total AS surface
+        FROM scenario_overrides so
+        JOIN cells c ON c.h3 = so.h3
+        WHERE c.municipality_code = $2
+          AND NOT EXISTS (
+            SELECT 1 FROM info_cells ic2
+            WHERE ic2.h3 = so.h3 AND ic2.opportunity_code = so.opportunity_code
+          )
       )
       SELECT
         h3,

@@ -22,6 +22,8 @@ export class MapStateEvents {
     if (this.c._uiMode === "comparador") {
       this.c._compareMode = "delta"
       this.c.dashboard?.hide()
+    } else {
+      this.c.dashboard?.hide()
     }
     this.c.setCellsVisible(false)
 
