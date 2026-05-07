@@ -74,6 +74,7 @@ export default class extends Controller {
     "normativeBtnWrap",
     "visualizacionSection",
     "normativeLayerBtn",
+    "draftWarning",
     "simulatorPanel",
     "simulatorBtn",
     "simulateBtn",
