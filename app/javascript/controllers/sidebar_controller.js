@@ -466,9 +466,14 @@ export default class extends Controller {
       this.normativeSectionTarget.hidden = inComparator || !this._municipalityHasNormative
     }
     if (this.hasNormativeLayerBtnTarget) {
+      const normOnlyBase = hasNormative && hasValidScenario && !isBase
+      const normDisabled = !hasNormative || normOnlyBase
+      const normTitle    = !hasNormative   ? NO_ACCESS
+                         : normOnlyBase    ? "Capa disponible solo para Escenario Base"
+                                           : ""
       this.normativeLayerBtnTargets.forEach(btn => {
-        btn.disabled = !hasNormative
-        btn.title = !hasNormative ? NO_ACCESS : ""
+        btn.disabled = normDisabled
+        btn.title    = normTitle
       })
     }
   }
