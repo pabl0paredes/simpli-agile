@@ -63,7 +63,7 @@ export class MapDashboard {
         .then(([dataA, dataB]) => {
           this._renderCo2Compare(dataA.co2_tons, dataB.co2_tons)
           this._renderAvgDistCompare(dataA.avg_distance_km, dataB.avg_distance_km)
-          this._renderHistogram(null)
+          this._renderHistogramCompare(dataA.trip_histogram, dataB.trip_histogram)
         })
         .catch(err => console.error("[Dashboard]", err))
     } else {
@@ -248,5 +248,83 @@ export class MapDashboard {
       }).join("")
 
     el.innerHTML = `<svg width="${W}" height="${H}" style="display:block;overflow:visible">${bars}${labels}</svg>`
+  }
+
+  _renderHistogramCompare(histA, histB) {
+    if (!this.c.hasDashboardHistogramTarget) return
+    const el = this.c.dashboardHistogramTarget
+
+    const isEmpty = (h) => !h || !h.length
+    if (isEmpty(histA) && isEmpty(histB)) { el.innerHTML = ""; return }
+
+    const mapA = {}; (histA || []).forEach(d => { mapA[d.bin_km] = d.trips })
+    const mapB = {}; (histB || []).forEach(d => { mapB[d.bin_km] = d.trips })
+
+    const allKeys = new Set([...Object.keys(mapA), ...Object.keys(mapB)].map(Number))
+    const maxBin  = Math.max(...allKeys, 0)
+    const bins    = Array.from({ length: maxBin + 1 }, (_, i) => i)
+
+    const maxTrips = Math.max(...bins.map(i => Math.max(mapA[i] || 0, mapB[i] || 0)), 1)
+
+    const W = 220, H = 90, padL = 6, padR = 4, padT = 4, padB = 18
+    const innerW = W - padL - padR
+    const innerH = H - padT - padB
+    const slotW  = innerW / bins.length
+    const barW   = Math.max(1, slotW - 1)
+
+    const COLOR_A = "#3b82f6"
+    const COLOR_B = "#8b5cf6"
+
+    const makeBars = (map, color) => bins.map((bin, i) => {
+      const bh = ((map[bin] || 0) / maxTrips) * innerH
+      const x  = padL + i * slotW
+      const y  = padT + innerH - bh
+      return `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${bh.toFixed(1)}" fill="${color}" opacity="0.7" rx="1"/>`
+    }).join("")
+
+    const step   = Math.max(1, Math.ceil(bins.length / 7))
+    const labels = bins.map((bin, i) => {
+      if (i % step !== 0 && i !== bins.length - 1) return ""
+      const x = padL + i * slotW + slotW / 2
+      return `<text x="${x.toFixed(1)}" y="${H - 3}" font-size="7.5" fill="#9ca3af" text-anchor="middle">${bin}k</text>`
+    }).join("")
+
+    el.innerHTML = `
+      <svg width="${W}" height="${H}" style="display:block;overflow:visible">
+        <g class="hist-series hist-series--a">${makeBars(mapA, COLOR_A)}</g>
+        <g class="hist-series hist-series--b">${makeBars(mapB, COLOR_B)}</g>
+        ${labels}
+      </svg>
+      <div class="hist-compare-btns">
+        <button class="hist-compare-btn" type="button" data-scenario="a">
+          <span class="hist-compare-dot hist-compare-dot--a"></span>Esc. A
+        </button>
+        <button class="hist-compare-btn" type="button" data-scenario="b">
+          <span class="hist-compare-dot hist-compare-dot--b"></span>Esc. B
+        </button>
+      </div>
+    `
+
+    const seriesA = el.querySelector(".hist-series--a")
+    const seriesB = el.querySelector(".hist-series--b")
+    const btnA    = el.querySelector('[data-scenario="a"]')
+    const btnB    = el.querySelector('[data-scenario="b"]')
+
+    const showBoth = () => {
+      seriesA.style.opacity = "1"
+      seriesB.style.opacity = "1"
+      btnA.classList.remove("is-active")
+      btnB.classList.remove("is-active")
+    }
+    btnA.addEventListener("mouseenter", () => {
+      seriesA.style.opacity = "1"; seriesB.style.opacity = "0.12"
+      btnA.classList.add("is-active"); btnB.classList.remove("is-active")
+    })
+    btnA.addEventListener("mouseleave", showBoth)
+    btnB.addEventListener("mouseenter", () => {
+      seriesA.style.opacity = "0.12"; seriesB.style.opacity = "1"
+      btnA.classList.remove("is-active"); btnB.classList.add("is-active")
+    })
+    btnB.addEventListener("mouseleave", showBoth)
   }
 }

@@ -2227,6 +2227,47 @@
   }
 
 
+  /* ── Histogram compare buttons ── */
+  .hist-compare-btns {
+    display: flex;
+    gap: 5px;
+    margin-top: 7px;
+    justify-content: center;
+  }
+
+  .hist-compare-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #71717a;
+    background: rgb(9 9 11 / 0.04);
+    border: 1px solid rgb(9 9 11 / 0.08);
+    border-radius: 6px;
+    padding: 3px 9px;
+    cursor: default;
+    transition: background 100ms ease, color 100ms ease;
+  }
+
+  .hist-compare-btn:hover,
+  .hist-compare-btn.is-active {
+    background: rgb(9 9 11 / 0.07);
+    color: #3f3f46;
+  }
+
+  .hist-compare-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .hist-compare-dot--a { background: #3b82f6; }
+  .hist-compare-dot--b { background: #8b5cf6; }
+
   /* ========== LEGEND ========== */
 
   .map-legend[hidden] { display: none; }
