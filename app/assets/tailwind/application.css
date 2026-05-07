@@ -1802,8 +1802,8 @@
     content: attr(data-tooltip);
     position: absolute;
     top: calc(100% + 8px);
-    right: 0;
-    left: auto;
+    left: 0;
+    right: auto;
     background: #18181b;
     color: white;
     font-size: 11px;
@@ -1821,12 +1821,32 @@
     content: "";
     position: absolute;
     top: calc(100% + 3px);
-    right: 8px;
-    left: auto;
+    left: 8px;
+    right: auto;
     border: 5px solid transparent;
     border-bottom-color: #18181b;
     pointer-events: none;
     z-index: 100;
+  }
+
+  /* Split: centrado bajo el botón */
+  .compare-modes__btn[data-mode="split"]:hover::after {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  .compare-modes__btn[data-mode="split"]:hover::before {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  /* Slider/swipe: alineado al borde derecho del botón */
+  .compare-modes__btn[data-mode="slider"]:hover::after {
+    left: auto;
+    right: 0;
+  }
+  .compare-modes__btn[data-mode="slider"]:hover::before {
+    left: auto;
+    right: 8px;
   }
 
   /* In comparator mode: add top spacing so content doesn't crowd the logo */
