@@ -276,7 +276,8 @@ export function createRegionsMunicipalities(controller) {
 
       // Para usuarios sin sesión: mostrar oportunidad directamente y cargar escenario base.
       if (!controller.hasScenarioSelectTarget) {
-        controller.opportunitySelectTarget.disabled = false
+        controller.syncScenarioActionsUI()
+        if (controller.hasOpportunitySelectTarget) controller.opportunitySelectTarget.disabled = false
         if (controller.hasOpportunitySectionTarget) controller.opportunitySectionTarget.hidden = false
 
         fetch(`/municipalities/base_scenario?municipality_code=${encodeURIComponent(munCode)}`)

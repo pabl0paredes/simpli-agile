@@ -111,8 +111,13 @@ export function createScenarios(controller) {
       controller._selectedScenarioId = e.detail.scenario_id
       controller._selectedScenarioStatus = e.detail.status
 
-      const opt = controller.scenarioSelectTarget.selectedOptions?.[0]
-      controller._selectedScenarioIsBase = (opt?.dataset?.isBase === "1")
+      const opt = controller.hasScenarioSelectTarget
+        ? controller.scenarioSelectTarget.selectedOptions?.[0]
+        : null
+      // Para usuarios sin sesión el status "base" viene en el evento directamente
+      controller._selectedScenarioIsBase = opt
+        ? (opt.dataset?.isBase === "1")
+        : (e.detail.status === "base")
 
       if (e.detail.status === "draft") {
         controller._draftScenarioId = e.detail.scenario_id

@@ -173,9 +173,17 @@ export default class extends Controller {
   }
 
   onMunicipalityFeaturesLoaded = (e) => {
-    const hasIndicators = (e.detail.features || []).includes("indicators")
+    const hasIndicators  = (e.detail.features || []).includes("indicators")
+    const userSignedIn   = this.element.dataset.userSignedIn === "true"
     if (this.hasDashboardBtnTarget) {
       this.dashboardBtnTarget.disabled = !hasIndicators
+      const tooltip = this.dashboardBtnTarget.closest(".map-fab__tooltip-wrap")
+        ?.querySelector(".map-fab__tooltip")
+      if (tooltip) {
+        tooltip.textContent = !userSignedIn
+          ? "Inicia sesión para acceder a los indicadores"
+          : "Indicadores no disponibles para esta comuna"
+      }
     }
     if (hasIndicators && this.hasDashboardPanelTarget && this.dashboardPanelTarget.hidden) {
       this.dashboard?.open()

@@ -1,4 +1,4 @@
-<aside class="sidebar" data-sidebar-target="panel">
+<aside class="sidebar" data-sidebar-target="panel" data-user-signed-in="<%= user_signed_in? %>">
     <div class="sidebar__header-area">
       <div class="sidebar__brand">
         <%= image_tag "Logo SimpliCity.png", alt: "Logo SimpliCity" %>
@@ -182,7 +182,6 @@
       </div>
 
 
-      <% if user_signed_in? %>
       <div
         class="sidebar__section"
         data-sidebar-target="locateSection"
@@ -217,6 +216,7 @@
         </div>
       </div>
 
+      <% if user_signed_in? %>
       <div
         class="sidebar__no-access"
         data-sidebar-target="noAccessSection"
