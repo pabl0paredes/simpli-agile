@@ -3,7 +3,8 @@
       data-controller="map"
       data-map-token-value="<%= ENV.fetch("MAPBOX_TOKEN", "") %>"
       data-map-initial-center-value="<%= @initial_center || "[-70.6371,-33.4378]" %>"
-      data-map-initial-zoom-value="<%= @initial_zoom || 4 %>">
+      data-map-initial-zoom-value="<%= @initial_zoom || 4 %>"
+      data-user-signed-in="<%= user_signed_in? %>">
 
   <% mapbox_token = ENV.fetch("MAPBOX_TOKEN", "") %>
 

@@ -398,7 +398,7 @@ export default class extends Controller {
 
   syncScenarioActionsUI() {
     const inComparator = (this._uiMode === "comparador")
-    const opt = this.scenarioSelectTarget?.selectedOptions?.[0]
+    const opt = this.hasScenarioSelectTarget ? this.scenarioSelectTarget.selectedOptions?.[0] : null
     const isBase = (opt?.dataset?.isBase === "1")
     const hasValidScenario = !!(opt?.value && !opt.value.includes("Seleccionar"))
 
@@ -427,11 +427,13 @@ export default class extends Controller {
       this.opportunitySelectTarget.disabled = false
     }
 
+    const userSignedIn   = this.element.dataset.userSignedIn === "true"
     const features       = this._features || []
     const hasLocator     = features.includes("locator")
     const hasSimulator   = features.includes("simulator")
     const hasNormative   = features.includes("normative")
     const hasMunicipality = !!this._selectedMunicipalityCode
+    const NO_AUTH        = "Inicia sesión para acceder a esta función"
     const NO_ACCESS      = "No tienes acceso a este feature"
     const NO_SCENARIO    = "Selecciona un escenario para usar esta herramienta"
 
@@ -442,7 +444,10 @@ export default class extends Controller {
       const btn  = wrap.querySelector("button")
       const tip  = wrap.querySelector(".sidebar__tooltip")
       if (!btn) return
-      if (!hasFeature) {
+      if (!userSignedIn) {
+        btn.disabled = true
+        if (tip) tip.textContent = NO_AUTH
+      } else if (!hasFeature) {
         btn.disabled = true
         if (tip) tip.textContent = NO_ACCESS
       } else if (needsScenario && (!hasValidScenario || isBase)) {
@@ -468,10 +473,11 @@ export default class extends Controller {
     }
     if (this.hasNormativeLayerBtnTarget) {
       const normOnlyBase = hasNormative && hasValidScenario && !isBase
-      const normDisabled = !hasNormative || normOnlyBase
-      const normTitle    = !hasNormative   ? NO_ACCESS
-                         : normOnlyBase    ? "Capa disponible solo para Escenario Base"
-                                           : ""
+      const normDisabled = !userSignedIn || !hasNormative || normOnlyBase
+      const normTitle    = !userSignedIn  ? NO_AUTH
+                         : !hasNormative  ? NO_ACCESS
+                         : normOnlyBase   ? "Capa disponible solo para Escenario Base"
+                                          : ""
       this.normativeLayerBtnTargets.forEach(btn => {
         btn.disabled = normDisabled
         btn.title    = normTitle
