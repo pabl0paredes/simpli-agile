@@ -45,17 +45,24 @@ class ScenariosController < ApplicationController
       return render json: { error: "Debes indicar un nombre para el escenario." }, status: :unprocessable_entity
     end
 
-    scenario = Scenario.create!(
-      user_id: current_user.id,
-      municipality_code: mun_code,
-      name: name,
-      status: "draft",
-      parent_id: base_scenario_id
-    )
+    scenario = nil
+    ActiveRecord::Base.transaction do
+      scenario = Scenario.create!(
+        user_id: current_user.id,
+        municipality_code: mun_code,
+        name: name,
+        status: "draft",
+        parent_id: base_scenario_id
+      )
+      Scenarios::CopyParentAccessibilities.call!(scenario:) if base_scenario_id
+    end
 
     render json: { ok: true, scenario_id: scenario.id }, status: :created
   rescue ActiveRecord::RecordInvalid => e
     render json: { error: e.message }, status: :unprocessable_entity
+  rescue StandardError => e
+    Rails.logger.error("[ScenariosController#create] #{e.class}: #{e.message}")
+    render json: { error: "No se pudo crear el escenario." }, status: :internal_server_error
   end
 
   def recalculate

@@ -151,9 +151,7 @@ export function createScenarios(controller) {
 
       const csrf = document.querySelector('meta[name="csrf-token"]').content
 
-      const baseScenarioId = controller._selectedScenarioIsBase
-        ? controller._selectedScenarioId
-        : null
+      const baseScenarioId = controller._selectedScenarioId || null
 
       const resp = await fetch("/scenarios", {
         method: "POST",
