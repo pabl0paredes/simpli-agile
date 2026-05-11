@@ -27,6 +27,7 @@ export function createScenarios(controller) {
           option.textContent = s.name
           option.dataset.isBase = s.is_base ? "1" : "0"
           option.dataset.status = s.status
+          option.dataset.parentName = s.parent_name || ""
           selector.appendChild(option)
           if (s.is_base) baseId = String(s.id)
         })
@@ -46,6 +47,8 @@ export function createScenarios(controller) {
           window.dispatchEvent(new CustomEvent("scenario:selected", {
             detail: { scenario_id: idToSelect, status }
           }))
+
+          controller.scenarios.updateParentInfo(opt)
         }
         controller.syncScenarioActionsUI()
       })
@@ -91,6 +94,8 @@ export function createScenarios(controller) {
       controller._selectedScenarioIsBase = isBase
       controller._selectedScenarioStatus = newStatus
       controller._selectedScenarioId = String(newScenarioId)
+
+      controller.scenarios.updateParentInfo(opt)
 
       if (controller.hasDeleteScenarioBtnTarget) {
         controller.deleteScenarioBtnTarget.hidden = isBase
@@ -151,9 +156,7 @@ export function createScenarios(controller) {
 
       const csrf = document.querySelector('meta[name="csrf-token"]').content
 
-      const baseScenarioId = controller._selectedScenarioIsBase
-        ? controller._selectedScenarioId
-        : null
+      const baseScenarioId = controller._selectedScenarioId || null
 
       const resp = await fetch("/scenarios", {
         method: "POST",
@@ -174,6 +177,19 @@ export function createScenarios(controller) {
         controller._selectedMunicipalityCode,
         json.scenario_id
       )
+    },
+
+    updateParentInfo(opt) {
+      if (!controller.hasScenarioParentInfoTarget) return
+      const parentName = opt?.dataset?.parentName
+      if (parentName) {
+        if (controller.hasScenarioParentNameTarget) {
+          controller.scenarioParentNameTarget.textContent = parentName
+        }
+        controller.scenarioParentInfoTarget.hidden = false
+      } else {
+        controller.scenarioParentInfoTarget.hidden = true
+      }
     }
   }
 }

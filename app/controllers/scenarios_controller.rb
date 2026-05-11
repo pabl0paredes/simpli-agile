@@ -10,8 +10,13 @@ class ScenariosController < ApplicationController
     user_scenarios = Scenario
       .where(user_id: current_user.id, municipality_code: mun_code)
       .where.not(id: base&.id)
-      .select(:id, :name, :status)
+      .select(:id, :name, :status, :parent_id)
       .order(created_at: :desc)
+
+    # Build id→display_name map to resolve parent names in one pass
+    parent_ids = user_scenarios.map(&:parent_id).compact.uniq
+    name_map = Scenario.where(id: parent_ids).pluck(:id, :name).to_h.transform_values { |n| n.presence }
+    name_map[base&.id] = base&.name.presence || "Escenario base" if base
 
     payload = []
 
@@ -20,16 +25,19 @@ class ScenariosController < ApplicationController
         id: base.id,
         name: base.name.presence || "Escenario base",
         is_base: true,
-        status: base.status
+        status: base.status,
+        parent_name: nil
       }
     end
 
     payload += user_scenarios.map do |s|
+      parent_name = s.parent_id ? (name_map[s.parent_id] || "Escenario #{s.parent_id}") : nil
       {
         id: s.id,
         name: s.name.presence || "Escenario #{s.id}",
         is_base: false,
-        status: s.status
+        status: s.status,
+        parent_name: parent_name
       }
     end
 
@@ -45,17 +53,24 @@ class ScenariosController < ApplicationController
       return render json: { error: "Debes indicar un nombre para el escenario." }, status: :unprocessable_entity
     end
 
-    scenario = Scenario.create!(
-      user_id: current_user.id,
-      municipality_code: mun_code,
-      name: name,
-      status: "draft",
-      parent_id: base_scenario_id
-    )
+    scenario = nil
+    ActiveRecord::Base.transaction do
+      scenario = Scenario.create!(
+        user_id: current_user.id,
+        municipality_code: mun_code,
+        name: name,
+        status: "draft",
+        parent_id: base_scenario_id
+      )
+      Scenarios::CopyParentAccessibilities.call!(scenario:) if base_scenario_id
+    end
 
     render json: { ok: true, scenario_id: scenario.id }, status: :created
   rescue ActiveRecord::RecordInvalid => e
     render json: { error: e.message }, status: :unprocessable_entity
+  rescue StandardError => e
+    Rails.logger.error("[ScenariosController#create] #{e.class}: #{e.message}")
+    render json: { error: "No se pudo crear el escenario." }, status: :internal_server_error
   end
 
   def recalculate
