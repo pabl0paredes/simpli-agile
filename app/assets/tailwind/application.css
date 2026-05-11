@@ -1639,8 +1639,11 @@
     transform: translateX(-50%);
     z-index: 30;
     display: inline-flex;
+    align-items: stretch;
     gap: 2px;
     padding: 3px;
+    height: 40px;
+    box-sizing: border-box;
     background: white;
     border: 1px solid rgb(9 9 11 / 0.10);
     border-radius: 10px;
@@ -1673,7 +1676,10 @@
     border: 0;
     background: transparent;
     cursor: pointer;
-    padding: 6px 16px;
+    padding: 0 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border-radius: 7px;
     font-size: 13px;
     font-weight: 600;
@@ -1703,6 +1709,8 @@
     align-items: center;
     gap: 4px;
     padding: 3px;
+    height: 40px;
+    box-sizing: border-box;
     background: white;
     border: 1px solid rgb(9 9 11 / 0.10);
     border-radius: 10px;
@@ -1711,20 +1719,36 @@
 
   .map-scenario-bar__select {
     height: 34px;
-    padding: 0 8px;
+    box-sizing: border-box;
+    padding: 0 28px 0 10px;
     border: 1px solid rgb(9 9 11 / 0.12);
     border-radius: 7px;
-    background: white;
+    background-color: white;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 6px center;
+    background-size: 14px 14px;
+    appearance: none;
+    -webkit-appearance: none;
     font-size: 13px;
     font-family: var(--font-sans);
     color: #233141;
     cursor: pointer;
     min-width: 160px;
     max-width: 220px;
+    outline: none;
+    transition: border-color 120ms ease, box-shadow 120ms ease;
+  }
+
+  .map-scenario-bar__select:focus {
+    border-color: rgb(9 9 11 / 0.32);
+    box-shadow: 0 0 0 3px rgb(9 9 11 / 0.06);
   }
 
   .map-scenario-bar__select:disabled {
-    opacity: 0.5;
+    background-color: #f4f4f5;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%23a1a1aa' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+    color: #a1a1aa;
     cursor: not-allowed;
   }
 
@@ -1732,6 +1756,7 @@
     flex-shrink: 0;
     width: 34px;
     height: 34px;
+    box-sizing: border-box;
     display: inline-flex;
     align-items: center;
     justify-content: center;
