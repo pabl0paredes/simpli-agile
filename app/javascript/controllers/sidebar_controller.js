@@ -82,6 +82,8 @@ export default class extends Controller {
     "agentInputsContainer",
     "agentInput",
     "streetsOnTopBtn",
+    "scenarioParentInfo",
+    "scenarioParentName",
   ]
 
   connect() {

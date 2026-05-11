@@ -10,8 +10,13 @@ class ScenariosController < ApplicationController
     user_scenarios = Scenario
       .where(user_id: current_user.id, municipality_code: mun_code)
       .where.not(id: base&.id)
-      .select(:id, :name, :status)
+      .select(:id, :name, :status, :parent_id)
       .order(created_at: :desc)
+
+    # Build id→display_name map to resolve parent names in one pass
+    parent_ids = user_scenarios.map(&:parent_id).compact.uniq
+    name_map = Scenario.where(id: parent_ids).pluck(:id, :name).to_h.transform_values { |n| n.presence }
+    name_map[base&.id] = base&.name.presence || "Escenario base" if base
 
     payload = []
 
@@ -20,16 +25,19 @@ class ScenariosController < ApplicationController
         id: base.id,
         name: base.name.presence || "Escenario base",
         is_base: true,
-        status: base.status
+        status: base.status,
+        parent_name: nil
       }
     end
 
     payload += user_scenarios.map do |s|
+      parent_name = s.parent_id ? (name_map[s.parent_id] || "Escenario #{s.parent_id}") : nil
       {
         id: s.id,
         name: s.name.presence || "Escenario #{s.id}",
         is_base: false,
-        status: s.status
+        status: s.status,
+        parent_name: parent_name
       }
     end
 

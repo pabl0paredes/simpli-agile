@@ -40,6 +40,7 @@ export function createUIState(controller) {
       controller._noBaseScenario = false
       if (controller.hasNoDataSectionTarget) controller.noDataSectionTarget.hidden = true
       if (controller.hasDraftWarningTarget)  controller.draftWarningTarget.hidden  = true
+      if (controller.hasScenarioParentInfoTarget) controller.scenarioParentInfoTarget.hidden = true
       if (controller.hasOpportunitySelectTarget) {
         controller.opportunitySelectTarget.value = "Seleccionar oportunidad..."
         controller.opportunitySelectTarget.disabled = true
