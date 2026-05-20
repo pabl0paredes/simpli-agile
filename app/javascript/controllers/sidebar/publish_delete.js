@@ -86,6 +86,11 @@ export function createPublishDelete(controller) {
         return alert(json.error || "Error eliminando Escenario.")
       }
 
+      controller._api?.trackEvent("scenario_deleted", {
+        scenario_id: scenarioId,
+        municipality_code: controller._selectedMunicipalityCode
+      })
+
       controller.resetVisualizationStateAfterScenarioChange()
 
       if (controller._selectedMunicipalityCode) {
