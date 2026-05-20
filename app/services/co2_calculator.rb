@@ -218,7 +218,11 @@ class Co2Calculator
       )
       SELECT
         h3,
-        SUM(CASE WHEN opportunity_code IN ('HC','HD','P') THEN units   ELSE 0 END) AS h_units,
+        SUM(CASE
+              WHEN opportunity_code IN ('HC','HD') THEN units
+              WHEN opportunity_code = 'P' AND surface > 0 THEN units
+              ELSE 0
+            END) AS h_units,
         SUM(CASE WHEN opportunity_code NOT IN ('HC','HD','P') THEN surface ELSE 0 END) AS non_h_surface
       FROM cell_data
       GROUP BY h3
