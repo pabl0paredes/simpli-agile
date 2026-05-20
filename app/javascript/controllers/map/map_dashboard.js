@@ -1,4 +1,5 @@
 import { PALETTES } from "controllers/map/palettes"
+import { trackEvent } from "controllers/sidebar/api"
 
 const ACC_LABELS = { 1: "Muy baja", 2: "Baja", 3: "Media", 4: "Alta", 5: "Muy alta" }
 
@@ -9,20 +10,46 @@ export class MapDashboard {
 
   toggle() {
     if (!this.c.hasDashboardPanelTarget) return
-    this.c.dashboardPanelTarget.hidden = !this.c.dashboardPanelTarget.hidden
-    if (!this.c.dashboardPanelTarget.hidden) {
+    const opening = this.c.dashboardPanelTarget.hidden
+    this.c.dashboardPanelTarget.hidden = !opening
+    if (opening) {
+      this._showBlur()
       this._showCo2Placeholder()
       this.render()
       this.fetchCo2()
+    } else {
+      trackEvent("indicators_closed", {
+        municipality_code: this.c._selectedMunicipalityCode,
+        scenario_id: this.c._selectedScenarioId
+      })
     }
   }
 
   open() {
     if (!this.c.hasDashboardPanelTarget) return
     this.c.dashboardPanelTarget.hidden = false
+    this._showBlur()
     this._showCo2Placeholder()
     this.render()
     this.fetchCo2()
+  }
+
+  _showBlur() {
+    const panel = this.c.dashboardPanelTarget
+    panel.classList.add("is-blurred")
+    const overlay = panel.querySelector(".map-dashboard__reveal-overlay")
+    if (overlay) overlay.hidden = false
+  }
+
+  reveal() {
+    const panel = this.c.dashboardPanelTarget
+    panel.classList.remove("is-blurred")
+    const overlay = panel.querySelector(".map-dashboard__reveal-overlay")
+    if (overlay) overlay.hidden = true
+    trackEvent("see_indicators", {
+      municipality_code: this.c._selectedMunicipalityCode,
+      scenario_id: this.c._selectedScenarioId
+    })
   }
 
   _showCo2Placeholder() {

@@ -270,6 +270,7 @@ export default class extends Controller {
       btn.classList.toggle("is-active", btn.dataset.styleId === styleId)
     })
     window.dispatchEvent(new CustomEvent("map:style-selected", { detail: { styleId } }))
+    trackEvent("map_style_changed", { style_id: styleId })
   }
 
   toggleStreetsOnTop() {
@@ -278,6 +279,7 @@ export default class extends Controller {
     btn.setAttribute("aria-pressed", String(enabled))
     btn.classList.toggle("is-active", enabled)
     window.dispatchEvent(new CustomEvent("map:streets-on-top", { detail: { enabled } }))
+    trackEvent("streets_changed", { enabled })
   }
 
   selectPalette(e) {
@@ -287,6 +289,7 @@ export default class extends Controller {
       btn.classList.toggle("is-active", btn.dataset.palette === palette)
     })
     window.dispatchEvent(new CustomEvent("map:palette-selected", { detail: { palette } }))
+    trackEvent("color_palette_changed", { palette })
   }
 
   toggle() {

@@ -131,51 +131,59 @@
         <i class="fa-solid fa-xmark"></i>
       </button>
     </div>
-    <div class="map-dashboard__title" data-map-target="dashboardTitle" hidden></div>
-    <div data-map-target="dashboardChart"></div>
-    <div class="map-dashboard__co2" data-map-target="dashboardCo2" hidden>
-      <div class="map-dashboard__co2-columns">
-        <div class="map-dashboard__co2-left">
-          <div class="map-dashboard__co2-title">Emisiones CO₂ (auto)</div>
-          <div class="map-dashboard__co2-row" data-map-target="dashboardCo2Single">
-            <span class="map-dashboard__co2-value" data-map-target="dashboardCo2Value">—</span>
-            <span class="map-dashboard__co2-unit">ton/año</span>
-          </div>
-          <div class="map-dashboard__co2-compare" data-map-target="dashboardCo2Compare" hidden>
-            <div class="map-dashboard__co2-scenario">
-              <span class="map-dashboard__co2-label">Esc. A</span>
-              <span class="map-dashboard__co2-value" data-map-target="dashboardCo2ValueA">—</span>
+
+    <div class="map-dashboard__reveal-overlay" data-action="click->map#revealDashboard">
+      <i class="fa-solid fa-eye map-dashboard__reveal-icon"></i>
+      <span class="map-dashboard__reveal-label">Ver indicadores</span>
+    </div>
+
+    <div class="map-dashboard__body">
+      <div class="map-dashboard__title" data-map-target="dashboardTitle" hidden></div>
+      <div data-map-target="dashboardChart"></div>
+      <div class="map-dashboard__co2" data-map-target="dashboardCo2" hidden>
+        <div class="map-dashboard__co2-columns">
+          <div class="map-dashboard__co2-left">
+            <div class="map-dashboard__co2-title">Emisiones CO₂ (auto)</div>
+            <div class="map-dashboard__co2-row" data-map-target="dashboardCo2Single">
+              <span class="map-dashboard__co2-value" data-map-target="dashboardCo2Value">—</span>
               <span class="map-dashboard__co2-unit">ton/año</span>
             </div>
-            <div class="map-dashboard__co2-scenario">
-              <span class="map-dashboard__co2-label">Esc. B</span>
-              <span class="map-dashboard__co2-value" data-map-target="dashboardCo2ValueB">—</span>
-              <span class="map-dashboard__co2-unit">ton/año</span>
+            <div class="map-dashboard__co2-compare" data-map-target="dashboardCo2Compare" hidden>
+              <div class="map-dashboard__co2-scenario">
+                <span class="map-dashboard__co2-label">Esc. A</span>
+                <span class="map-dashboard__co2-value" data-map-target="dashboardCo2ValueA">—</span>
+                <span class="map-dashboard__co2-unit">ton/año</span>
+              </div>
+              <div class="map-dashboard__co2-scenario">
+                <span class="map-dashboard__co2-label">Esc. B</span>
+                <span class="map-dashboard__co2-value" data-map-target="dashboardCo2ValueB">—</span>
+                <span class="map-dashboard__co2-unit">ton/año</span>
+              </div>
+            </div>
+
+            <div class="map-dashboard__co2-title" style="margin-top:10px">Distancia promedio</div>
+            <div class="map-dashboard__co2-row" data-map-target="dashboardAvgDistSingle">
+              <span class="map-dashboard__co2-value" data-map-target="dashboardAvgDistValue">—</span>
+              <span class="map-dashboard__co2-unit">km/viaje</span>
+            </div>
+            <div class="map-dashboard__co2-compare" data-map-target="dashboardAvgDistCompare" hidden>
+              <div class="map-dashboard__co2-scenario">
+                <span class="map-dashboard__co2-label">Esc. A</span>
+                <span class="map-dashboard__co2-value" data-map-target="dashboardAvgDistValueA">—</span>
+                <span class="map-dashboard__co2-unit">km/viaje</span>
+              </div>
+              <div class="map-dashboard__co2-scenario">
+                <span class="map-dashboard__co2-label">Esc. B</span>
+                <span class="map-dashboard__co2-value" data-map-target="dashboardAvgDistValueB">—</span>
+                <span class="map-dashboard__co2-unit">km/viaje</span>
+              </div>
             </div>
           </div>
 
-          <div class="map-dashboard__co2-title" style="margin-top:10px">Distancia promedio</div>
-          <div class="map-dashboard__co2-row" data-map-target="dashboardAvgDistSingle">
-            <span class="map-dashboard__co2-value" data-map-target="dashboardAvgDistValue">—</span>
-            <span class="map-dashboard__co2-unit">km/viaje</span>
+          <div class="map-dashboard__co2-right">
+            <div class="map-dashboard__co2-title">Distribución de viajes</div>
+            <div data-map-target="dashboardHistogram"></div>
           </div>
-          <div class="map-dashboard__co2-compare" data-map-target="dashboardAvgDistCompare" hidden>
-            <div class="map-dashboard__co2-scenario">
-              <span class="map-dashboard__co2-label">Esc. A</span>
-              <span class="map-dashboard__co2-value" data-map-target="dashboardAvgDistValueA">—</span>
-              <span class="map-dashboard__co2-unit">km/viaje</span>
-            </div>
-            <div class="map-dashboard__co2-scenario">
-              <span class="map-dashboard__co2-label">Esc. B</span>
-              <span class="map-dashboard__co2-value" data-map-target="dashboardAvgDistValueB">—</span>
-              <span class="map-dashboard__co2-unit">km/viaje</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="map-dashboard__co2-right">
-          <div class="map-dashboard__co2-title">Distribución de viajes</div>
-          <div data-map-target="dashboardHistogram"></div>
         </div>
       </div>
     </div>

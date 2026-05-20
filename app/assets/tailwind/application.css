@@ -2112,6 +2112,51 @@
     backdrop-filter: blur(6px);
     z-index: 20;
     pointer-events: auto;
+    overflow: hidden;
+  }
+
+  .map-dashboard__body {
+    transition: filter 200ms ease;
+  }
+
+  .map-dashboard.is-blurred .map-dashboard__body {
+    filter: blur(5px);
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .map-dashboard__reveal-overlay {
+    position: absolute;
+    inset: 0;
+    top: 44px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.45);
+    z-index: 10;
+    cursor: pointer;
+    transition: background 150ms ease;
+  }
+
+  .map-dashboard__reveal-overlay[hidden] { display: none; }
+
+  .map-dashboard__reveal-overlay:hover {
+    background: rgba(255, 255, 255, 0.6);
+  }
+
+  .map-dashboard__reveal-icon {
+    font-size: 22px;
+    color: #3b82f6;
+    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.15));
+  }
+
+  .map-dashboard__reveal-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+    letter-spacing: 0.01em;
   }
 
   .map-dashboard__header {

@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { trackEvent } from "controllers/sidebar/api"
 
 export default class extends Controller {
   static targets = ["tab", "pane"]
@@ -17,6 +18,13 @@ export default class extends Controller {
   open() {
     this.element.hidden = false
     document.body.style.overflow = "hidden"
+    trackEvent("helper_opened")
+  }
+
+  faqToggled(e) {
+    if (!e.target.open) return
+    const question = e.target.querySelector("summary")?.textContent?.trim()
+    trackEvent("helper_question_opened", { question })
   }
 
   close() {

@@ -1,5 +1,7 @@
 // app/javascript/controllers/sidebar/simulator.js
 
+import { trackEvent } from "controllers/sidebar/api"
+
 export function createSimulator(controller) {
   return {
     loadAgentTypesIntoPanel() {
@@ -50,6 +52,11 @@ export function createSimulator(controller) {
         if (controller.hasLocatorPanelTarget && !controller.locatorPanelTarget.hidden) {
           controller.closeLocator()
         }
+
+        trackEvent("simulator_opened", {
+          municipality_code: controller._selectedMunicipalityCode,
+          scenario_id: controller._selectedScenarioId
+        })
 
         controller.simulatorPanelTarget.style.left = controller.collapsed ? "0px" : "304px"
         controller.loadAgentTypesIntoPanel()

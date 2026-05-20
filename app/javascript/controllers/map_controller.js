@@ -231,6 +231,7 @@ export default class extends Controller {
 
   toggleLegend = () => this.legend.toggle()
   toggleDashboard = () => this.dashboard.toggle()
+  revealDashboard = () => this.dashboard.reveal()
   toggleStylePicker = () => this.styleManager?.togglePicker()
   selectStyle(e) { this.styleManager?.select(e.currentTarget.dataset.styleId) }
 

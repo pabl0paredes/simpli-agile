@@ -201,6 +201,11 @@ export function createOpportunitiesLayers(controller) {
       if (normMetric) {
         if (isActive) {
           if (!controller._selectedMunicipalityCode || !controller._selectedScenarioId) return
+          controller._api?.trackEvent("normative_layer_selected", {
+            norm_metric: normMetric,
+            municipality_code: controller._selectedMunicipalityCode,
+            scenario_id: controller._selectedScenarioId
+          })
           window.dispatchEvent(new CustomEvent("normative:selected", {
             detail: {
               normMetric,

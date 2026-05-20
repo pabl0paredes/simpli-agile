@@ -171,6 +171,12 @@ export function createScenarios(controller) {
       const json = await resp.json()
       if (!resp.ok) return alert(json.error || "Error creando escenario.")
 
+      controller._api?.trackEvent("scenario_created", {
+        scenario_id: json.scenario_id,
+        municipality_code: controller._selectedMunicipalityCode,
+        parent_scenario_id: baseScenarioId
+      })
+
       controller.scenarios.closeCreateScenarioModal()
 
       await controller.scenarios.loadScenariosIntoSelect(
